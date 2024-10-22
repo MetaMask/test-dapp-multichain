@@ -7,4 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/MetaMask/test-dapp-multichain/
+## [0.0.1]
+
+### Uncategorized
+
+- fix: linting issue
+- fix: publish docs homepage
+- fix: check diff filename
+- fix: other linting issues
+- Initial Commit of react app and module template
+
+[Unreleased]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.0.1...HEAD
+[0.0.1]: https://github.com/MetaMask/test-dapp-multichain/releases/tag/v0.0.1
