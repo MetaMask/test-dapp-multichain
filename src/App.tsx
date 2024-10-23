@@ -1,31 +1,11 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+
 import './App.css';
+// import makeProvider from './providers/MockMultichainProvider';
+import MetaMaskMultichainProvider from './providers/MetaMaskMultichainProvider';
 
-let currentSession: any = null;
-
-// Function to simulate MetaMask provider
-const provider = {
-  request: async ({ method, params }: { method: string; params: any }) => {
-    console.log(`Calling ${method} with params:`, params);
-    // Simulate responses based on method
-    switch (method) {
-      case 'wallet_createSession':
-        currentSession = {
-          sessionScopes: params.requiredScopes,
-        };
-        return currentSession;
-      case 'wallet_getSession':
-        return currentSession;
-      case 'wallet_revokeSession':
-        return true;
-      case 'wallet_invokeMethod':
-        return 'Method invocation result';
-      default:
-        throw new Error('Method not implemented');
-    }
-  },
-};
+const provider = new MetaMaskMultichainProvider();
 
 function App() {
   const [createSessionResult, setCreateSessionResult] = useState<any>(null);
@@ -44,8 +24,64 @@ function App() {
       'eip155:1': false,
     },
   );
+  const [walletNotifyResults, setWalletNotifyResults] = useState<any>(null);
+  const [walletSessionChangedResults, setWalletSessionChangedResults] =
+    useState<any>(null);
+  const [currentSession, setCurrentSession] = useState<any>(null);
+  const [extensionId, setExtensionId] = useState<string>('');
+  const [invokeMethodRequests, setInvokeMethodRequests] = useState<
+    Record<string, string>
+  >({});
 
-  // Add this new function to clear all state
+  useEffect(() => {
+    console.log('extensionId', extensionId);
+    if (extensionId) {
+      provider.connect(extensionId);
+    }
+    return () => {
+      provider.disconnect();
+    };
+  }, [extensionId]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!currentSession) {
+        return;
+      }
+      setWalletSessionChangedResults({
+        jsonrpc: '2.0',
+        method: 'wallet_sessionChanged',
+        params: currentSession,
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [currentSession]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!currentSession) {
+        return;
+      }
+      setWalletNotifyResults({
+        jsonrpc: '2.0',
+        method: 'wallet_notify',
+        params: {
+          'eip155:1': {
+            method: 'eth_subscription',
+            params: {
+              subscription: '0xfoo',
+              result: {
+                blockNumber: '0x1',
+              },
+            },
+          },
+        },
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [currentSession]);
+
+  // Update the handleResetState function
   const handleResetState = () => {
     setCreateSessionResult(null);
     setGetSessionResult(null);
@@ -53,11 +89,13 @@ function App() {
     setSelectedMethods({});
     setInvokeMethodResults({});
     setCustomScope('');
+    setWalletNotifyResults(null);
+    setWalletSessionChangedResults(null);
     setSelectedScopes({
       'eip155:1337': false,
       'eip155:1': false,
     });
-    currentSession = null; // Reset the global currentSession variable
+    setCurrentSession(null);
   };
 
   const handleCreateSession = async () => {
@@ -85,6 +123,7 @@ function App() {
         params: { requiredScopes },
       });
       setCreateSessionResult(result);
+      setCurrentSession(result);
     } catch (error) {
       console.error('Error creating session:', error);
     }
@@ -110,6 +149,7 @@ function App() {
       });
       if (result) {
         setRevokeSessionResult(result);
+        handleResetState();
       }
     } catch (error) {
       console.error('Error revoking session:', error);
@@ -118,10 +158,8 @@ function App() {
 
   const handleInvokeMethod = async (scope: string, method: string) => {
     try {
-      const result = await provider.request({
-        method: 'wallet_invokeMethod',
-        params: [scope, { method, params: [] }],
-      });
+      const requestObject = JSON.parse(invokeMethodRequests[scope] ?? '{}');
+      const result = await provider.request(requestObject);
       setInvokeMethodResults((prev) => ({
         ...prev,
         [scope]: { ...prev[scope], [method]: result },
@@ -139,7 +177,21 @@ function App() {
     <div className="App">
       <h1>MetaMask MultiChain API Test Dapp</h1>
       <div>
+        <label>
+          Extension ID:
+          <input
+            type="text"
+            placeholder="Enter extension ID"
+            value={extensionId}
+            onChange={(evt) => setExtensionId(evt.target.value)}
+          />
+        </label>
+      </div>
+      <div>
         <h2>Session Lifecycle</h2>
+        <br />
+        <button onClick={handleResetState}>Clear State</button>
+        <br />
         <div>
           <h3>Create Session</h3>
           <label>
@@ -192,12 +244,24 @@ function App() {
                   <h3>{scope}</h3>
                   <select
                     value={selectedMethods[scope] ?? ''}
-                    onChange={(evt) =>
+                    onChange={(evt) => {
+                      const selectedMethod = evt.target.value;
                       setSelectedMethods((prev) => ({
                         ...prev,
-                        [scope]: evt.target.value,
-                      }))
-                    }
+                        [scope]: selectedMethod,
+                      }));
+                      const defaultRequest = {
+                        method: 'wallet_invokeMethod',
+                        params: {
+                          scope,
+                          request: { method: selectedMethod, params: [] },
+                        },
+                      };
+                      setInvokeMethodRequests((prev) => ({
+                        ...prev,
+                        [scope]: JSON.stringify(defaultRequest, null, 2),
+                      }));
+                    }}
                   >
                     <option value="">Select a method</option>
                     {details.methods.map((method: string) => (
@@ -206,11 +270,28 @@ function App() {
                       </option>
                     ))}
                   </select>
+                  <div>
+                    <h4>Invoke Method Request:</h4>
+                    <textarea
+                      value={invokeMethodRequests[scope] ?? ''}
+                      onChange={(evt) =>
+                        setInvokeMethodRequests((prev) => ({
+                          ...prev,
+                          [scope]: evt.target.value,
+                        }))
+                      }
+                      rows={5}
+                      cols={50}
+                      style={{ width: '100%', maxWidth: '500px' }}
+                    />
+                  </div>
                   <button
                     onClick={async () => {
-                      const selectedMethod = selectedMethods[scope];
-                      if (selectedMethod) {
-                        await handleInvokeMethod(scope, selectedMethod);
+                      if (selectedMethods[scope]) {
+                        await handleInvokeMethod(
+                          scope,
+                          selectedMethods[scope] ?? '',
+                        );
                       }
                     }}
                   >
@@ -223,7 +304,9 @@ function App() {
                         ([method, result]) => (
                           <div key={method}>
                             <h5>{method}:</h5>
-                            <pre>{JSON.stringify(result, null, 2)}</pre>
+                            <code className="code-left-align">
+                              <pre>{JSON.stringify(result, null, 2)}</pre>
+                            </code>
                           </div>
                         ),
                       )}
@@ -239,13 +322,34 @@ function App() {
         <br />
         <br />
         <button onClick={handleGetSession}>wallet_getSession</button>
-        <div>{JSON.stringify(getSessionResult)}</div>
+        <div>
+          <code className="code-left-align">
+            <pre>{JSON.stringify(getSessionResult, null, 2)}</pre>
+          </code>
+        </div>
         <button onClick={handleRevokeSession}>wallet_revokeSession</button>
-        <div>{JSON.stringify(revokeSessionResult)}</div>
+        <div>
+          <code className="code-left-align">
+            <pre>{JSON.stringify(revokeSessionResult, null, 2)}</pre>
+          </code>
+        </div>
         <br />
         <br />
         <br />
-        <button onClick={handleResetState}>Clear</button>
+        <br />
+        <h1>wallet_notify</h1>
+        <code className="code-left-align">
+          <pre>{JSON.stringify(walletNotifyResults, null, 4)}</pre>
+        </code>
+        <br />
+        <br />
+        <br />
+        <br />
+        <h1>wallet_sessionChanged</h1>
+        <code className="code-left-align">
+          <pre>{JSON.stringify(walletSessionChangedResults, null, 4)}</pre>
+        </code>
+        <br />
       </div>
     </div>
   );
