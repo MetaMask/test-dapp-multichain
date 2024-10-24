@@ -1,6 +1,8 @@
+import type { Provider } from './Provider';
+
 type NotificationCallback = (notification: any) => void;
 
-class MetaMaskMultichainProvider {
+class MetaMaskMultichainProvider implements Provider {
   #port: chrome.runtime.Port | null;
 
   #requestMap: Map<
@@ -26,7 +28,6 @@ class MetaMaskMultichainProvider {
 
     // eslint-disable-next-line
     this.#port = chrome.runtime.connect(extensionId);
-    console.log('this.#port', this.#port);
     this.#port.onMessage.addListener(this.#handleMessage.bind(this));
     this.#port.onDisconnect.addListener(() => {
       this.#port = null;
@@ -79,7 +80,6 @@ class MetaMaskMultichainProvider {
   }
 
   #handleMessage(message: any): void {
-    console.log('got message back', message);
     const { data } = message;
     if (data.id && this.#requestMap.has(data.id)) {
       const { resolve, reject } = this.#requestMap.get(data.id) ?? {};
@@ -104,6 +104,12 @@ class MetaMaskMultichainProvider {
 
   removeNotificationListener(callback: NotificationCallback): void {
     this.#notificationCallbacks.delete(callback);
+  }
+
+  removeAllNotificationListeners() {
+    this.#notificationCallbacks.forEach(
+      this.removeNotificationListener.bind(this),
+    );
   }
 
   #notifyCallbacks(notification: any): void {

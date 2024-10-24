@@ -2,13 +2,14 @@
 import React, { useEffect, useState } from 'react';
 
 import './App.css';
-// import makeProvider from './providers/MockMultichainProvider';
 import MetaMaskMultichainProvider from './providers/MetaMaskMultichainProvider';
-
-const provider = new MetaMaskMultichainProvider();
+import makeProvider from './providers/MockMultichainProvider';
+import type { Provider } from './providers/Provider';
 
 function App() {
   const [createSessionResult, setCreateSessionResult] = useState<any>(null);
+  const [providerType, setProviderType] = useState<string>('metamask');
+  const [provider, setProvider] = useState<any>(null);
   const [getSessionResult, setGetSessionResult] = useState<any>(null);
   const [revokeSessionResult, setRevokeSessionResult] = useState<any>(null);
   const [selectedMethods, setSelectedMethods] = useState<
@@ -27,59 +28,55 @@ function App() {
   const [walletNotifyResults, setWalletNotifyResults] = useState<any>(null);
   const [walletSessionChangedResults, setWalletSessionChangedResults] =
     useState<any>(null);
-  const [currentSession, setCurrentSession] = useState<any>(null);
   const [extensionId, setExtensionId] = useState<string>('');
   const [invokeMethodRequests, setInvokeMethodRequests] = useState<
     Record<string, string>
   >({});
 
+  // Use useEffect to handle provider initialization and cleanup
   useEffect(() => {
-    console.log('extensionId', extensionId);
-    if (extensionId) {
+    let newProvider: Provider;
+    if (providerType === 'mock') {
+      newProvider = makeProvider(() => createSessionResult);
+    } else {
+      newProvider = new MetaMaskMultichainProvider();
+      if (extensionId) {
+        newProvider.connect(extensionId);
+      }
+    }
+
+    setProvider(newProvider);
+
+    return () => {
+      if (newProvider && typeof newProvider.disconnect === 'function') {
+        newProvider.disconnect();
+      }
+    };
+  }, [providerType, createSessionResult, extensionId]);
+
+  useEffect(() => {
+    if (extensionId && provider) {
       provider.connect(extensionId);
     }
     return () => {
-      provider.disconnect();
+      if (provider) {
+        provider.disconnect();
+      }
     };
-  }, [extensionId]);
+  }, [extensionId, provider]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (!currentSession) {
-        return;
+    if (!provider) {
+      return;
+    }
+    provider.onNotification((notification: any) => {
+      if (notification.method === 'wallet_notify') {
+        setWalletNotifyResults(notification);
+      } else if (notification.method === 'wallet_sessionChanged') {
+        setWalletSessionChangedResults(notification);
       }
-      setWalletSessionChangedResults({
-        jsonrpc: '2.0',
-        method: 'wallet_sessionChanged',
-        params: currentSession,
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [currentSession]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (!currentSession) {
-        return;
-      }
-      setWalletNotifyResults({
-        jsonrpc: '2.0',
-        method: 'wallet_notify',
-        params: {
-          'eip155:1': {
-            method: 'eth_subscription',
-            params: {
-              subscription: '0xfoo',
-              result: {
-                blockNumber: '0x1',
-              },
-            },
-          },
-        },
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [currentSession]);
+    });
+  }, [provider]);
 
   // Update the handleResetState function
   const handleResetState = () => {
@@ -95,7 +92,6 @@ function App() {
       'eip155:1337': false,
       'eip155:1': false,
     });
-    setCurrentSession(null);
   };
 
   const handleCreateSession = async () => {
@@ -123,7 +119,6 @@ function App() {
         params: { requiredScopes },
       });
       setCreateSessionResult(result);
-      setCurrentSession(result);
     } catch (error) {
       console.error('Error creating session:', error);
     }
@@ -176,6 +171,18 @@ function App() {
   return (
     <div className="App">
       <h1>MetaMask MultiChain API Test Dapp</h1>
+      <div>
+        <label>
+          Provider:
+          <select
+            value={providerType}
+            onChange={(evt) => setProviderType(evt.target.value)}
+          >
+            <option value="metamask">MetaMask Provider</option>
+            <option value="mock">Mock Provider</option>
+          </select>
+        </label>
+      </div>
       <div>
         <label>
           Extension ID:
