@@ -48,9 +48,7 @@ function App() {
     setProvider(newProvider);
 
     return () => {
-      if (newProvider && typeof newProvider.disconnect === 'function') {
-        newProvider.disconnect();
-      }
+      newProvider?.disconnect();
     };
   }, [providerType, createSessionResult, extensionId]);
 
