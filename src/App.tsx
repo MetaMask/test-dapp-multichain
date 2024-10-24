@@ -1,7 +1,11 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
+import { MetaMaskOpenRPCDocument } from '@metamask/api-specs';
+import type { MethodObject, OpenrpcDocument } from '@open-rpc/meta-schema';
+import { parseOpenRPCDocument } from '@open-rpc/schema-utils-js';
 import React, { useEffect, useState } from 'react';
 
 import './App.css';
+import { openRPCExampleToJSON } from './helpers/OpenRPCExampleToJSON';
 import MetaMaskMultichainProvider from './providers/MetaMaskMultichainProvider';
 import makeProvider from './providers/MockMultichainProvider';
 import type { Provider } from './providers/Provider';
@@ -32,6 +36,8 @@ function App() {
   const [invokeMethodRequests, setInvokeMethodRequests] = useState<
     Record<string, string>
   >({});
+  const [metamaskOpenrpcDocument, setMetamaskOpenrpcDocument] =
+    useState<OpenrpcDocument>();
 
   // Use useEffect to handle provider initialization and cleanup
   useEffect(() => {
@@ -63,6 +69,16 @@ function App() {
       }
     };
   }, [extensionId, provider]);
+
+  useEffect(() => {
+    parseOpenRPCDocument(MetaMaskOpenRPCDocument)
+      .then((parsedOpenRPCDocument) => {
+        setMetamaskOpenrpcDocument(parsedOpenRPCDocument);
+      })
+      .catch(() => {
+        //
+      });
+  }, []);
 
   // Update the handleResetState function
   const handleResetState = () => {
@@ -149,7 +165,7 @@ function App() {
       console.error('Error invoking method:', error);
       setInvokeMethodResults((prev) => ({
         ...prev,
-        [scope]: { ...prev[scope], [method]: null },
+        [scope]: { ...prev[scope], [method]: error },
       }));
     }
   };
@@ -243,11 +259,20 @@ function App() {
                         ...prev,
                         [scope]: selectedMethod,
                       }));
+                      const example = metamaskOpenrpcDocument?.methods.find(
+                        (method) => {
+                          return (
+                            (method as MethodObject).name === selectedMethod
+                          );
+                        },
+                      );
                       const defaultRequest = {
                         method: 'wallet_invokeMethod',
                         params: {
                           scope,
-                          request: { method: selectedMethod, params: [] },
+                          request: openRPCExampleToJSON(
+                            example as MethodObject,
+                          ),
                         },
                       };
                       setInvokeMethodRequests((prev) => ({

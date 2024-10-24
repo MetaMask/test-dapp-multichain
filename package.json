@@ -59,6 +59,9 @@
     ]
   },
   "dependencies": {
+    "@metamask/api-specs": "^0.10.12",
+    "@open-rpc/meta-schema": "^1.14.9",
+    "@open-rpc/schema-utils-js": "^2.0.5",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@types/chrome": "^0.0.279",
