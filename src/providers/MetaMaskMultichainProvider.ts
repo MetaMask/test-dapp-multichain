@@ -41,6 +41,7 @@ class MetaMaskMultichainProvider implements Provider {
       this.#port = null;
     }
     this.#requestMap.clear();
+    this.removeAllNotificationListeners();
   }
 
   async request({

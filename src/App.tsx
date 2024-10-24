@@ -9,7 +9,7 @@ import type { Provider } from './providers/Provider';
 function App() {
   const [createSessionResult, setCreateSessionResult] = useState<any>(null);
   const [providerType, setProviderType] = useState<string>('metamask');
-  const [provider, setProvider] = useState<any>(null);
+  const [provider, setProvider] = useState<Provider>();
   const [getSessionResult, setGetSessionResult] = useState<any>(null);
   const [revokeSessionResult, setRevokeSessionResult] = useState<any>(null);
   const [selectedMethods, setSelectedMethods] = useState<
@@ -40,21 +40,22 @@ function App() {
       newProvider = makeProvider(() => createSessionResult);
     } else {
       newProvider = new MetaMaskMultichainProvider();
-      if (extensionId) {
-        newProvider.connect(extensionId);
-      }
     }
 
     setProvider(newProvider);
+  }, [providerType, createSessionResult]);
 
-    return () => {
-      newProvider?.disconnect();
-    };
-  }, [providerType, createSessionResult, extensionId]);
-
+  // setup provider
   useEffect(() => {
     if (extensionId && provider) {
       provider.connect(extensionId);
+      provider.onNotification((notification: any) => {
+        if (notification.method === 'wallet_notify') {
+          setWalletNotifyResults(notification);
+        } else if (notification.method === 'wallet_sessionChanged') {
+          setWalletSessionChangedResults(notification);
+        }
+      });
     }
     return () => {
       if (provider) {
@@ -62,19 +63,6 @@ function App() {
       }
     };
   }, [extensionId, provider]);
-
-  useEffect(() => {
-    if (!provider) {
-      return;
-    }
-    provider.onNotification((notification: any) => {
-      if (notification.method === 'wallet_notify') {
-        setWalletNotifyResults(notification);
-      } else if (notification.method === 'wallet_sessionChanged') {
-        setWalletSessionChangedResults(notification);
-      }
-    });
-  }, [provider]);
 
   // Update the handleResetState function
   const handleResetState = () => {
@@ -112,7 +100,7 @@ function App() {
         };
       }
 
-      const result = await provider.request({
+      const result = await provider?.request({
         method: 'wallet_createSession',
         params: { requiredScopes },
       });
@@ -124,7 +112,7 @@ function App() {
 
   const handleGetSession = async () => {
     try {
-      const result = await provider.request({
+      const result = await provider?.request({
         method: 'wallet_getSession',
         params: [],
       });
@@ -136,7 +124,7 @@ function App() {
 
   const handleRevokeSession = async () => {
     try {
-      const result = await provider.request({
+      const result = await provider?.request({
         method: 'wallet_revokeSession',
         params: [],
       });
@@ -152,7 +140,7 @@ function App() {
   const handleInvokeMethod = async (scope: string, method: string) => {
     try {
       const requestObject = JSON.parse(invokeMethodRequests[scope] ?? '{}');
-      const result = await provider.request(requestObject);
+      const result = await provider?.request(requestObject);
       setInvokeMethodResults((prev) => ({
         ...prev,
         [scope]: { ...prev[scope], [method]: result },
