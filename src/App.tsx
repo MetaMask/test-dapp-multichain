@@ -183,7 +183,9 @@ function App() {
       <div>
         <h2>Session Lifecycle</h2>
         <br />
-        <button onClick={handleResetState}>Clear State</button>
+        <button id="clear-state-btn" onClick={handleResetState}>
+          Clear State
+        </button>
         <br />
         <div>
           <h3>Create Session</h3>
@@ -226,7 +228,9 @@ function App() {
               />
             </label>
           </div>
-          <button onClick={handleCreateSession}>wallet_createSession</button>
+          <button id="create-session-btn" onClick={handleCreateSession}>
+            wallet_createSession
+          </button>
         </div>
         {createSessionResult && (
           <div>
@@ -279,6 +283,7 @@ function App() {
                     />
                   </div>
                   <button
+                    id={`invoke-method-${scope}-btn`}
                     onClick={async () => {
                       if (selectedMethods[scope]) {
                         await handleInvokeMethod(
@@ -298,7 +303,7 @@ function App() {
                           <div key={method}>
                             <h5>{method}:</h5>
                             <code className="code-left-align">
-                              <pre>{JSON.stringify(result, null, 2)}</pre>
+                              <pre id={`invoke-method-${scope}-${method}-result`}>{JSON.stringify(result, null, 2)}</pre>
                             </code>
                           </div>
                         ),
@@ -314,16 +319,24 @@ function App() {
         <br />
         <br />
         <br />
-        <button onClick={handleGetSession}>wallet_getSession</button>
+        <button id="get-session-btn" onClick={handleGetSession}>
+          wallet_getSession
+        </button>
         <div>
           <code className="code-left-align">
-            <pre>{JSON.stringify(getSessionResult, null, 2)}</pre>
+            <pre id="get-session-result">
+              {JSON.stringify(getSessionResult, null, 2)}
+            </pre>
           </code>
         </div>
-        <button onClick={handleRevokeSession}>wallet_revokeSession</button>
+        <button id="revoke-session-btn" onClick={handleRevokeSession}>
+          wallet_revokeSession
+        </button>
         <div>
           <code className="code-left-align">
-            <pre>{JSON.stringify(revokeSessionResult, null, 2)}</pre>
+            <pre id="revoke-session-result">
+              {JSON.stringify(revokeSessionResult, null, 2)}
+            </pre>
           </code>
         </div>
         <br />
@@ -332,7 +345,9 @@ function App() {
         <br />
         <h1>wallet_notify</h1>
         <code className="code-left-align">
-          <pre>{JSON.stringify(walletNotifyResults, null, 4)}</pre>
+          <pre id="wallet-notify-result">
+            {JSON.stringify(walletNotifyResults, null, 4)}
+          </pre>
         </code>
         <br />
         <br />
@@ -340,7 +355,9 @@ function App() {
         <br />
         <h1>wallet_sessionChanged</h1>
         <code className="code-left-align">
-          <pre>{JSON.stringify(walletSessionChangedResults, null, 4)}</pre>
+          <pre id="wallet-session-changed-result">
+            {JSON.stringify(walletSessionChangedResults, null, 4)}
+          </pre>
         </code>
         <br />
       </div>
