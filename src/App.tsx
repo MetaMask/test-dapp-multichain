@@ -303,7 +303,11 @@ function App() {
                           <div key={method}>
                             <h5>{method}:</h5>
                             <code className="code-left-align">
-                              <pre id={`invoke-method-${scope}-${method}-result`}>{JSON.stringify(result, null, 2)}</pre>
+                              <pre
+                                id={`invoke-method-${scope}-${method}-result`}
+                              >
+                                {JSON.stringify(result, null, 2)}
+                              </pre>
                             </code>
                           </div>
                         ),
