@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.7]
+
+### Uncategorized
+
+- fix: add ids for e2e tests ([#13](https://github.com/MetaMask/test-dapp-multichain/pull/13))
+
 ## [0.0.6]
 
 ### Uncategorized
@@ -67,7 +73,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix: other linting issues
 - Initial Commit of react app and module template
 
-[Unreleased]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.0.6...HEAD
+[Unreleased]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.0.7...HEAD
+[0.0.7]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.0.6...v0.0.7
 [0.0.6]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.0.4...v0.0.5
 [0.0.4]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.0.3...v0.0.4
