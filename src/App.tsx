@@ -204,110 +204,110 @@ function App() {
   return (
     <div className="App">
       <h1>MetaMask MultiChain API Test Dapp</h1>
-      <div>
-        <label>
-          Provider:
-          <select
-            value={providerType}
-            onChange={(evt) => setProviderType(evt.target.value)}
-          >
-            <option value="metamask">MetaMask Provider</option>
-            <option value="mock">Mock Provider</option>
-          </select>
-        </label>
-      </div>
-      <div>
-        <label>
-          Extension ID:
-          <input
-            type="text"
-            placeholder="Enter extension ID"
-            value={extensionId}
-            onChange={(evt) => setExtensionId(evt.target.value)}
-          />
-        </label>
-      </div>
-      <div
-        style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}
-      >
-        <span
-          style={{
-            display: 'inline-block',
-            width: '10px',
-            height: '10px',
-            borderRadius: '50%',
-            backgroundColor: isExternallyConnectableConnected ? 'green' : 'red',
-            marginRight: '8px',
-          }}
-        ></span>
-        <span>
-          {isExternallyConnectableConnected
-            ? 'Ready to Connect'
-            : 'Not ready to connect'}
-        </span>
-        <button
-          style={{ marginLeft: '10px' }}
-          onClick={() => {
-            setExtensionId('');
-            localStorage.removeItem('extensionId');
-          }}
-        >
-          Clear Extension ID
-        </button>
-      </div>
-      <div>
-        <h2>Session Lifecycle</h2>
-        <br />
-        <button id="clear-state-btn" onClick={handleResetState}>
-          Clear State
-        </button>
-        <br />
+      <section>
         <div>
-          <h3>Create Session</h3>
           <label>
-            <input
-              type="checkbox"
-              name="eip155:1337"
-              checked={selectedScopes['eip155:1337']}
-              onChange={(evt) =>
-                setSelectedScopes((prev) => ({
-                  ...prev,
-                  'eip155:1337': evt.target.checked,
-                }))
-              }
-            />{' '}
-            EIP155:1337
+            Provider:
+            <select
+              value={providerType}
+              onChange={(evt) => setProviderType(evt.target.value)}
+            >
+              <option value="metamask">MetaMask Provider</option>
+              <option value="mock">Mock Provider</option>
+            </select>
           </label>
+        </div>
+        <div>
           <label>
+            Extension ID:
             <input
-              type="checkbox"
-              name="eip155:1"
-              checked={selectedScopes['eip155:1']}
-              onChange={(evt) =>
-                setSelectedScopes((prev) => ({
-                  ...prev,
-                  'eip155:1': evt.target.checked,
-                }))
-              }
-            />{' '}
-            EIP155:1
+              type="text"
+              placeholder="Enter extension ID"
+              value={extensionId}
+              onChange={(evt) => setExtensionId(evt.target.value)}
+            />
           </label>
-          <div>
-            <label>
-              Custom:
-              <input
-                type="text"
-                placeholder="e.g., eip155:5"
-                value={customScope}
-                onChange={(evt) => setCustomScope(evt.target.value)}
-              />
-            </label>
-          </div>
-          <button id="create-session-btn" onClick={handleCreateSession}>
-            wallet_createSession
+        </div>
+        <div className="connection-status">
+          <span
+            className={`status-indicator ${
+              isExternallyConnectableConnected
+                ? 'status-connected'
+                : 'status-disconnected'
+            }`}
+          ></span>
+          <span>
+            {isExternallyConnectableConnected
+              ? 'Ready to Connect'
+              : 'Not ready to connect'}
+          </span>
+          <button
+            onClick={() => {
+              setExtensionId('');
+              localStorage.removeItem('extensionId');
+            }}
+          >
+            Clear Extension ID
           </button>
         </div>
-        {createSessionResult && (
+      </section>
+      <section>
+        <div>
+          <h2>Session Lifecycle</h2>
+          <br />
+          <button id="clear-state-btn" onClick={handleResetState}>
+            Clear State
+          </button>
+          <br />
+          <div>
+            <h3>Create Session</h3>
+            <label>
+              <input
+                type="checkbox"
+                name="eip155:1337"
+                checked={selectedScopes['eip155:1337']}
+                onChange={(evt) =>
+                  setSelectedScopes((prev) => ({
+                    ...prev,
+                    'eip155:1337': evt.target.checked,
+                  }))
+                }
+              />{' '}
+              EIP155:1337
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                name="eip155:1"
+                checked={selectedScopes['eip155:1']}
+                onChange={(evt) =>
+                  setSelectedScopes((prev) => ({
+                    ...prev,
+                    'eip155:1': evt.target.checked,
+                  }))
+                }
+              />{' '}
+              EIP155:1
+            </label>
+            <div>
+              <label>
+                Custom:
+                <input
+                  type="text"
+                  placeholder="e.g., eip155:5"
+                  value={customScope}
+                  onChange={(evt) => setCustomScope(evt.target.value)}
+                />
+              </label>
+            </div>
+            <button id="create-session-btn" onClick={handleCreateSession}>
+              wallet_createSession
+            </button>
+          </div>
+        </div>
+      </section>
+      {createSessionResult && (
+        <section>
           <div>
             <h2>Connected Scopes</h2>
             {Object.entries(createSessionResult.sessionScopes).map(
@@ -351,7 +351,7 @@ function App() {
                       </option>
                     ))}
                   </select>
-                  <div>
+                  <div className="method-container">
                     <h4>Invoke Method Request:</h4>
                     <textarea
                       value={invokeMethodRequests[scope] ?? ''}
@@ -363,7 +363,6 @@ function App() {
                       }
                       rows={5}
                       cols={50}
-                      style={{ width: '100%', maxWidth: '500px' }}
                     />
                   </div>
                   <button
@@ -379,76 +378,75 @@ function App() {
                   >
                     Invoke Method
                   </button>
-                  {invokeMethodResults[scope] && (
-                    <div>
-                      <h4>Invoke Method Results:</h4>
-                      {Object.entries(invokeMethodResults[scope]).map(
-                        ([method, result]) => (
-                          <div key={method}>
-                            <h5>{method}:</h5>
-                            <code className="code-left-align">
-                              <pre
-                                id={`invoke-method-${scope}-${method}-result`}
-                              >
-                                {JSON.stringify(result, null, 2)}
-                              </pre>
-                            </code>
-                          </div>
-                        ),
-                      )}
-                    </div>
-                  )}
+                  <div className="method-result">
+                    <h4>Invoke Method Results:</h4>
+                    {Object.entries(invokeMethodResults[scope]).map(
+                      ([method, result]) => (
+                        <div key={method}>
+                          <h5>{method}:</h5>
+                          <code className="code-left-align">
+                            <pre id={`invoke-method-${scope}-${method}-result`}>
+                              {JSON.stringify(result, null, 2)}
+                            </pre>
+                          </code>
+                        </div>
+                      ),
+                    )}
+                  </div>
                 </div>
               ),
             )}
           </div>
-        )}
-        <div></div>
-        <br />
-        <br />
-        <br />
-        <button id="get-session-btn" onClick={handleGetSession}>
-          wallet_getSession
-        </button>
+        </section>
+      )}
+      <section>
         <div>
+          <br />
+          <br />
+          <br />
+          <button id="get-session-btn" onClick={handleGetSession}>
+            wallet_getSession
+          </button>
+          <div>
+            <code className="code-left-align">
+              <pre id="get-session-result">
+                {JSON.stringify(getSessionResult, null, 2)}
+              </pre>
+            </code>
+          </div>
+          <button id="revoke-session-btn" onClick={handleRevokeSession}>
+            wallet_revokeSession
+          </button>
+          <div>
+            <code className="code-left-align">
+              <pre id="revoke-session-result">
+                {JSON.stringify(revokeSessionResult, null, 2)}
+              </pre>
+            </code>
+          </div>
+          <br />
+          <br />
+          <br />
+          <br />
+          <h1>wallet_notify</h1>
           <code className="code-left-align">
-            <pre id="get-session-result">
-              {JSON.stringify(getSessionResult, null, 2)}
+            <pre id="wallet-notify-result">
+              {JSON.stringify(walletNotifyResults, null, 4)}
             </pre>
           </code>
-        </div>
-        <button id="revoke-session-btn" onClick={handleRevokeSession}>
-          wallet_revokeSession
-        </button>
-        <div>
+          <br />
+          <br />
+          <br />
+          <br />
+          <h1>wallet_sessionChanged</h1>
           <code className="code-left-align">
-            <pre id="revoke-session-result">
-              {JSON.stringify(revokeSessionResult, null, 2)}
+            <pre id="wallet-session-changed-result">
+              {JSON.stringify(walletSessionChangedResults, null, 4)}
             </pre>
           </code>
+          <br />
         </div>
-        <br />
-        <br />
-        <br />
-        <br />
-        <h1>wallet_notify</h1>
-        <code className="code-left-align">
-          <pre id="wallet-notify-result">
-            {JSON.stringify(walletNotifyResults, null, 4)}
-          </pre>
-        </code>
-        <br />
-        <br />
-        <br />
-        <br />
-        <h1>wallet_sessionChanged</h1>
-        <code className="code-left-align">
-          <pre id="wallet-session-changed-result">
-            {JSON.stringify(walletSessionChangedResults, null, 4)}
-          </pre>
-        </code>
-        <br />
-      </div>
+      </section>
     </div>
   );
 }
