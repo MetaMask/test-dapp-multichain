@@ -11,6 +11,15 @@ import MetaMaskMultichainProvider from './providers/MetaMaskMultichainProvider';
 import makeProvider from './providers/MockMultichainProvider';
 import type { Provider } from './providers/Provider';
 
+// Add this helper function at the top of your file, outside the App component
+const truncateJSON = (json: any): string => {
+  const stringified = JSON.stringify(json, null, 2);
+  if (stringified.length <= 100) {
+    return stringified;
+  }
+  return `${stringified.substring(0, 100)}...`;
+};
+
 function App() {
   const [createSessionResult, setCreateSessionResult] = useState<any>(null);
   const [providerType, setProviderType] = useState<string>('metamask');
@@ -27,7 +36,7 @@ function App() {
   const [selectedScopes, setSelectedScopes] = useState<Record<string, boolean>>(
     {
       'eip155:1337': false,
-      'eip155:1': false,
+      'eip155:1': true,
     },
   );
   const [walletNotifyResults, setWalletNotifyResults] = useState<any>(null);
@@ -268,12 +277,8 @@ function App() {
       <section>
         <div>
           <h2>Session Lifecycle</h2>
-          <br />
-          <button id="clear-state-btn" onClick={handleResetState}>
-            Clear State
-          </button>
-          <br />
-          <div>
+
+          <div className="create-session-container">
             <h3>Create Session</h3>
             <label>
               <input
@@ -317,6 +322,74 @@ function App() {
             <button id="create-session-btn" onClick={handleCreateSession}>
               wallet_createSession
             </button>
+          </div>
+
+          <div className="session-divider" />
+
+          <div className="session-controls">
+            <button id="clear-state-btn" onClick={handleResetState}>
+              Clear State
+            </button>
+            <button id="get-session-btn" onClick={handleGetSession}>
+              wallet_getSession
+            </button>
+            <button id="revoke-session-btn" onClick={handleRevokeSession}>
+              wallet_revokeSession
+            </button>
+          </div>
+
+          <div className="session-result">
+            {(createSessionResult ||
+              getSessionResult ||
+              revokeSessionResult) && (
+              <>
+                {createSessionResult && (
+                  <div className="result-item">
+                    <h4>Create Session Result:</h4>
+                    <details>
+                      <summary className="result-summary">
+                        {truncateJSON(createSessionResult)}
+                      </summary>
+                      <code className="code-left-align">
+                        <pre id="create-session-result">
+                          {JSON.stringify(createSessionResult, null, 2)}
+                        </pre>
+                      </code>
+                    </details>
+                  </div>
+                )}
+                {getSessionResult && (
+                  <div className="result-item">
+                    <h4>Get Session Result:</h4>
+                    <details>
+                      <summary className="result-summary">
+                        {truncateJSON(getSessionResult)}
+                      </summary>
+                      <code className="code-left-align">
+                        <pre id="get-session-result">
+                          {JSON.stringify(getSessionResult, null, 2)}
+                        </pre>
+                      </code>
+                    </details>
+                  </div>
+                )}
+                {revokeSessionResult && (
+                  <div className="result-item">
+                    <h4>Revoke Session Result:</h4>
+                    <details>
+                      <summary className="result-summary">
+                        {truncateJSON(revokeSessionResult)}
+                      </summary>
+                      <code className="code-left-align">
+                        <pre id="revoke-session-result">
+                          {JSON.stringify(revokeSessionResult, null, 2)}
+                        </pre>
+                      </code>
+                    </details>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -420,52 +493,24 @@ function App() {
           </div>
         </section>
       )}
-      <section>
-        <div>
-          <br />
-          <br />
-          <br />
-          <button id="get-session-btn" onClick={handleGetSession}>
-            wallet_getSession
-          </button>
-          <div>
-            <code className="code-left-align">
-              <pre id="get-session-result">
-                {JSON.stringify(getSessionResult, null, 2)}
-              </pre>
-            </code>
-          </div>
-          <button id="revoke-session-btn" onClick={handleRevokeSession}>
-            wallet_revokeSession
-          </button>
-          <div>
-            <code className="code-left-align">
-              <pre id="revoke-session-result">
-                {JSON.stringify(revokeSessionResult, null, 2)}
-              </pre>
-            </code>
-          </div>
-          <br />
-          <br />
-          <br />
-          <br />
-          <h1>wallet_notify</h1>
+      <section className="notifications-section">
+        <h2>Notifications</h2>
+        <div className="notification-container">
+          <h3>wallet_notify</h3>
           <code className="code-left-align">
             <pre id="wallet-notify-result">
-              {JSON.stringify(walletNotifyResults, null, 4)}
+              {JSON.stringify(walletNotifyResults, null, 2)}
             </pre>
           </code>
-          <br />
-          <br />
-          <br />
-          <br />
-          <h1>wallet_sessionChanged</h1>
+        </div>
+
+        <div className="notification-container">
+          <h3>wallet_sessionChanged</h3>
           <code className="code-left-align">
             <pre id="wallet-session-changed-result">
-              {JSON.stringify(walletSessionChangedResults, null, 4)}
+              {JSON.stringify(walletSessionChangedResults, null, 2)}
             </pre>
           </code>
-          <br />
         </div>
       </section>
     </div>

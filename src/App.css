@@ -200,3 +200,143 @@ input[type="checkbox"] {
     transform: rotate(360deg);
   }
 }
+
+/* Session controls */
+.session-controls {
+  display: flex;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  flex-wrap: wrap;
+}
+
+.session-result {
+  margin: 1.5rem 0 0 0;
+  padding: 1.5rem;
+  background-color: #f7fafc;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.session-result > div {
+  margin-bottom: 1.5rem;
+}
+
+.session-result > div:last-child {
+  margin-bottom: 0;
+}
+
+.session-result h4 {
+  color: #4a5568;
+  margin: 0 0 0.75rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.create-session-container {
+  margin: 0 0 1.5rem 0;
+  padding: 0 0 1.5rem 0;
+}
+
+.session-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, #e2e8f0, transparent);
+  margin: 1.5rem 0;
+}
+
+/* Notifications section */
+.notifications-section {
+  background: white;
+  border-radius: 8px;
+  padding: 2rem;
+}
+
+.notifications-section h2 {
+  text-align: left;
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.notification-container {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background-color: #f7fafc;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.notification-container h3 {
+  color: #4a5568;
+  font-size: 1.1rem;
+  margin: 0 0 1rem 0;
+  text-align: left;
+}
+
+.notification-container pre {
+  margin: 0;
+  padding: 1rem;
+  background-color: white;
+  border-radius: 4px;
+}
+
+/* Remove the old h1 styles for wallet_notify and wallet_sessionChanged */
+.notifications-section h1 {
+  font-size: 1.5rem;
+  text-align: left;
+  color: #2d3748;
+  margin: 1rem 0;
+}
+
+/* Result styling */
+.result-item {
+  margin-bottom: 1.5rem;
+}
+
+.result-item:last-child {
+  margin-bottom: 0;
+}
+
+.result-summary {
+  cursor: pointer;
+  padding: 0.5rem;
+  background-color: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-family: monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  display: block;
+}
+
+.result-summary:hover {
+  background-color: #f7fafc;
+}
+
+details {
+  margin-top: 0.5rem;
+}
+
+details > .code-left-align {
+  margin-top: 0.5rem;
+}
+
+/* Style the disclosure triangle */
+details summary {
+  list-style: none; /* Remove default triangle in Firefox */
+}
+
+details summary::-webkit-details-marker {
+  display: none; /* Remove default triangle in Chrome */
+}
+
+details summary::before {
+  content: '▶';
+  display: inline-block;
+  margin-right: 0.5rem;
+  transition: transform 0.2s;
+}
+
+details[open] summary::before {
+  transform: rotate(90deg);
+}
