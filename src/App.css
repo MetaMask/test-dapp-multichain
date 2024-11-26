@@ -84,7 +84,6 @@ button#clear-state-btn:hover {
   background-color: #c53030;
 }
 
-/* Add this to your existing button styles */
 button:disabled {
   background-color: #a0aec0;
   cursor: not-allowed;
@@ -95,7 +94,6 @@ button:disabled:hover {
   background-color: #a0aec0;
 }
 
-/* Code blocks */
 .code-left-align {
   text-align: left;
   display: inline-block;
@@ -259,7 +257,7 @@ input[type="checkbox"] {
 .notification-container {
   margin-bottom: 2rem;
   padding: 1rem;
-  background-color: #f7fafc;
+  background-color: white;
   border-radius: 4px;
   border: 1px solid #e2e8f0;
 }
@@ -271,14 +269,18 @@ input[type="checkbox"] {
   text-align: left;
 }
 
-.notification-container pre {
-  margin: 0;
-  padding: 1rem;
-  background-color: white;
-  border-radius: 4px;
+.notification-container details {
+  margin-top: 0;
 }
 
-/* Remove the old h1 styles for wallet_notify and wallet_sessionChanged */
+.notification-container .code-left-align {
+  background-color: #f7fafc;
+}
+
+.notification-container pre {
+  margin: 0;
+}
+
 .notifications-section h1 {
   font-size: 1.5rem;
   text-align: left;
@@ -286,7 +288,6 @@ input[type="checkbox"] {
   margin: 1rem 0;
 }
 
-/* Result styling */
 .result-item {
   margin-bottom: 1.5rem;
 }
@@ -321,13 +322,12 @@ details > .code-left-align {
   margin-top: 0.5rem;
 }
 
-/* Style the disclosure triangle */
 details summary {
-  list-style: none; /* Remove default triangle in Firefox */
+  list-style: none; 
 }
 
 details summary::-webkit-details-marker {
-  display: none; /* Remove default triangle in Chrome */
+  display: none; 
 }
 
 details summary::before {
@@ -341,15 +341,13 @@ details[open] summary::before {
   transform: rotate(90deg);
 }
 
-/* Update the grid layout for connected scopes */
 .scopes-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* Force 3 columns */
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
   margin-top: 1rem;
 }
 
-/* Add responsive behavior for smaller screens */
 @media (max-width: 1200px) {
   .scopes-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -362,7 +360,6 @@ details[open] summary::before {
   }
 }
 
-/* Update scope card styling for collapsible sections */
 .scope-card .collapsible-section {
   border: 1px solid #e2e8f0;
   border-radius: 4px;
@@ -385,7 +382,6 @@ details[open] summary::before {
   background-color: white;
 }
 
-/* Adjust the textarea in collapsible sections */
 .scope-card .collapsible-content textarea {
   margin: 0;
 }
@@ -425,13 +421,11 @@ details[open] summary::before {
   margin: 0;
 }
 
-/* Make sure the invoke method button is consistently placed */
 .scope-card button {
   align-self: flex-start;
   margin: 0;
 }
 
-/* Result preview styling */
 .result-method {
   font-weight: 600;
   margin-right: 1rem;
@@ -445,7 +439,7 @@ details[open] summary::before {
   overflow: hidden;
   text-overflow: ellipsis;
   display: inline-block;
-  max-width: calc(100% - 150px); /* Leave space for the method name */
+  max-width: calc(100% - 150px);
 }
 
 .result-item-small {
@@ -466,7 +460,6 @@ details[open] summary::before {
   font-size: 0.9rem;
 }
 
-/* Update collapsible section summary for results */
 .scope-card .collapsible-section summary {
   display: flex;
   align-items: center;
@@ -476,4 +469,12 @@ details[open] summary::before {
   cursor: pointer;
   font-weight: normal;
   overflow: hidden;
+}
+
+.scope-card-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+  padding: 10px 0;
 }

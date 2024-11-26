@@ -11,7 +11,6 @@ import MetaMaskMultichainProvider from './providers/MetaMaskMultichainProvider';
 import makeProvider from './providers/MockMultichainProvider';
 import type { Provider } from './providers/Provider';
 
-// Add this helper function at the top of your file, outside the App component
 const truncateJSON = (
   json: any,
   maxLength = 100,
@@ -26,7 +25,6 @@ const truncateJSON = (
   };
 };
 
-// Add this constant at the top of the file, after other imports
 const FEATURED_NETWORKS = {
   'eip155:1': 'Ethereum Mainnet',
   'eip155:59144': 'Linea Mainnet',
@@ -79,7 +77,6 @@ function App() {
     setisExternallyConnectableConnected,
   ] = useState<boolean>(false);
 
-  // Use useEffect to handle provider initialization and cleanup
   useEffect(() => {
     let newProvider: Provider;
     if (providerType === 'mock') {
@@ -92,7 +89,6 @@ function App() {
     setProvider(newProvider);
   }, [providerType, createSessionResult]);
 
-  // Define the throttled function using useCallback
   const throttledConnect = useCallback(
     throttle(
       () => {
@@ -101,7 +97,7 @@ function App() {
       500,
       { leading: false },
     ),
-    [provider, extensionId], // Dependencies
+    [provider, extensionId],
   );
 
   useEffect(() => {
@@ -146,7 +142,6 @@ function App() {
       });
   }, []);
 
-  // Update the handleResetState function
   const handleResetState = () => {
     setCreateSessionResult(null);
     setGetSessionResult(null);
@@ -171,11 +166,11 @@ function App() {
 
   const handleCreateSession = async () => {
     try {
-      const requiredScopes: Record<string, any> = {};
+      const optionalScopes: Record<string, any> = {};
 
       Object.entries(selectedScopes).forEach(([scope, isSelected]) => {
         if (isSelected) {
-          requiredScopes[scope] = {
+          optionalScopes[scope] = {
             methods: ['eth_sendTransaction', 'eth_sign'],
             notifications: ['eth_subscription'],
           };
@@ -183,15 +178,20 @@ function App() {
       });
 
       if (customScope) {
-        requiredScopes[customScope] = {
+        optionalScopes[customScope] = {
           methods: ['eth_sendTransaction', 'eth_sign'],
           notifications: ['eth_subscription'],
         };
       }
 
+      console.log('optionalScopes', {
+        method: 'wallet_createSession',
+        params: { optionalScopes },
+      });
+
       const result = await provider?.request({
         method: 'wallet_createSession',
-        params: { requiredScopes },
+        params: { optionalScopes },
       });
       setCreateSessionResult(result);
     } catch (error) {
@@ -248,7 +248,6 @@ function App() {
       .filter(([_, method]) => method) // Only include scopes that have a method selected
       .map(([scope, method]) => ({ scope, method }));
 
-    // Invoke all methods in parallel
     await Promise.all(
       scopesWithMethods.map(async ({ scope, method }) =>
         handleInvokeMethod(scope, method),
@@ -258,12 +257,10 @@ function App() {
 
   useEffect(() => {
     if (createSessionResult?.sessionScopes) {
-      // Pre-select eth_chainId for all scopes
       const initialSelectedMethods: Record<string, string> = {};
       Object.keys(createSessionResult.sessionScopes).forEach((scope) => {
         initialSelectedMethods[scope] = 'eth_chainId';
 
-        // Also set up the default request for eth_chainId
         const example = metamaskOpenrpcDocument?.methods.find(
           (method) => (method as MethodObject).name === 'eth_chainId',
         );
@@ -458,7 +455,30 @@ function App() {
               {Object.entries(createSessionResult.sessionScopes).map(
                 ([scope, details]: [string, any]) => (
                   <div key={scope} className="scope-card">
-                    <h3>{scope}</h3>
+                    <h3
+                      title={
+                        FEATURED_NETWORKS[
+                          scope as keyof typeof FEATURED_NETWORKS
+                        ]
+                          ? `${
+                              FEATURED_NETWORKS[
+                                scope as keyof typeof FEATURED_NETWORKS
+                              ]
+                            } (${scope})`
+                          : scope
+                      }
+                      className="scope-card-title"
+                    >
+                      {FEATURED_NETWORKS[
+                        scope as keyof typeof FEATURED_NETWORKS
+                      ]
+                        ? `${
+                            FEATURED_NETWORKS[
+                              scope as keyof typeof FEATURED_NETWORKS
+                            ]
+                          } (${scope})`
+                        : scope}
+                    </h3>
                     <select
                       value={selectedMethods[scope] ?? ''}
                       onChange={(evt) => {
@@ -580,20 +600,34 @@ function App() {
         <h2>Notifications</h2>
         <div className="notification-container">
           <h3>wallet_notify</h3>
-          <code className="code-left-align">
-            <pre id="wallet-notify-result">
-              {JSON.stringify(walletNotifyResults, null, 2)}
-            </pre>
-          </code>
+          {walletNotifyResults && (
+            <details>
+              <summary className="result-summary">
+                {truncateJSON(walletNotifyResults).text}
+              </summary>
+              <code className="code-left-align">
+                <pre id="wallet-notify-result">
+                  {JSON.stringify(walletNotifyResults, null, 2)}
+                </pre>
+              </code>
+            </details>
+          )}
         </div>
 
         <div className="notification-container">
           <h3>wallet_sessionChanged</h3>
-          <code className="code-left-align">
-            <pre id="wallet-session-changed-result">
-              {JSON.stringify(walletSessionChangedResults, null, 2)}
-            </pre>
-          </code>
+          {walletSessionChangedResults && (
+            <details>
+              <summary className="result-summary">
+                {truncateJSON(walletSessionChangedResults).text}
+              </summary>
+              <code className="code-left-align">
+                <pre id="wallet-session-changed-result">
+                  {JSON.stringify(walletSessionChangedResults, null, 2)}
+                </pre>
+              </code>
+            </details>
+          )}
         </div>
       </section>
     </div>
