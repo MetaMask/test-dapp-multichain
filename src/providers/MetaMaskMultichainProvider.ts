@@ -27,12 +27,16 @@ class MetaMaskMultichainProvider implements Provider {
     }
 
     // eslint-disable-next-line
-    this.#port = chrome.runtime.connect(extensionId);
-    this.#port.onMessage.addListener(this.#handleMessage.bind(this));
-    this.#port.onDisconnect.addListener(() => {
-      this.#port = null;
-      this.#requestMap.clear();
-    });
+    try {
+      this.#port = chrome.runtime.connect(extensionId);
+      this.#port.onMessage.addListener(this.#handleMessage.bind(this));
+      this.#port.onDisconnect.addListener(() => {
+        this.#port = null;
+        this.#requestMap.clear();
+      });
+    } catch {
+      // no-op for now
+    }
   }
 
   disconnect(): void {

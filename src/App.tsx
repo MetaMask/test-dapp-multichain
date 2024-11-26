@@ -2,7 +2,8 @@
 import { MetaMaskOpenRPCDocument } from '@metamask/api-specs';
 import type { MethodObject, OpenrpcDocument } from '@open-rpc/meta-schema';
 import { parseOpenRPCDocument } from '@open-rpc/schema-utils-js';
-import React, { useEffect, useState } from 'react';
+import throttle from 'lodash.throttle';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import './App.css';
 import { openRPCExampleToJSON } from './helpers/OpenRPCExampleToJSON';
@@ -38,6 +39,10 @@ function App() {
   >({});
   const [metamaskOpenrpcDocument, setMetamaskOpenrpcDocument] =
     useState<OpenrpcDocument>();
+  const [
+    isExternallyConnectableConnected,
+    setisExternallyConnectableConnected,
+  ] = useState<boolean>(false);
 
   // Use useEffect to handle provider initialization and cleanup
   useEffect(() => {
@@ -45,23 +50,49 @@ function App() {
     if (providerType === 'mock') {
       newProvider = makeProvider(() => createSessionResult);
     } else {
+      console.log('creating metamask provider');
       newProvider = new MetaMaskMultichainProvider();
     }
 
     setProvider(newProvider);
   }, [providerType, createSessionResult]);
 
+  // Define the throttled function using useCallback
+  const throttledConnect = useCallback(
+    throttle(
+      () => {
+        provider?.connect(extensionId);
+      },
+      500,
+      { leading: false },
+    ),
+    [provider, extensionId], // Dependencies
+  );
+
+  useEffect(() => {
+    const extensionIdFromLocalStorage = localStorage.getItem('extensionId');
+    if (extensionIdFromLocalStorage) {
+      setExtensionId(extensionIdFromLocalStorage);
+    }
+  }, []);
+
   // setup provider
   useEffect(() => {
     if (extensionId && provider) {
-      provider.connect(extensionId);
-      provider.onNotification((notification: any) => {
-        if (notification.method === 'wallet_notify') {
-          setWalletNotifyResults(notification);
-        } else if (notification.method === 'wallet_sessionChanged') {
-          setWalletSessionChangedResults(notification);
-        }
-      });
+      try {
+        throttledConnect();
+        setisExternallyConnectableConnected(true);
+        localStorage.setItem('extensionId', extensionId);
+        provider.onNotification((notification: any) => {
+          if (notification.method === 'wallet_notify') {
+            setWalletNotifyResults(notification);
+          } else if (notification.method === 'wallet_sessionChanged') {
+            setWalletSessionChangedResults(notification);
+          }
+        });
+      } catch (error) {
+        setisExternallyConnectableConnected(false);
+      }
     }
     return () => {
       if (provider) {
@@ -195,6 +226,34 @@ function App() {
             onChange={(evt) => setExtensionId(evt.target.value)}
           />
         </label>
+      </div>
+      <div
+        style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}
+      >
+        <span
+          style={{
+            display: 'inline-block',
+            width: '10px',
+            height: '10px',
+            borderRadius: '50%',
+            backgroundColor: isExternallyConnectableConnected ? 'green' : 'red',
+            marginRight: '8px',
+          }}
+        ></span>
+        <span>
+          {isExternallyConnectableConnected
+            ? 'Ready to Connect'
+            : 'Not ready to connect'}
+        </span>
+        <button
+          style={{ marginLeft: '10px' }}
+          onClick={() => {
+            setExtensionId('');
+            localStorage.removeItem('extensionId');
+          }}
+        >
+          Clear Extension ID
+        </button>
       </div>
       <div>
         <h2>Session Lifecycle</h2>
