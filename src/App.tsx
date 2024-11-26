@@ -12,13 +12,32 @@ import makeProvider from './providers/MockMultichainProvider';
 import type { Provider } from './providers/Provider';
 
 // Add this helper function at the top of your file, outside the App component
-const truncateJSON = (json: any): string => {
+const truncateJSON = (
+  json: any,
+  maxLength = 100,
+): { text: string; truncated: boolean } => {
   const stringified = JSON.stringify(json, null, 2);
-  if (stringified.length <= 100) {
-    return stringified;
+  if (stringified.length <= maxLength) {
+    return { text: stringified, truncated: false };
   }
-  return `${stringified.substring(0, 100)}...`;
+  return {
+    text: stringified,
+    truncated: true,
+  };
 };
+
+// Add this constant at the top of the file, after other imports
+const FEATURED_NETWORKS = {
+  'eip155:1': 'Ethereum Mainnet',
+  'eip155:59144': 'Linea Mainnet',
+  'eip155:42161': 'Arbitrum One',
+  'eip155:43114': 'Avalanche Network C-Chain',
+  'eip155:56': 'BNB Chain',
+  'eip155:10': 'OP Mainnet',
+  'eip155:137': 'Polygon Mainnet',
+  'eip155:324': 'zkSync Era Mainnet',
+  'eip155:8453': 'Base Mainnet',
+} as const;
 
 function App() {
   const [createSessionResult, setCreateSessionResult] = useState<any>(null);
@@ -35,8 +54,15 @@ function App() {
   const [customScope, setCustomScope] = useState<string>('');
   const [selectedScopes, setSelectedScopes] = useState<Record<string, boolean>>(
     {
-      'eip155:1337': false,
-      'eip155:1': true,
+      'eip155:1': false,
+      'eip155:59144': false,
+      'eip155:42161': false,
+      'eip155:43114': false,
+      'eip155:56': false,
+      'eip155:10': false,
+      'eip155:137': false,
+      'eip155:324': false,
+      'eip155:8453': false,
     },
   );
   const [walletNotifyResults, setWalletNotifyResults] = useState<any>(null);
@@ -131,8 +157,15 @@ function App() {
     setWalletNotifyResults(null);
     setWalletSessionChangedResults(null);
     setSelectedScopes({
-      'eip155:1337': false,
       'eip155:1': false,
+      'eip155:59144': false,
+      'eip155:42161': false,
+      'eip155:43114': false,
+      'eip155:56': false,
+      'eip155:10': false,
+      'eip155:137': false,
+      'eip155:324': false,
+      'eip155:8453': false,
     });
   };
 
@@ -223,6 +256,35 @@ function App() {
     );
   };
 
+  useEffect(() => {
+    if (createSessionResult?.sessionScopes) {
+      // Pre-select eth_chainId for all scopes
+      const initialSelectedMethods: Record<string, string> = {};
+      Object.keys(createSessionResult.sessionScopes).forEach((scope) => {
+        initialSelectedMethods[scope] = 'eth_chainId';
+
+        // Also set up the default request for eth_chainId
+        const example = metamaskOpenrpcDocument?.methods.find(
+          (method) => (method as MethodObject).name === 'eth_chainId',
+        );
+
+        const defaultRequest = {
+          method: 'wallet_invokeMethod',
+          params: {
+            scope,
+            request: openRPCExampleToJSON(example as MethodObject),
+          },
+        };
+
+        setInvokeMethodRequests((prev) => ({
+          ...prev,
+          [scope]: JSON.stringify(defaultRequest, null, 2),
+        }));
+      });
+      setSelectedMethods(initialSelectedMethods);
+    }
+  }, [createSessionResult?.sessionScopes, metamaskOpenrpcDocument]);
+
   return (
     <div className="App">
       <h1>MetaMask MultiChain API Test Dapp</h1>
@@ -280,34 +342,22 @@ function App() {
 
           <div className="create-session-container">
             <h3>Create Session</h3>
-            <label>
-              <input
-                type="checkbox"
-                name="eip155:1337"
-                checked={selectedScopes['eip155:1337']}
-                onChange={(evt) =>
-                  setSelectedScopes((prev) => ({
-                    ...prev,
-                    'eip155:1337': evt.target.checked,
-                  }))
-                }
-              />{' '}
-              EIP155:1337
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                name="eip155:1"
-                checked={selectedScopes['eip155:1']}
-                onChange={(evt) =>
-                  setSelectedScopes((prev) => ({
-                    ...prev,
-                    'eip155:1': evt.target.checked,
-                  }))
-                }
-              />{' '}
-              EIP155:1
-            </label>
+            {Object.entries(FEATURED_NETWORKS).map(([chainId, networkName]) => (
+              <label key={chainId}>
+                <input
+                  type="checkbox"
+                  name={chainId}
+                  checked={selectedScopes[chainId] ?? false}
+                  onChange={(evt) =>
+                    setSelectedScopes((prev) => ({
+                      ...prev,
+                      [chainId]: evt.target.checked,
+                    }))
+                  }
+                />{' '}
+                {networkName}
+              </label>
+            ))}
             <div>
               <label>
                 Custom:
@@ -348,7 +398,7 @@ function App() {
                     <h4>Create Session Result:</h4>
                     <details>
                       <summary className="result-summary">
-                        {truncateJSON(createSessionResult)}
+                        {truncateJSON(createSessionResult).text}
                       </summary>
                       <code className="code-left-align">
                         <pre id="create-session-result">
@@ -363,7 +413,7 @@ function App() {
                     <h4>Get Session Result:</h4>
                     <details>
                       <summary className="result-summary">
-                        {truncateJSON(getSessionResult)}
+                        {truncateJSON(getSessionResult).text}
                       </summary>
                       <code className="code-left-align">
                         <pre id="get-session-result">
@@ -378,7 +428,7 @@ function App() {
                     <h4>Revoke Session Result:</h4>
                     <details>
                       <summary className="result-summary">
-                        {truncateJSON(revokeSessionResult)}
+                        {truncateJSON(revokeSessionResult).text}
                       </summary>
                       <code className="code-left-align">
                         <pre id="revoke-session-result">
@@ -404,92 +454,125 @@ function App() {
             >
               Invoke All Selected Methods
             </button>
-            {Object.entries(createSessionResult.sessionScopes).map(
-              ([scope, details]: [string, any]) => (
-                <div key={scope}>
-                  <h3>{scope}</h3>
-                  <select
-                    value={selectedMethods[scope] ?? ''}
-                    onChange={(evt) => {
-                      const selectedMethod = evt.target.value;
-                      setSelectedMethods((prev) => ({
-                        ...prev,
-                        [scope]: selectedMethod,
-                      }));
-                      const example = metamaskOpenrpcDocument?.methods.find(
-                        (method) => {
-                          return (
-                            (method as MethodObject).name === selectedMethod
-                          );
-                        },
-                      );
-                      const defaultRequest = {
-                        method: 'wallet_invokeMethod',
-                        params: {
-                          scope,
-                          request: openRPCExampleToJSON(
-                            example as MethodObject,
-                          ),
-                        },
-                      };
-                      setInvokeMethodRequests((prev) => ({
-                        ...prev,
-                        [scope]: JSON.stringify(defaultRequest, null, 2),
-                      }));
-                    }}
-                  >
-                    <option value="">Select a method</option>
-                    {details.methods.map((method: string) => (
-                      <option key={method} value={method}>
-                        {method}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="method-container">
-                    <h4>Invoke Method Request:</h4>
-                    <textarea
-                      value={invokeMethodRequests[scope] ?? ''}
-                      onChange={(evt) =>
+            <div className="scopes-grid">
+              {Object.entries(createSessionResult.sessionScopes).map(
+                ([scope, details]: [string, any]) => (
+                  <div key={scope} className="scope-card">
+                    <h3>{scope}</h3>
+                    <select
+                      value={selectedMethods[scope] ?? ''}
+                      onChange={(evt) => {
+                        const selectedMethod = evt.target.value;
+                        setSelectedMethods((prev) => ({
+                          ...prev,
+                          [scope]: selectedMethod,
+                        }));
+                        const example = metamaskOpenrpcDocument?.methods.find(
+                          (method) => {
+                            return (
+                              (method as MethodObject).name === selectedMethod
+                            );
+                          },
+                        );
+                        const defaultRequest = {
+                          method: 'wallet_invokeMethod',
+                          params: {
+                            scope,
+                            request: openRPCExampleToJSON(
+                              example as MethodObject,
+                            ),
+                          },
+                        };
                         setInvokeMethodRequests((prev) => ({
                           ...prev,
-                          [scope]: evt.target.value,
-                        }))
-                      }
-                      rows={5}
-                      cols={50}
-                    />
+                          [scope]: JSON.stringify(defaultRequest, null, 2),
+                        }));
+                      }}
+                    >
+                      <option value="">Select a method</option>
+                      {details.methods.map((method: string) => (
+                        <option key={method} value={method}>
+                          {method}
+                        </option>
+                      ))}
+                    </select>
+
+                    <details className="collapsible-section">
+                      <summary>Invoke Method Request</summary>
+                      <div className="collapsible-content">
+                        <textarea
+                          value={invokeMethodRequests[scope] ?? ''}
+                          onChange={(evt) =>
+                            setInvokeMethodRequests((prev) => ({
+                              ...prev,
+                              [scope]: evt.target.value,
+                            }))
+                          }
+                          rows={5}
+                          cols={50}
+                        />
+                      </div>
+                    </details>
+
+                    <button
+                      id={`invoke-method-${scope}-btn`}
+                      onClick={async () => {
+                        if (selectedMethods[scope]) {
+                          await handleInvokeMethod(
+                            scope,
+                            selectedMethods[scope] ?? '',
+                          );
+                        }
+                      }}
+                    >
+                      Invoke Method
+                    </button>
+
+                    {Object.keys(invokeMethodResults?.[scope] ?? {}).length >
+                      0 &&
+                      Object.entries(invokeMethodResults[scope] ?? {}).map(
+                        ([method, result]) => {
+                          const { text, truncated } = truncateJSON(result, 150);
+
+                          return truncated ? (
+                            <details
+                              key={method}
+                              className="collapsible-section"
+                            >
+                              <summary>
+                                <span className="result-method">{method}:</span>
+                                <span className="result-preview">
+                                  {JSON.stringify(result).slice(0, 100)}...
+                                </span>
+                              </summary>
+                              <div className="collapsible-content">
+                                <code className="code-left-align">
+                                  <pre
+                                    id={`invoke-method-${scope}-${method}-result`}
+                                  >
+                                    {JSON.stringify(result, null, 2)}
+                                  </pre>
+                                </code>
+                              </div>
+                            </details>
+                          ) : (
+                            <div key={method} className="result-item-small">
+                              <h5>{method}:</h5>
+                              <code className="code-left-align">
+                                <pre
+                                  id={`invoke-method-${scope}-${method}-result`}
+                                >
+                                  {text}
+                                </pre>
+                              </code>
+                            </div>
+                          );
+                        },
+                      )}
                   </div>
-                  <button
-                    id={`invoke-method-${scope}-btn`}
-                    onClick={async () => {
-                      if (selectedMethods[scope]) {
-                        await handleInvokeMethod(
-                          scope,
-                          selectedMethods[scope] ?? '',
-                        );
-                      }
-                    }}
-                  >
-                    Invoke Method
-                  </button>
-                  <div className="method-result">
-                    <h4>Invoke Method Results:</h4>
-                    {Object.entries(invokeMethodResults?.[scope] ?? {}).map(
-                      ([method, result]) => (
-                        <div key={method}>
-                          <h5>{method}:</h5>
-                          <code className="code-left-align">
-                            <pre id={`invoke-method-${scope}-${method}-result`}>
-                              {JSON.stringify(result, null, 2)}
-                            </pre>
-                          </code>
-                        </div>
-                      ),
-                    )}
-                  </div>
-                </div>
-              ),
-            )}
+                ),
+              )}
+            </div>
           </div>
         </section>
       )}

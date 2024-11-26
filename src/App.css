@@ -340,3 +340,140 @@ details summary::before {
 details[open] summary::before {
   transform: rotate(90deg);
 }
+
+/* Update the grid layout for connected scopes */
+.scopes-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Force 3 columns */
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+/* Add responsive behavior for smaller screens */
+@media (max-width: 1200px) {
+  .scopes-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 800px) {
+  .scopes-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Update scope card styling for collapsible sections */
+.scope-card .collapsible-section {
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.scope-card .collapsible-section summary {
+  padding: 0.75rem;
+  background-color: #f7fafc;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.scope-card .collapsible-section summary:hover {
+  background-color: #edf2f7;
+}
+
+.scope-card .collapsible-content {
+  padding: 1rem;
+  background-color: white;
+}
+
+/* Adjust the textarea in collapsible sections */
+.scope-card .collapsible-content textarea {
+  margin: 0;
+}
+
+.scope-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.scope-card h3 {
+  margin: 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.scope-card select {
+  width: 100%;
+  margin: 0.5rem 0;
+}
+
+.scope-card .method-container {
+  margin: 0;
+}
+
+.scope-card textarea {
+  width: 100%;
+  margin: 0.5rem 0;
+  box-sizing: border-box;
+}
+
+.scope-card .method-result {
+  margin: 0;
+}
+
+/* Make sure the invoke method button is consistently placed */
+.scope-card button {
+  align-self: flex-start;
+  margin: 0;
+}
+
+/* Result preview styling */
+.result-method {
+  font-weight: 600;
+  margin-right: 1rem;
+}
+
+.result-preview {
+  color: #4a5568;
+  font-family: monospace;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  max-width: calc(100% - 150px); /* Leave space for the method name */
+}
+
+.result-item-small {
+  background-color: #f7fafc;
+  padding: 1rem;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.result-item-small h5 {
+  margin: 0 0 0.5rem 0;
+  color: #4a5568;
+  font-size: 0.9rem;
+}
+
+.result-item-small pre {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* Update collapsible section summary for results */
+.scope-card .collapsible-section summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background-color: #f7fafc;
+  cursor: pointer;
+  font-weight: normal;
+  overflow: hidden;
+}
