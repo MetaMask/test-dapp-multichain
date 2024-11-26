@@ -84,6 +84,17 @@ button#clear-state-btn:hover {
   background-color: #c53030;
 }
 
+/* Add this to your existing button styles */
+button:disabled {
+  background-color: #a0aec0;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+button:disabled:hover {
+  background-color: #a0aec0;
+}
+
 /* Code blocks */
 .code-left-align {
   text-align: left;

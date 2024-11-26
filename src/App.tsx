@@ -201,6 +201,19 @@ function App() {
     }
   };
 
+  const handleInvokeAllMethods = async () => {
+    const scopesWithMethods = Object.entries(selectedMethods)
+      .filter(([_, method]) => method) // Only include scopes that have a method selected
+      .map(([scope, method]) => ({ scope, method }));
+
+    // Invoke all methods in parallel
+    await Promise.all(
+      scopesWithMethods.map(async ({ scope, method }) =>
+        handleInvokeMethod(scope, method),
+      ),
+    );
+  };
+
   return (
     <div className="App">
       <h1>MetaMask MultiChain API Test Dapp</h1>
@@ -244,6 +257,7 @@ function App() {
           <button
             onClick={() => {
               setExtensionId('');
+              setisExternallyConnectableConnected(false);
               localStorage.removeItem('extensionId');
             }}
           >
@@ -306,10 +320,17 @@ function App() {
           </div>
         </div>
       </section>
-      {createSessionResult && (
+      {createSessionResult?.sessionScopes && (
         <section>
           <div>
             <h2>Connected Scopes</h2>
+            <button
+              onClick={handleInvokeAllMethods}
+              disabled={Object.keys(selectedMethods).length === 0}
+              style={{ marginBottom: '1rem' }}
+            >
+              Invoke All Selected Methods
+            </button>
             {Object.entries(createSessionResult.sessionScopes).map(
               ([scope, details]: [string, any]) => (
                 <div key={scope}>
@@ -380,7 +401,7 @@ function App() {
                   </button>
                   <div className="method-result">
                     <h4>Invoke Method Results:</h4>
-                    {Object.entries(invokeMethodResults[scope]).map(
+                    {Object.entries(invokeMethodResults?.[scope] ?? {}).map(
                       ([method, result]) => (
                         <div key={method}>
                           <h5>{method}:</h5>
