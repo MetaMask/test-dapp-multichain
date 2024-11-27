@@ -532,7 +532,6 @@ details[open] summary::before {
   padding: 10px 0;
 }
 
-/* Add these styles */
 .session-info {
   height: fit-content;
   margin: 0;
@@ -574,7 +573,6 @@ details[open] summary::before {
   margin-bottom: 0;
 }
 
-/* Add this style */
 .session-lifecycle-buttons {
   display: flex;
   gap: 1rem;

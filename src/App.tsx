@@ -9,6 +9,7 @@ import { openRPCExampleToJSON } from './helpers/OpenRPCExampleToJSON';
 import MetaMaskMultichainProvider from './providers/MetaMaskMultichainProvider';
 import makeProvider from './providers/MockMultichainProvider';
 import type { Provider } from './providers/Provider';
+import { insertSigningAddress } from './constants/signingMethods';
 
 const truncateJSON = (
   json: any,
@@ -185,6 +186,7 @@ function App() {
     parseOpenRPCDocument(MetaMaskOpenRPCDocument)
       .then((parsedOpenRPCDocument) => {
         setMetamaskOpenrpcDocument(parsedOpenRPCDocument);
+        console.log('parsedOpenRPCDocument', parsedOpenRPCDocument);
       })
       .catch(() => {
         //
@@ -356,6 +358,46 @@ function App() {
       setSelectedAccounts(initialSelectedAccounts);
     }
   }, [createSessionResult?.sessionScopes, metamaskOpenrpcDocument]);
+
+  const handleMethodSelect = (
+    evt: React.ChangeEvent<HTMLSelectElement>,
+    scope: string,
+  ) => {
+    const selectedMethod = evt.target.value;
+    setSelectedMethods((prev) => ({
+      ...prev,
+      [scope]: selectedMethod,
+    }));
+
+    const example = metamaskOpenrpcDocument?.methods.find(
+      (method) => (method as MethodObject).name === selectedMethod,
+    );
+
+    if (example) {
+      const exampleParams = openRPCExampleToJSON(example as MethodObject);
+      const selectedAddress = selectedAccounts[scope];
+
+      // Insert signing address if applicable
+      const updatedParams = insertSigningAddress(
+        selectedMethod,
+        exampleParams,
+        selectedAddress,
+      );
+
+      const defaultRequest = {
+        method: 'wallet_invokeMethod',
+        params: {
+          scope,
+          request: updatedParams,
+        },
+      };
+
+      setInvokeMethodRequests((prev) => ({
+        ...prev,
+        [scope]: JSON.stringify(defaultRequest, null, 2),
+      }));
+    }
+  };
 
   return (
     <div className="App">
@@ -618,33 +660,7 @@ function App() {
 
                     <select
                       value={selectedMethods[scope] ?? ''}
-                      onChange={(evt) => {
-                        const selectedMethod = evt.target.value;
-                        setSelectedMethods((prev) => ({
-                          ...prev,
-                          [scope]: selectedMethod,
-                        }));
-                        const example = metamaskOpenrpcDocument?.methods.find(
-                          (method) => {
-                            return (
-                              (method as MethodObject).name === selectedMethod
-                            );
-                          },
-                        );
-                        const defaultRequest = {
-                          method: 'wallet_invokeMethod',
-                          params: {
-                            scope,
-                            request: openRPCExampleToJSON(
-                              example as MethodObject,
-                            ),
-                          },
-                        };
-                        setInvokeMethodRequests((prev) => ({
-                          ...prev,
-                          [scope]: JSON.stringify(defaultRequest, null, 2),
-                        }));
-                      }}
+                      onChange={(evt) => handleMethodSelect(evt, scope)}
                     >
                       <option value="">Select a method</option>
                       {details.methods.map((method: string) => (
