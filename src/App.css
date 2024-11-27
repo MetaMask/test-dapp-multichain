@@ -440,7 +440,24 @@ details[open] summary::before {
 
 .scope-card select {
   width: 100%;
-  margin: 0.5rem 0;
+  padding: 0.75rem;
+  background-color: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.9rem;
+  color: #4a5568;
+  cursor: pointer;
+  margin: 0;
+}
+
+.scope-card select:hover {
+  background-color: #edf2f7;
+}
+
+.scope-card select option {
+  padding: 0.5rem;
+  font-family: monospace;
 }
 
 .scope-card .method-container {
