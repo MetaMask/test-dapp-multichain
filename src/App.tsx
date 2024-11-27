@@ -407,6 +407,10 @@ function App() {
     }
   };
 
+  const handleClearInvokeResults = () => {
+    setInvokeMethodResults({});
+  };
+
   return (
     <div className="App">
       <h1>MetaMask MultiChain API Test Dapp</h1>
@@ -501,9 +505,6 @@ function App() {
               </button>
               <button id="revoke-session-btn" onClick={handleRevokeSession}>
                 wallet_revokeSession
-              </button>
-              <button id="clear-state-btn" onClick={handleResetState}>
-                Clear State
               </button>
             </div>
           </div>
@@ -608,7 +609,16 @@ function App() {
       {createSessionResult?.sessionScopes && (
         <section>
           <div>
-            <h2>Connected Scopes</h2>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <h2>Connected Scopes</h2>
+              <button onClick={handleClearInvokeResults}>Clear Results</button>
+            </div>
             <button
               onClick={handleInvokeAllMethods}
               disabled={Object.keys(selectedMethods).length === 0}
@@ -649,10 +659,46 @@ function App() {
                       className="accounts-select"
                       value={selectedAccounts[scope] ?? ''}
                       onChange={(evt) => {
+                        const newAddress = evt.target.value;
                         setSelectedAccounts((prev) => ({
                           ...prev,
-                          [scope]: evt.target.value,
+                          [scope]: newAddress,
                         }));
+
+                        // Update the method request if it's a signing method
+                        const currentMethod = selectedMethods[scope];
+                        if (currentMethod && currentMethod in SIGNING_METHODS) {
+                          const example = metamaskOpenrpcDocument?.methods.find(
+                            (method) =>
+                              (method as MethodObject).name === currentMethod,
+                          );
+
+                          if (example) {
+                            let exampleParams: JsonValue = openRPCExampleToJSON(
+                              example as MethodObject,
+                            );
+
+                            // Insert the newly selected address
+                            exampleParams = insertSigningAddress(
+                              currentMethod,
+                              exampleParams,
+                              newAddress,
+                            );
+
+                            const updatedRequest = {
+                              method: 'wallet_invokeMethod',
+                              params: {
+                                scope,
+                                request: exampleParams,
+                              },
+                            };
+
+                            setInvokeMethodRequests((prev) => ({
+                              ...prev,
+                              [scope]: JSON.stringify(updatedRequest, null, 2),
+                            }));
+                          }
+                        }
                       }}
                     >
                       <option value="">Select an account</option>
