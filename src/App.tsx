@@ -110,7 +110,7 @@ function App() {
     return () => {
       newProvider.disconnect();
     };
-  }, [providerType, createSessionResult]);
+  }, [providerType]);
 
   useEffect(() => {
     const extensionIdFromLocalStorage = localStorage.getItem('extensionId');
@@ -144,6 +144,29 @@ function App() {
           if (result) {
             setGetSessionResult(result);
             setCreateSessionResult(result);
+
+            const initialSelectedMethods: Record<string, string> = {};
+            Object.keys(result.sessionScopes).forEach((scope) => {
+              initialSelectedMethods[scope] = 'eth_chainId';
+
+              const example = metamaskOpenrpcDocument?.methods.find(
+                (method) => (method as MethodObject).name === 'eth_chainId',
+              );
+
+              const defaultRequest = {
+                method: 'wallet_invokeMethod',
+                params: {
+                  scope,
+                  request: openRPCExampleToJSON(example as MethodObject),
+                },
+              };
+
+              setInvokeMethodRequests((prev) => ({
+                ...prev,
+                [scope]: JSON.stringify(defaultRequest, null, 2),
+              }));
+            });
+            setSelectedMethods(initialSelectedMethods);
           }
         } catch (error) {
           console.error('Error checking existing session:', error);
@@ -153,7 +176,7 @@ function App() {
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     checkExistingSession();
-  }, [provider, isExternallyConnectableConnected]);
+  }, [provider, isExternallyConnectableConnected, metamaskOpenrpcDocument]);
 
   useEffect(() => {
     parseOpenRPCDocument(MetaMaskOpenRPCDocument)
