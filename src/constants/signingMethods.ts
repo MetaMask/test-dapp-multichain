@@ -13,6 +13,7 @@ export type JsonValue =
   | JsonObject
   | JsonArray;
 
+// TODO need to inject chainId into eth_signTypedData_v4 example
 export const SIGNING_METHODS = {
   eth_signTypedData_v4: {
     path: ['params', 0],
@@ -32,7 +33,6 @@ export function insertSigningAddress(
   example: JsonValue,
   selectedAddress: string,
 ): JsonValue {
-  // If not a signing method, return example unchanged
   if (!(method in SIGNING_METHODS)) {
     return example;
   }
@@ -43,7 +43,6 @@ export function insertSigningAddress(
   // @ts-expect-error - TODO: fix this
   let current: JsonObject | JsonArray = updatedExample;
 
-  // Handle all but the last element in the path
   for (let i = 0; i < path.length - 1; i++) {
     const key = path[i];
 
@@ -76,7 +75,6 @@ export function insertSigningAddress(
     current = current[key];
   }
 
-  // Strip the chain ID prefix if the address includes it
   const cleanAddress = selectedAddress.includes(':')
     ? selectedAddress.split(':').pop() ?? selectedAddress
     : selectedAddress;

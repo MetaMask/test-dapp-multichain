@@ -39,6 +39,7 @@ const FEATURED_NETWORKS = {
   'eip155:137': 'Polygon Mainnet',
   'eip155:324': 'zkSync Era Mainnet',
   'eip155:8453': 'Base Mainnet',
+  'eip155:1337': 'Localhost',
 } as const;
 
 function App() {
@@ -46,7 +47,7 @@ function App() {
   const [providerType, setProviderType] = useState<string>('metamask');
   const [provider, setProvider] = useState<Provider>();
   const [getSessionResult, setGetSessionResult] = useState<any>(null);
-  const [revokeSessionResult, setRevokeSessionResult] = useState<any>(null);
+  // const [revokeSessionResult, setRevokeSessionResult] = useState<any>(null);
   const [selectedMethods, setSelectedMethods] = useState<
     Record<string, string>
   >({});
@@ -80,7 +81,7 @@ function App() {
     isExternallyConnectableConnected,
     setisExternallyConnectableConnected,
   ] = useState<boolean>(false);
-  const [isResultExpanded, setIsResultExpanded] = useState(false);
+  // const [isResultExpanded, setIsResultExpanded] = useState(false);
   const [selectedAccounts, setSelectedAccounts] = useState<
     Record<string, string>
   >({});
@@ -200,7 +201,7 @@ function App() {
   const handleResetState = () => {
     setCreateSessionResult(null);
     setGetSessionResult(null);
-    setRevokeSessionResult(null);
+    // setRevokeSessionResult(null);
     setSelectedMethods({});
     setInvokeMethodResults({});
     setCustomScope('');
@@ -273,7 +274,7 @@ function App() {
         params: [],
       });
       if (result) {
-        setRevokeSessionResult(result);
+        // setRevokeSessionResult(result);
         handleResetState();
       }
     } catch (error) {
@@ -466,53 +467,52 @@ function App() {
       <section>
         <div>
           <h2>Session Lifecycle</h2>
+          <div style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
+            <div style={{ flex: '0 0 50%' }}>
+              <div className="create-session-container">
+                <h3>Create Session</h3>
+                {Object.entries(FEATURED_NETWORKS).map(
+                  ([chainId, networkName]) => (
+                    <label key={chainId}>
+                      <input
+                        type="checkbox"
+                        name={chainId}
+                        checked={selectedScopes[chainId] ?? false}
+                        onChange={(evt) =>
+                          setSelectedScopes((prev) => ({
+                            ...prev,
+                            [chainId]: evt.target.checked,
+                          }))
+                        }
+                      />{' '}
+                      {networkName}
+                    </label>
+                  ),
+                )}
+                <div>
+                  <label>
+                    Custom:
+                    <input
+                      type="text"
+                      placeholder="e.g., eip155:5"
+                      value={customScope}
+                      onChange={(evt) => setCustomScope(evt.target.value)}
+                    />
+                  </label>
+                </div>
+                <div className="session-lifecycle-buttons">
+                  <button id="create-session-btn" onClick={handleCreateSession}>
+                    wallet_createSession
+                  </button>
+                  <button id="get-session-btn" onClick={handleGetSession}>
+                    wallet_getSession
+                  </button>
+                  <button id="revoke-session-btn" onClick={handleRevokeSession}>
+                    wallet_revokeSession
+                  </button>
+                </div>
+              </div>
 
-          <div className="create-session-container">
-            <h3>Create Session</h3>
-            {Object.entries(FEATURED_NETWORKS).map(([chainId, networkName]) => (
-              <label key={chainId}>
-                <input
-                  type="checkbox"
-                  name={chainId}
-                  checked={selectedScopes[chainId] ?? false}
-                  onChange={(evt) =>
-                    setSelectedScopes((prev) => ({
-                      ...prev,
-                      [chainId]: evt.target.checked,
-                    }))
-                  }
-                />{' '}
-                {networkName}
-              </label>
-            ))}
-            <div>
-              <label>
-                Custom:
-                <input
-                  type="text"
-                  placeholder="e.g., eip155:5"
-                  value={customScope}
-                  onChange={(evt) => setCustomScope(evt.target.value)}
-                />
-              </label>
-            </div>
-            <div className="session-lifecycle-buttons">
-              <button id="create-session-btn" onClick={handleCreateSession}>
-                wallet_createSession
-              </button>
-              <button id="get-session-btn" onClick={handleGetSession}>
-                wallet_getSession
-              </button>
-              <button id="revoke-session-btn" onClick={handleRevokeSession}>
-                wallet_revokeSession
-              </button>
-            </div>
-          </div>
-
-          <div className="session-divider" />
-
-          {(createSessionResult || getSessionResult || revokeSessionResult) && (
-            <div className="session-results-grid">
               {createSessionResult && (
                 <div className="session-info">
                   <h3>Connected Accounts</h3>
@@ -538,72 +538,67 @@ function App() {
                   </ul>
                 </div>
               )}
+            </div>
 
-              <div
-                className={`session-result ${
-                  isResultExpanded ? 'expanded' : ''
-                }`}
-              >
-                {(createSessionResult ||
-                  getSessionResult ||
-                  revokeSessionResult) && (
-                  <>
-                    {createSessionResult && (
-                      <div className="result-item">
-                        <h4>Create Session Result:</h4>
-                        <details>
-                          <summary className="result-summary">
-                            {truncateJSON(createSessionResult).text}
-                          </summary>
-                          <code className="code-left-align">
-                            <pre id="create-session-result">
-                              {JSON.stringify(createSessionResult, null, 2)}
-                            </pre>
-                          </code>
-                        </details>
-                      </div>
-                    )}
-                    {getSessionResult && (
-                      <div className="result-item">
-                        <h4>Get Session Result:</h4>
-                        <details>
-                          <summary className="result-summary">
-                            {truncateJSON(getSessionResult).text}
-                          </summary>
-                          <code className="code-left-align">
-                            <pre id="get-session-result">
-                              {JSON.stringify(getSessionResult, null, 2)}
-                            </pre>
-                          </code>
-                        </details>
-                      </div>
-                    )}
-                    {revokeSessionResult && (
-                      <div className="result-item">
-                        <h4>Revoke Session Result:</h4>
-                        <details>
-                          <summary className="result-summary">
-                            {truncateJSON(revokeSessionResult).text}
-                          </summary>
-                          <code className="code-left-align">
-                            <pre id="revoke-session-result">
-                              {JSON.stringify(revokeSessionResult, null, 2)}
-                            </pre>
-                          </code>
-                        </details>
-                      </div>
-                    )}
-                  </>
-                )}
-                <button
-                  className="session-result-toggle"
-                  onClick={() => setIsResultExpanded(!isResultExpanded)}
-                >
-                  {isResultExpanded ? 'Show Less' : 'Show More'}
-                </button>
+            <div style={{ flex: '0 0 50%' }}>
+              {/* Session Results */}
+              <div className="results-container">
+                <div className="results-label">
+                  Session Lifecycle method results
+                </div>
+                <div className="session-result">
+                  {(createSessionResult || getSessionResult) && (
+                    <div className="result-item">
+                      <h4>Session Result:</h4>
+                      <details>
+                        <summary className="result-summary">
+                          {
+                            truncateJSON(
+                              createSessionResult || getSessionResult,
+                            ).text
+                          }
+                        </summary>
+                        <code className="code-left-align">
+                          <pre id="session-result">
+                            {JSON.stringify(
+                              createSessionResult || getSessionResult,
+                              null,
+                              2,
+                            )}
+                          </pre>
+                        </code>
+                      </details>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Session Changes */}
+              <div className="results-container">
+                <div className="results-label">
+                  wallet_sessionChanged results
+                </div>
+                <div className="notification-container">
+                  <h3>Session Changes</h3>
+                  {walletSessionChangedResults ? (
+                    <details>
+                      <summary className="result-summary">
+                        {truncateJSON(walletSessionChangedResults).text}
+                      </summary>
+                      <code className="code-left-align">
+                        <pre id="wallet-session-changed-result">
+                          {JSON.stringify(walletSessionChangedResults, null, 2)}
+                        </pre>
+                      </code>
+                    </details>
+                  ) : (
+                    <p>No session changes detected</p>
+                  )}
+                </div>
               </div>
             </div>
-          )}
+          </div>
+          <div className="session-divider" />
         </div>
       </section>
       {createSessionResult?.sessionScopes && (
@@ -665,7 +660,7 @@ function App() {
                           [scope]: newAddress,
                         }));
 
-                        // Update the method request if it's a signing method
+                        // modify the method request if it's a signing method (inject selected address)
                         const currentMethod = selectedMethods[scope];
                         if (currentMethod && currentMethod in SIGNING_METHODS) {
                           const example = metamaskOpenrpcDocument?.methods.find(
@@ -678,7 +673,7 @@ function App() {
                               example as MethodObject,
                             );
 
-                            // Insert the newly selected address
+                            // inject the newly selected address
                             exampleParams = insertSigningAddress(
                               currentMethod,
                               exampleParams,
@@ -825,22 +820,6 @@ function App() {
               <code className="code-left-align">
                 <pre id="wallet-notify-result">
                   {JSON.stringify(walletNotifyResults, null, 2)}
-                </pre>
-              </code>
-            </details>
-          )}
-        </div>
-
-        <div className="notification-container">
-          <h3>wallet_sessionChanged</h3>
-          {walletSessionChangedResults && (
-            <details>
-              <summary className="result-summary">
-                {truncateJSON(walletSessionChangedResults).text}
-              </summary>
-              <code className="code-left-align">
-                <pre id="wallet-session-changed-result">
-                  {JSON.stringify(walletSessionChangedResults, null, 2)}
                 </pre>
               </code>
             </details>
