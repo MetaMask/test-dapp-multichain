@@ -5,11 +5,15 @@ import { parseOpenRPCDocument } from '@open-rpc/schema-utils-js';
 import React, { useEffect, useState } from 'react';
 
 import './App.css';
+import type { JsonValue } from './constants/signingMethods';
+import {
+  insertSigningAddress,
+  SIGNING_METHODS,
+} from './constants/signingMethods';
 import { openRPCExampleToJSON } from './helpers/OpenRPCExampleToJSON';
 import MetaMaskMultichainProvider from './providers/MetaMaskMultichainProvider';
 import makeProvider from './providers/MockMultichainProvider';
 import type { Provider } from './providers/Provider';
-import { insertSigningAddress } from './constants/signingMethods';
 
 const truncateJSON = (
   json: any,
@@ -374,21 +378,25 @@ function App() {
     );
 
     if (example) {
-      const exampleParams = openRPCExampleToJSON(example as MethodObject);
+      let exampleParams: JsonValue = openRPCExampleToJSON(
+        example as MethodObject,
+      );
       const selectedAddress = selectedAccounts[scope];
 
-      // Insert signing address if applicable
-      const updatedParams = insertSigningAddress(
-        selectedMethod,
-        exampleParams,
-        selectedAddress,
-      );
+      if (selectedAddress && selectedMethod in SIGNING_METHODS) {
+        // Insert signing address if applicable
+        exampleParams = insertSigningAddress(
+          selectedMethod,
+          exampleParams,
+          selectedAddress,
+        );
+      }
 
       const defaultRequest = {
         method: 'wallet_invokeMethod',
         params: {
           scope,
-          request: updatedParams,
+          request: exampleParams,
         },
       };
 
