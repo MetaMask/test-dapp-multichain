@@ -2,8 +2,7 @@
 import { MetaMaskOpenRPCDocument } from '@metamask/api-specs';
 import type { MethodObject, OpenrpcDocument } from '@open-rpc/meta-schema';
 import { parseOpenRPCDocument } from '@open-rpc/schema-utils-js';
-import throttle from 'lodash.throttle';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import './App.css';
 import { openRPCExampleToJSON } from './helpers/OpenRPCExampleToJSON';
@@ -76,42 +75,12 @@ function App() {
     isExternallyConnectableConnected,
     setisExternallyConnectableConnected,
   ] = useState<boolean>(false);
+  const [isResultExpanded, setIsResultExpanded] = useState(false);
 
-  useEffect(() => {
-    let newProvider: Provider;
-    if (providerType === 'mock') {
-      newProvider = makeProvider(() => createSessionResult);
-    } else {
-      console.log('creating metamask provider');
-      newProvider = new MetaMaskMultichainProvider();
-    }
-
-    setProvider(newProvider);
-  }, [providerType, createSessionResult]);
-
-  const throttledConnect = useCallback(
-    throttle(
-      () => {
-        provider?.connect(extensionId);
-      },
-      500,
-      { leading: false },
-    ),
-    [provider, extensionId],
-  );
-
-  useEffect(() => {
-    const extensionIdFromLocalStorage = localStorage.getItem('extensionId');
-    if (extensionIdFromLocalStorage) {
-      setExtensionId(extensionIdFromLocalStorage);
-    }
-  }, []);
-
-  // setup provider
-  useEffect(() => {
+  const handleConnect = () => {
     if (extensionId && provider) {
       try {
-        throttledConnect();
+        provider.connect(extensionId);
         setisExternallyConnectableConnected(true);
         localStorage.setItem('extensionId', extensionId);
         provider.onNotification((notification: any) => {
@@ -125,12 +94,66 @@ function App() {
         setisExternallyConnectableConnected(false);
       }
     }
+  };
+
+  useEffect(() => {
+    let newProvider: Provider;
+    if (providerType === 'mock') {
+      newProvider = makeProvider(() => createSessionResult);
+    } else {
+      console.log('creating metamask provider');
+      newProvider = new MetaMaskMultichainProvider();
+    }
+
+    setProvider(newProvider);
+
     return () => {
-      if (provider) {
-        provider.disconnect();
+      newProvider.disconnect();
+    };
+  }, [providerType, createSessionResult]);
+
+  useEffect(() => {
+    const extensionIdFromLocalStorage = localStorage.getItem('extensionId');
+    if (extensionIdFromLocalStorage && provider) {
+      setExtensionId(extensionIdFromLocalStorage);
+      try {
+        provider.connect(extensionIdFromLocalStorage);
+        setisExternallyConnectableConnected(true);
+        provider.onNotification((notification: any) => {
+          if (notification.method === 'wallet_notify') {
+            setWalletNotifyResults(notification);
+          } else if (notification.method === 'wallet_sessionChanged') {
+            setWalletSessionChangedResults(notification);
+          }
+        });
+      } catch (error) {
+        console.error('Error auto-connecting:', error);
+        setisExternallyConnectableConnected(false);
+      }
+    }
+  }, [provider]);
+
+  useEffect(() => {
+    const checkExistingSession = async () => {
+      if (provider && isExternallyConnectableConnected) {
+        try {
+          const result = await provider.request({
+            method: 'wallet_getSession',
+            params: [],
+          });
+          if (result) {
+            setGetSessionResult(result);
+            setCreateSessionResult(result);
+          }
+        } catch (error) {
+          console.error('Error checking existing session:', error);
+        }
       }
     };
-  }, [extensionId, provider]);
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    checkExistingSession();
+  }, [provider, isExternallyConnectableConnected]);
 
   useEffect(() => {
     parseOpenRPCDocument(MetaMaskOpenRPCDocument)
@@ -307,6 +330,7 @@ function App() {
               value={extensionId}
               onChange={(evt) => setExtensionId(evt.target.value)}
             />
+            <button onClick={handleConnect}>Connect</button>
           </label>
         </div>
         <div className="connection-status">
@@ -382,87 +406,101 @@ function App() {
             </div>
           </div>
 
-          {createSessionResult && (
-            <div className="session-info">
-              <h3>Connected Accounts</h3>
-              <ul className="connection-list">
-                {Object.values(createSessionResult.sessionScopes ?? {})
-                  .flatMap((scope: any) => scope.accounts ?? [])
-                  .map((account: string) => account.split(':').pop() ?? '')
-                  .filter((address: string) => address !== '')
-                  .filter(
-                    (address: string, index: number, array: string[]) =>
-                      array.indexOf(address) === index,
-                  )
-                  .map((address: string) => (
-                    <li key={address}>{address}</li>
-                  )) || <li>No accounts connected</li>}
-              </ul>
-
-              <h3>Connected Chains</h3>
-              <ul className="connection-list">
-                {Object.keys(createSessionResult.sessionScopes ?? {}).map(
-                  (chain: string) => <li key={chain}>{chain}</li>,
-                ) ?? <li>No chains connected</li>}
-              </ul>
-            </div>
-          )}
-
           <div className="session-divider" />
 
-          <div className="session-result">
-            {(createSessionResult ||
-              getSessionResult ||
-              revokeSessionResult) && (
-              <>
-                {createSessionResult && (
-                  <div className="result-item">
-                    <h4>Create Session Result:</h4>
-                    <details>
-                      <summary className="result-summary">
-                        {truncateJSON(createSessionResult).text}
-                      </summary>
-                      <code className="code-left-align">
-                        <pre id="create-session-result">
-                          {JSON.stringify(createSessionResult, null, 2)}
-                        </pre>
-                      </code>
-                    </details>
-                  </div>
+          {(createSessionResult || getSessionResult || revokeSessionResult) && (
+            <div className="session-results-grid">
+              {createSessionResult && (
+                <div className="session-info">
+                  <h3>Connected Accounts</h3>
+                  <ul className="connection-list">
+                    {Object.values(createSessionResult.sessionScopes ?? {})
+                      .flatMap((scope: any) => scope.accounts ?? [])
+                      .map((account: string) => account.split(':').pop() ?? '')
+                      .filter((address: string) => address !== '')
+                      .filter(
+                        (address: string, index: number, array: string[]) =>
+                          array.indexOf(address) === index,
+                      )
+                      .map((address: string) => (
+                        <li key={address}>{address}</li>
+                      )) || <li>No accounts connected</li>}
+                  </ul>
+
+                  <h3>Connected Chains</h3>
+                  <ul className="connection-list">
+                    {Object.keys(createSessionResult.sessionScopes ?? {}).map(
+                      (chain: string) => <li key={chain}>{chain}</li>,
+                    ) ?? <li>No chains connected</li>}
+                  </ul>
+                </div>
+              )}
+
+              <div
+                className={`session-result ${
+                  isResultExpanded ? 'expanded' : ''
+                }`}
+              >
+                {(createSessionResult ||
+                  getSessionResult ||
+                  revokeSessionResult) && (
+                  <>
+                    {createSessionResult && (
+                      <div className="result-item">
+                        <h4>Create Session Result:</h4>
+                        <details>
+                          <summary className="result-summary">
+                            {truncateJSON(createSessionResult).text}
+                          </summary>
+                          <code className="code-left-align">
+                            <pre id="create-session-result">
+                              {JSON.stringify(createSessionResult, null, 2)}
+                            </pre>
+                          </code>
+                        </details>
+                      </div>
+                    )}
+                    {getSessionResult && (
+                      <div className="result-item">
+                        <h4>Get Session Result:</h4>
+                        <details>
+                          <summary className="result-summary">
+                            {truncateJSON(getSessionResult).text}
+                          </summary>
+                          <code className="code-left-align">
+                            <pre id="get-session-result">
+                              {JSON.stringify(getSessionResult, null, 2)}
+                            </pre>
+                          </code>
+                        </details>
+                      </div>
+                    )}
+                    {revokeSessionResult && (
+                      <div className="result-item">
+                        <h4>Revoke Session Result:</h4>
+                        <details>
+                          <summary className="result-summary">
+                            {truncateJSON(revokeSessionResult).text}
+                          </summary>
+                          <code className="code-left-align">
+                            <pre id="revoke-session-result">
+                              {JSON.stringify(revokeSessionResult, null, 2)}
+                            </pre>
+                          </code>
+                        </details>
+                      </div>
+                    )}
+                  </>
                 )}
-                {getSessionResult && (
-                  <div className="result-item">
-                    <h4>Get Session Result:</h4>
-                    <details>
-                      <summary className="result-summary">
-                        {truncateJSON(getSessionResult).text}
-                      </summary>
-                      <code className="code-left-align">
-                        <pre id="get-session-result">
-                          {JSON.stringify(getSessionResult, null, 2)}
-                        </pre>
-                      </code>
-                    </details>
-                  </div>
-                )}
-                {revokeSessionResult && (
-                  <div className="result-item">
-                    <h4>Revoke Session Result:</h4>
-                    <details>
-                      <summary className="result-summary">
-                        {truncateJSON(revokeSessionResult).text}
-                      </summary>
-                      <code className="code-left-align">
-                        <pre id="revoke-session-result">
-                          {JSON.stringify(revokeSessionResult, null, 2)}
-                        </pre>
-                      </code>
-                    </details>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+                <button
+                  className="session-result-toggle"
+                  onClick={() => setIsResultExpanded(!isResultExpanded)}
+                >
+                  {isResultExpanded ? 'Show Less' : 'Show More'}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </section>
       {createSessionResult?.sessionScopes && (

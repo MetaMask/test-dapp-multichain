@@ -96,13 +96,14 @@ button:disabled:hover {
 
 .code-left-align {
   text-align: left;
-  display: inline-block;
+  display: block;
   width: 100%;
   background-color: #f7fafc;
   padding: 1rem;
   border-radius: 4px;
   border: 1px solid #edf2f7;
   overflow-x: auto;
+  box-sizing: border-box;
 }
 
 pre {
@@ -206,11 +207,47 @@ input[type="checkbox"] {
 }
 
 .session-result {
-  margin: 1.5rem 0 0 0;
+  margin: 0;
   padding: 1.5rem;
   background-color: #f7fafc;
   border-radius: 4px;
   border: 1px solid #e2e8f0;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  height: 300px;
+  overflow-y: auto;
+  position: relative;
+  transition: height 0.3s ease;
+}
+
+.session-result.expanded {
+  height: 900px;
+}
+
+.session-result-toggle {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0.5rem;
+  background: linear-gradient(transparent, #f7fafc);
+  text-align: center;
+  cursor: pointer;
+  border: none;
+  width: 100%;
+  color: #4299e1;
+  font-weight: 500;
+}
+
+.session-result-toggle:hover {
+  background: linear-gradient(transparent, #edf2f7);
+}
+
+.session-result pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-width: 100%;
 }
 
 .session-result > div {
@@ -301,11 +338,11 @@ input[type="checkbox"] {
   border: 1px solid #e2e8f0;
   border-radius: 4px;
   font-family: monospace;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
   max-width: 100%;
-  display: block;
 }
 
 .result-summary:hover {
@@ -479,21 +516,25 @@ details[open] summary::before {
 
 /* Add these styles */
 .session-info {
-  margin: 1.5rem 0;
-  padding: 1.5rem;
-  background-color: #f7fafc;
-  border-radius: 4px;
-  border: 1px solid #e2e8f0;
+  height: fit-content;
+  margin: 0;
 }
 
-.session-info h3 {
-  color: #4a5568;
-  font-size: 1.1rem;
-  margin: 1rem 0 0.5rem 0;
+.session-result {
+  margin: 0;
 }
 
-.session-info h3:first-child {
-  margin-top: 0;
+.session-results-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 800px) {
+  .session-results-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .connection-list {
