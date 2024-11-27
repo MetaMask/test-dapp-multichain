@@ -429,6 +429,7 @@ details[open] summary::before {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  overflow: hidden;
 }
 
 .scope-card h3 {
@@ -562,4 +563,43 @@ details[open] summary::before {
   gap: 1rem;
   margin-top: 1rem;
   flex-wrap: wrap;
+}
+
+.scope-card .result-item-small,
+.scope-card .collapsible-section {
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+.scope-card pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.scope-card .result-preview {
+  max-width: calc(100% - 150px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.scope-card .code-left-align {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.scope-card .collapsible-content {
+  padding: 1rem;
+  background-color: white;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.scope-card .collapsible-content textarea {
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
 }
