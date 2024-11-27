@@ -366,24 +366,49 @@ function App() {
                 />
               </label>
             </div>
-            <button id="create-session-btn" onClick={handleCreateSession}>
-              wallet_createSession
-            </button>
+            <div className="session-lifecycle-buttons">
+              <button id="create-session-btn" onClick={handleCreateSession}>
+                wallet_createSession
+              </button>
+              <button id="get-session-btn" onClick={handleGetSession}>
+                wallet_getSession
+              </button>
+              <button id="revoke-session-btn" onClick={handleRevokeSession}>
+                wallet_revokeSession
+              </button>
+              <button id="clear-state-btn" onClick={handleResetState}>
+                Clear State
+              </button>
+            </div>
           </div>
+
+          {createSessionResult && (
+            <div className="session-info">
+              <h3>Connected Accounts</h3>
+              <ul className="connection-list">
+                {Object.values(createSessionResult.sessionScopes ?? {})
+                  .flatMap((scope: any) => scope.accounts ?? [])
+                  .map((account: string) => account.split(':').pop() ?? '')
+                  .filter((address: string) => address !== '')
+                  .filter(
+                    (address: string, index: number, array: string[]) =>
+                      array.indexOf(address) === index,
+                  )
+                  .map((address: string) => (
+                    <li key={address}>{address}</li>
+                  )) || <li>No accounts connected</li>}
+              </ul>
+
+              <h3>Connected Chains</h3>
+              <ul className="connection-list">
+                {Object.keys(createSessionResult.sessionScopes ?? {}).map(
+                  (chain: string) => <li key={chain}>{chain}</li>,
+                ) ?? <li>No chains connected</li>}
+              </ul>
+            </div>
+          )}
 
           <div className="session-divider" />
-
-          <div className="session-controls">
-            <button id="clear-state-btn" onClick={handleResetState}>
-              Clear State
-            </button>
-            <button id="get-session-btn" onClick={handleGetSession}>
-              wallet_getSession
-            </button>
-            <button id="revoke-session-btn" onClick={handleRevokeSession}>
-              wallet_revokeSession
-            </button>
-          </div>
 
           <div className="session-result">
             {(createSessionResult ||
