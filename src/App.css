@@ -674,29 +674,23 @@ details[open] summary::before {
 }
 
 .results-container {
-  position: relative;
+  position: static;
   margin-bottom: 20px;
 }
 
 .results-label {
-  position: absolute;
-  top: -10px;
-  left: 10px;
-  background: white;
-  padding: 0 8px;
-  font-size: 1.4rem;
-  color: #2b6cb0;
-  z-index: 1;
-  border: 1px solid #e2e8f0;
-  border-radius: 4px;
-  font-weight: 500;
+  display: none;
 }
 
-/* Update existing containers to account for label */
-.session-result {
-  margin-top: 10px;
+.results-section {
+  margin-bottom: 20px;
 }
 
+.results-section h3 {
+  margin-bottom: 10px;
+}
+
+.session-result,
 .notification-container {
-  margin-top: 10px;
+  margin-top: 0;
 }

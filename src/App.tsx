@@ -542,10 +542,8 @@ function App() {
 
             <div style={{ flex: '0 0 50%' }}>
               {/* Session Results */}
-              <div className="results-container">
-                <div className="results-label">
-                  Session Lifecycle method results
-                </div>
+              <div className="results-section">
+                <h3>Session Lifecycle method results</h3>
                 <div className="session-result">
                   {(createSessionResult || getSessionResult) && (
                     <div className="result-item">
@@ -574,12 +572,9 @@ function App() {
               </div>
 
               {/* Session Changes */}
-              <div className="results-container">
-                <div className="results-label">
-                  wallet_sessionChanged results
-                </div>
+              <div className="results-section">
+                <h3>wallet_sessionChanged results</h3>
                 <div className="notification-container">
-                  <h3>Session Changes</h3>
                   {walletSessionChangedResults ? (
                     <details>
                       <summary className="result-summary">
