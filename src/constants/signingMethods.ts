@@ -1,17 +1,5 @@
-// Types for JSON values
-export type JsonObject = {
-  [key: string]: JsonValue;
-};
-
-export type JsonArray = JsonValue[];
-
-export type JsonValue =
-  | string
-  | number
-  | boolean
-  | null
-  | JsonObject
-  | JsonArray;
+import { parseCaipAccountId } from '@metamask/utils';
+import type { Json } from '@metamask/utils';
 
 // TODO need to inject chainId into eth_signTypedData_v4 example
 export const SIGNING_METHODS = {
@@ -30,18 +18,17 @@ type SigningMethod = keyof typeof SIGNING_METHODS;
 
 export function insertSigningAddress(
   method: string,
-  example: JsonValue,
-  selectedAddress: string,
-): JsonValue {
+  example: Json,
+  selectedAddress: `${string}:${string}:${string}`,
+): Json {
   if (!(method in SIGNING_METHODS)) {
     return example;
   }
 
-  const updatedExample = JSON.parse(JSON.stringify(example)) as JsonValue;
+  const updatedExample = JSON.parse(JSON.stringify(example));
   const { path } = SIGNING_METHODS[method as SigningMethod];
 
-  // @ts-expect-error - TODO: fix this
-  let current: JsonObject | JsonArray = updatedExample;
+  let current: Json = updatedExample;
 
   for (let i = 0; i < path.length - 1; i++) {
     const key = path[i];
@@ -70,21 +57,16 @@ export function insertSigningAddress(
         current[key] = typeof path[i + 1] === 'number' ? [] : {};
       }
     }
-
-    // @ts-expect-error - TODO: fix this
-    current = current[key];
   }
 
-  const cleanAddress = selectedAddress.includes(':')
-    ? selectedAddress.split(':').pop() ?? selectedAddress
-    : selectedAddress;
+  const { address } = parseCaipAccountId(selectedAddress);
 
   const lastKey = path[path.length - 1];
   if (typeof current === 'object' && current !== null) {
     if (Array.isArray(current)) {
-      current[lastKey as number] = cleanAddress;
+      current[lastKey as number] = address;
     } else {
-      current[lastKey as string] = cleanAddress;
+      current[lastKey as string] = address;
     }
   }
 

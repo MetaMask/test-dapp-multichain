@@ -1,53 +1,27 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { MetaMaskOpenRPCDocument } from '@metamask/api-specs';
+import { parseCaipAccountId } from '@metamask/utils';
+import type { Json } from '@metamask/utils';
 import type { MethodObject, OpenrpcDocument } from '@open-rpc/meta-schema';
 import { parseOpenRPCDocument } from '@open-rpc/schema-utils-js';
 import React, { useEffect, useState } from 'react';
 
 import './App.css';
-import type { JsonValue } from './constants/signingMethods';
+import { FEATURED_NETWORKS } from './constants/networks';
 import {
   insertSigningAddress,
   SIGNING_METHODS,
 } from './constants/signingMethods';
-import { openRPCExampleToJSON } from './helpers/OpenRPCExampleToJSON';
+import { openRPCExampleToJSON, truncateJSON } from './helpers/JsonHelpers';
 import MetaMaskMultichainProvider from './providers/MetaMaskMultichainProvider';
 import makeProvider from './providers/MockMultichainProvider';
 import type { Provider } from './providers/Provider';
-
-const truncateJSON = (
-  json: any,
-  maxLength = 100,
-): { text: string; truncated: boolean } => {
-  const stringified = JSON.stringify(json, null, 2);
-  if (stringified.length <= maxLength) {
-    return { text: stringified, truncated: false };
-  }
-  return {
-    text: stringified,
-    truncated: true,
-  };
-};
-
-const FEATURED_NETWORKS = {
-  'eip155:1': 'Ethereum Mainnet',
-  'eip155:59144': 'Linea Mainnet',
-  'eip155:42161': 'Arbitrum One',
-  'eip155:43114': 'Avalanche Network C-Chain',
-  'eip155:56': 'BNB Chain',
-  'eip155:10': 'OP Mainnet',
-  'eip155:137': 'Polygon Mainnet',
-  'eip155:324': 'zkSync Era Mainnet',
-  'eip155:8453': 'Base Mainnet',
-  'eip155:1337': 'Localhost',
-} as const;
 
 function App() {
   const [createSessionResult, setCreateSessionResult] = useState<any>(null);
   const [providerType, setProviderType] = useState<string>('metamask');
   const [provider, setProvider] = useState<Provider>();
   const [getSessionResult, setGetSessionResult] = useState<any>(null);
-  // const [revokeSessionResult, setRevokeSessionResult] = useState<any>(null);
   const [selectedMethods, setSelectedMethods] = useState<
     Record<string, string>
   >({});
@@ -66,6 +40,7 @@ function App() {
       'eip155:137': false,
       'eip155:324': false,
       'eip155:8453': false,
+      'eip155:1337': false,
     },
   );
   const [walletNotifyResults, setWalletNotifyResults] = useState<any>(null);
@@ -81,7 +56,6 @@ function App() {
     isExternallyConnectableConnected,
     setisExternallyConnectableConnected,
   ] = useState<boolean>(false);
-  // const [isResultExpanded, setIsResultExpanded] = useState(false);
   const [selectedAccounts, setSelectedAccounts] = useState<
     Record<string, string>
   >({});
@@ -274,7 +248,6 @@ function App() {
         params: [],
       });
       if (result) {
-        // setRevokeSessionResult(result);
         handleResetState();
       }
     } catch (error) {
@@ -333,12 +306,11 @@ function App() {
 
       Object.entries(createSessionResult.sessionScopes).forEach(
         ([scope, details]: [string, any]) => {
-          // Initialize method selection
           initialSelectedMethods[scope] = 'eth_blockNumber';
 
-          // Initialize account selection with first account
           if (details.accounts && details.accounts.length > 0) {
-            initialSelectedAccounts[scope] = details.accounts[0];
+            const { address } = parseCaipAccountId(details.accounts[0]);
+            initialSelectedAccounts[scope] = address;
           }
 
           const example = metamaskOpenrpcDocument?.methods.find(
@@ -379,13 +351,10 @@ function App() {
     );
 
     if (example) {
-      let exampleParams: JsonValue = openRPCExampleToJSON(
-        example as MethodObject,
-      );
+      let exampleParams: Json = openRPCExampleToJSON(example as MethodObject);
       const selectedAddress = selectedAccounts[scope];
 
       if (selectedAddress && selectedMethod in SIGNING_METHODS) {
-        // Insert signing address if applicable
         exampleParams = insertSigningAddress(
           selectedMethod,
           exampleParams,
@@ -519,7 +488,10 @@ function App() {
                   <ul className="connection-list">
                     {Object.values(createSessionResult.sessionScopes ?? {})
                       .flatMap((scope: any) => scope.accounts ?? [])
-                      .map((account: string) => account.split(':').pop() ?? '')
+                      .map(
+                        (account: `${string}:${string}:${string}`) =>
+                          parseCaipAccountId(account).address,
+                      )
                       .filter((address: string) => address !== '')
                       .filter(
                         (address: string, index: number, array: string[]) =>
@@ -664,7 +636,7 @@ function App() {
                           );
 
                           if (example) {
-                            let exampleParams: JsonValue = openRPCExampleToJSON(
+                            let exampleParams: Json = openRPCExampleToJSON(
                               example as MethodObject,
                             );
 
@@ -692,14 +664,16 @@ function App() {
                       }}
                     >
                       <option value="">Select an account</option>
-                      {(details.accounts ?? []).map((account: string) => {
-                        const address = account.split(':').pop();
-                        return (
-                          <option key={account} value={account}>
-                            {address}
-                          </option>
-                        );
-                      })}
+                      {(details.accounts ?? []).map(
+                        (account: `${string}:${string}:${string}`) => {
+                          const { address } = parseCaipAccountId(account);
+                          return (
+                            <option key={address} value={address}>
+                              {address}
+                            </option>
+                          );
+                        },
+                      )}
                     </select>
 
                     <select
@@ -737,7 +711,7 @@ function App() {
                         if (selectedMethods[scope]) {
                           await handleInvokeMethod(
                             scope,
-                            selectedMethods[scope] ?? '',
+                            selectedMethods[scope],
                           );
                         }
                       }}
@@ -745,57 +719,47 @@ function App() {
                       Invoke Method
                     </button>
 
-                    {Object.keys(invokeMethodResults?.[scope] ?? {}).length >
-                      0 &&
-                      Object.entries(invokeMethodResults[scope] ?? {}).map(
-                        ([method, results]) => {
-                          return results.map((result, index) => {
-                            const { text, truncated } = truncateJSON(
-                              result,
-                              150,
-                            );
-
-                            return truncated ? (
-                              <details
-                                key={`${method}-${index}`}
-                                className="collapsible-section"
-                              >
-                                <summary>
-                                  <span className="result-method">
-                                    {method}:
-                                  </span>
-                                  <span className="result-preview">
-                                    {JSON.stringify(result).slice(0, 100)}...
-                                  </span>
-                                </summary>
-                                <div className="collapsible-content">
-                                  <code className="code-left-align">
-                                    <pre
-                                      id={`invoke-method-${scope}-${method}-result-${index}`}
-                                    >
-                                      {JSON.stringify(result, null, 2)}
-                                    </pre>
-                                  </code>
-                                </div>
-                              </details>
-                            ) : (
-                              <div
-                                key={`${method}-${index}`}
-                                className="result-item-small"
-                              >
-                                <h5>{method}:</h5>
+                    {Object.entries(invokeMethodResults?.[scope] ?? {}).map(
+                      ([method, results]) => {
+                        return results.map((result, index) => {
+                          const { text, truncated } = truncateJSON(result, 150);
+                          return truncated ? (
+                            <details
+                              key={`${method}-${index}`}
+                              className="collapsible-section"
+                            >
+                              <summary>
+                                <span className="result-method">{method}:</span>
+                                <span className="result-preview">{text}</span>
+                              </summary>
+                              <div className="collapsible-content">
                                 <code className="code-left-align">
                                   <pre
                                     id={`invoke-method-${scope}-${method}-result-${index}`}
                                   >
-                                    {text}
+                                    {JSON.stringify(result, null, 2)}
                                   </pre>
                                 </code>
                               </div>
-                            );
-                          });
-                        },
-                      )}
+                            </details>
+                          ) : (
+                            <div
+                              key={`${method}-${index}`}
+                              className="result-item-small"
+                            >
+                              <h5>{method}:</h5>
+                              <code className="code-left-align">
+                                <pre
+                                  id={`invoke-method-${scope}-${method}-result-${index}`}
+                                >
+                                  {text}
+                                </pre>
+                              </code>
+                            </div>
+                          );
+                        });
+                      },
+                    )}
                   </div>
                 ),
               )}
