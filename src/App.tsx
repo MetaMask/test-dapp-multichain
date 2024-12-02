@@ -57,7 +57,7 @@ function App() {
     setisExternallyConnectableConnected,
   ] = useState<boolean>(false);
   const [selectedAccounts, setSelectedAccounts] = useState<
-    Record<string, string>
+    Record<string, `${string}:${string}:${string}`>
   >({});
 
   const handleConnect = () => {
@@ -84,7 +84,6 @@ function App() {
     if (providerType === 'mock') {
       newProvider = makeProvider(() => createSessionResult);
     } else {
-      console.log('creating metamask provider');
       newProvider = new MetaMaskMultichainProvider();
     }
 
@@ -165,10 +164,9 @@ function App() {
     parseOpenRPCDocument(MetaMaskOpenRPCDocument)
       .then((parsedOpenRPCDocument) => {
         setMetamaskOpenrpcDocument(parsedOpenRPCDocument);
-        console.log('parsedOpenRPCDocument', parsedOpenRPCDocument);
       })
       .catch(() => {
-        //
+        console.error('Error parsing metamask openrpc document');
       });
   }, []);
 
@@ -213,11 +211,6 @@ function App() {
           notifications: ['eth_subscription'],
         };
       }
-
-      console.log('optionalScopes', {
-        method: 'wallet_createSession',
-        params: { optionalScopes },
-      });
 
       const result = await provider?.request({
         method: 'wallet_createSession',
@@ -302,15 +295,17 @@ function App() {
   useEffect(() => {
     if (createSessionResult?.sessionScopes) {
       const initialSelectedMethods: Record<string, string> = {};
-      const initialSelectedAccounts: Record<string, string> = {};
+      const initialSelectedAccounts: Record<
+        string,
+        `${string}:${string}:${string}`
+      > = {};
 
       Object.entries(createSessionResult.sessionScopes).forEach(
         ([scope, details]: [string, any]) => {
           initialSelectedMethods[scope] = 'eth_blockNumber';
 
           if (details.accounts && details.accounts.length > 0) {
-            const { address } = parseCaipAccountId(details.accounts[0]);
-            initialSelectedAccounts[scope] = address;
+            initialSelectedAccounts[scope] = details.accounts[0];
           }
 
           const example = metamaskOpenrpcDocument?.methods.find(
@@ -338,7 +333,7 @@ function App() {
 
   const handleMethodSelect = (
     evt: React.ChangeEvent<HTMLSelectElement>,
-    scope: string,
+    scope: `${string}:${string}`,
   ) => {
     const selectedMethod = evt.target.value;
     setSelectedMethods((prev) => ({
@@ -359,6 +354,7 @@ function App() {
           selectedMethod,
           exampleParams,
           selectedAddress,
+          scope,
         );
       }
 
@@ -621,7 +617,9 @@ function App() {
                       className="accounts-select"
                       value={selectedAccounts[scope] ?? ''}
                       onChange={(evt) => {
-                        const newAddress = evt.target.value;
+                        const newAddress =
+                          (evt.target
+                            .value as `${string}:${string}:${string}`) ?? '';
                         setSelectedAccounts((prev) => ({
                           ...prev,
                           [scope]: newAddress,
@@ -645,6 +643,7 @@ function App() {
                               currentMethod,
                               exampleParams,
                               newAddress,
+                              scope as `${string}:${string}`,
                             );
 
                             const updatedRequest = {
@@ -668,7 +667,7 @@ function App() {
                         (account: `${string}:${string}:${string}`) => {
                           const { address } = parseCaipAccountId(account);
                           return (
-                            <option key={address} value={address}>
+                            <option key={address} value={account}>
                               {address}
                             </option>
                           );
@@ -678,7 +677,9 @@ function App() {
 
                     <select
                       value={selectedMethods[scope] ?? ''}
-                      onChange={(evt) => handleMethodSelect(evt, scope)}
+                      onChange={(evt) =>
+                        handleMethodSelect(evt, scope as `${string}:${string}`)
+                      }
                     >
                       <option value="">Select a method</option>
                       {details.methods.map((method: string) => (

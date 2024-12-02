@@ -1,74 +1,98 @@
-import { parseCaipAccountId } from '@metamask/utils';
+import { parseCaipAccountId, parseCaipChainId } from '@metamask/utils';
 import type { Json } from '@metamask/utils';
 
-// TODO need to inject chainId into eth_signTypedData_v4 example
 export const SIGNING_METHODS = {
-  eth_signTypedData_v4: {
-    path: ['params', 0],
-  },
-  eth_sendTransaction: {
-    path: ['params', 0, 'from'],
-  },
-  personal_sign: {
-    path: ['params', 1],
-  },
+  eth_sendTransaction: true,
+  eth_signTypedData_v4: true,
+  personal_sign: true,
 } as const;
 
-type SigningMethod = keyof typeof SIGNING_METHODS;
-
-export function insertSigningAddress(
+export const insertSigningAddress = (
   method: string,
-  example: Json,
-  selectedAddress: `${string}:${string}:${string}`,
-): Json {
-  if (!(method in SIGNING_METHODS)) {
-    return example;
+  exampleParams: Json,
+  address: `${string}:${string}:${string}`,
+  scope: `${string}:${string}`,
+): Json => {
+  const { address: parsedAddress } = parseCaipAccountId(address);
+  const { reference: chainId } = parseCaipChainId(scope);
+
+  if (
+    typeof exampleParams !== 'object' ||
+    exampleParams === null ||
+    !('method' in exampleParams) ||
+    !('params' in exampleParams) ||
+    !Array.isArray(exampleParams.params)
+  ) {
+    return exampleParams;
   }
 
-  const updatedExample = JSON.parse(JSON.stringify(example));
-  const { path } = SIGNING_METHODS[method as SigningMethod];
-
-  let current: Json = updatedExample;
-
-  for (let i = 0; i < path.length - 1; i++) {
-    const key = path[i];
-
-    if (typeof current !== 'object' || current === null) {
-      current = typeof path[i + 1] === 'number' ? [] : {};
-      continue;
-    }
-
-    if (key === undefined) {
-      throw new Error('Undefined key encountered in path');
-    }
-
-    if (typeof key === 'number') {
-      if (!Array.isArray(current)) {
-        current = [];
+  switch (method) {
+    case 'eth_sendTransaction':
+      if (
+        exampleParams.params.length > 0 &&
+        typeof exampleParams.params[0] === 'object' &&
+        exampleParams.params[0] !== null
+      ) {
+        return {
+          ...exampleParams,
+          params: [
+            {
+              ...exampleParams.params[0],
+              from: parsedAddress,
+            },
+            ...exampleParams.params.slice(1),
+          ],
+        };
       }
-      if (!(key in current)) {
-        current[key] = typeof path[i + 1] === 'number' ? [] : {};
+      break;
+
+    case 'personal_sign':
+      if (exampleParams.params.length >= 2) {
+        return {
+          ...exampleParams,
+          params: [
+            exampleParams.params[0],
+            parsedAddress,
+            ...exampleParams.params.slice(2),
+          ] as Json[],
+        };
       }
-    } else {
-      if (Array.isArray(current)) {
-        continue;
+      break;
+
+    case 'eth_signTypedData_v4':
+      if (
+        exampleParams.params.length >= 2 &&
+        typeof exampleParams.params[1] === 'object' &&
+        exampleParams.params[1] !== null
+      ) {
+        const typedData = exampleParams.params[1];
+        if (
+          typeof typedData === 'object' &&
+          typedData !== null &&
+          'domain' in typedData &&
+          typeof typedData.domain === 'object' &&
+          typedData.domain !== null
+        ) {
+          return {
+            ...exampleParams,
+            params: [
+              parsedAddress,
+              {
+                ...typedData,
+                domain: {
+                  ...typedData.domain,
+                  chainId,
+                },
+              },
+            ],
+          };
+        }
       }
-      if (!(key in current)) {
-        current[key] = typeof path[i + 1] === 'number' ? [] : {};
-      }
-    }
+      break;
+
+    default:
+      break;
   }
 
-  const { address } = parseCaipAccountId(selectedAddress);
-
-  const lastKey = path[path.length - 1];
-  if (typeof current === 'object' && current !== null) {
-    if (Array.isArray(current)) {
-      current[lastKey as number] = address;
-    } else {
-      current[lastKey as string] = address;
-    }
-  }
-
-  return updatedExample;
-}
+  return exampleParams;
+};
