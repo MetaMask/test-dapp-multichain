@@ -11,7 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Uncategorized
 
-- Ad/overall enhance ([#15](https://github.com/MetaMask/test-dapp-multichain/pull/15))
+- Add support for injecting accounts into `wallet_invokeMethod` requests ([#15](https://github.com/MetaMask/test-dapp-multichain/pull/15))
+- Store extension Id in local storage for session preservation across page reloads ([#15](https://github.com/MetaMask/test-dapp-multichain/pull/15))
+- A bunch of other minor fixes and enhancements ([#15](https://github.com/MetaMask/test-dapp-multichain/pull/15))
+- Generally make it prettier ([#15](https://github.com/MetaMask/test-dapp-multichain/pull/15))
 
 ## [0.0.7]
 
