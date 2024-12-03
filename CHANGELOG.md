@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.0]
 
-### Uncategorized
+### Added
 
 - Add support for injecting accounts into `wallet_invokeMethod` requests ([#15](https://github.com/MetaMask/test-dapp-multichain/pull/15))
 - Store extension Id in local storage for session preservation across page reloads ([#15](https://github.com/MetaMask/test-dapp-multichain/pull/15))
@@ -18,21 +18,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.0.7]
 
-### Uncategorized
+### Added
 
-- fix: add ids for e2e tests ([#13](https://github.com/MetaMask/test-dapp-multichain/pull/13))
+- Add ids for e2e tests ([#13](https://github.com/MetaMask/test-dapp-multichain/pull/13))
 
 ## [0.0.6]
 
-### Uncategorized
+### Fixed
 
-- fix: notifications + provider types and add provider dropdown ([#10](https://github.com/MetaMask/test-dapp-multichain/pull/10))
+- Fix notifications + provider types and add provider dropdown ([#10](https://github.com/MetaMask/test-dapp-multichain/pull/10))
 
 ## [0.0.5]
 
-### Uncategorized
+### Added
 
-- feat: add initial test dapp with mock provider ([#8](https://github.com/MetaMask/test-dapp-multichain/pull/8))
+- Add initial test dapp with mock provider ([#8](https://github.com/MetaMask/test-dapp-multichain/pull/8))
 
 ## [0.0.4]
 
