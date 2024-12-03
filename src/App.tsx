@@ -31,8 +31,8 @@ function App() {
   const [customScope, setCustomScope] = useState<string>('');
   const [selectedScopes, setSelectedScopes] = useState<Record<string, boolean>>(
     {
-      'eip155:1': false,
-      'eip155:59144': false,
+      'eip155:1': true,
+      'eip155:59144': true,
       'eip155:42161': false,
       'eip155:43114': false,
       'eip155:56': false,
@@ -173,7 +173,6 @@ function App() {
   const handleResetState = () => {
     setCreateSessionResult(null);
     setGetSessionResult(null);
-    // setRevokeSessionResult(null);
     setSelectedMethods({});
     setInvokeMethodResults({});
     setCustomScope('');
@@ -189,6 +188,7 @@ function App() {
       'eip155:137': false,
       'eip155:324': false,
       'eip155:8453': false,
+      'eip155:1337': false,
     });
   };
 
@@ -709,11 +709,9 @@ function App() {
                     <button
                       id={`invoke-method-${scope}-btn`}
                       onClick={async () => {
-                        if (selectedMethods[scope]) {
-                          await handleInvokeMethod(
-                            scope,
-                            selectedMethods[scope],
-                          );
+                        const method = selectedMethods[scope];
+                        if (method) {
+                          await handleInvokeMethod(scope, method);
                         }
                       }}
                     >
