@@ -25,14 +25,18 @@ class MetaMaskMultichainProvider implements Provider {
     if (this.#port) {
       this.disconnect();
     }
-
-    // eslint-disable-next-line
-    this.#port = chrome.runtime.connect(extensionId);
-    this.#port.onMessage.addListener(this.#handleMessage.bind(this));
-    this.#port.onDisconnect.addListener(() => {
-      this.#port = null;
-      this.#requestMap.clear();
-    });
+    try {
+      this.#port = chrome.runtime.connect(extensionId);
+      this.#port.onMessage.addListener(this.#handleMessage.bind(this));
+      this.#port.onDisconnect.addListener(() => {
+        this.#port = null;
+        this.#requestMap.clear();
+      });
+    } catch {
+      console.error(
+        'Error connecting to MetaMask Multichain Provider. Make sure the Multichain Enable Metamask extension is installed and enabled.',
+      );
+    }
   }
 
   disconnect(): void {

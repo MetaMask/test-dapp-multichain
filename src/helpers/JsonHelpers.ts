@@ -42,3 +42,17 @@ export const openRPCExampleToJSON = (method: MethodObject) => {
     params,
   };
 };
+
+export const truncateJSON = (
+  json: any,
+  maxLength = 100,
+): { text: string; truncated: boolean } => {
+  const stringified = JSON.stringify(json).slice(0, maxLength);
+  if (stringified.length <= maxLength) {
+    return { text: stringified, truncated: false };
+  }
+  return {
+    text: stringified.slice(0, maxLength),
+    truncated: true,
+  };
+};
