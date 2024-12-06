@@ -481,6 +481,9 @@ function App() {
   return (
     <div className="App">
       <h1>MetaMask MultiChain API Test Dapp</h1>
+      <div style={{ textAlign: 'center' }}>
+        <i>Requires MetaMask Extension with CAIP Multichain API Enabled</i>
+      </div>
       <section>
         <div>
           <label>
