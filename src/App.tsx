@@ -471,7 +471,7 @@ function App() {
   return (
     <div className="App">
       <h1>MetaMask MultiChain API Test Dapp</h1>
-      <div style={{ textAlign: 'center' }}>
+      <div className="app-subtitle">
         <i>Requires MetaMask Extension with CAIP Multichain API Enabled</i>
       </div>
       <section>
@@ -532,8 +532,8 @@ function App() {
       <section>
         <div>
           <h2>Session Lifecycle</h2>
-          <div style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
-            <div style={{ flex: '0 0 50%' }}>
+          <div className="session-layout">
+            <div className="session-column">
               <div className="create-session-container">
                 <h3>Create Session</h3>
                 {Object.entries(FEATURED_NETWORKS).map(
@@ -573,33 +573,21 @@ function App() {
                     onClick={handleCreateSession}
                     disabled={!isExternallyConnectableConnected}
                   >
-                    <span
-                      style={{ fontFamily: 'Courier New', fontWeight: 'bold' }}
-                    >
-                      wallet_createSession
-                    </span>
+                    <span className="code-method">wallet_createSession</span>
                   </button>
                   <button
                     id="get-session-btn"
                     onClick={handleGetSession}
                     disabled={!isExternallyConnectableConnected}
                   >
-                    <span
-                      style={{ fontFamily: 'Courier New', fontWeight: 'bold' }}
-                    >
-                      wallet_getSession
-                    </span>
+                    <span className="code-method">wallet_getSession</span>
                   </button>
                   <button
                     id="revoke-session-btn"
                     onClick={handleRevokeSession}
                     disabled={!isExternallyConnectableConnected}
                   >
-                    <span
-                      style={{ fontFamily: 'Courier New', fontWeight: 'bold' }}
-                    >
-                      wallet_revokeSession
-                    </span>
+                    <span className="code-method">wallet_revokeSession</span>
                   </button>
                 </div>
               </div>
@@ -634,7 +622,7 @@ function App() {
               )}
             </div>
 
-            <div style={{ flex: '0 0 50%' }}>
+            <div className="session-column">
               {/* Session Results */}
               <div className="results-section">
                 <h3>Session Lifecycle method results</h3>
@@ -644,19 +632,10 @@ function App() {
                       ({ timestamp, method, data }, index) => (
                         <details key={timestamp}>
                           <summary className="result-summary">
-                            <span
-                              style={{ marginRight: '10px', color: '#666' }}
-                            >
+                            <span className="timestamp">
                               {new Date(timestamp).toLocaleString()}
                             </span>
-                            <span
-                              style={{
-                                marginRight: '10px',
-                                fontWeight: 'bold',
-                              }}
-                            >
-                              {method}
-                            </span>
+                            <span className="method-name">{method}</span>
                             {truncateJSON(data).text}
                           </summary>
                           <code className="code-left-align">
@@ -676,11 +655,7 @@ function App() {
               {/* Session Changes */}
               <div className="results-section">
                 <h3>
-                  <span
-                    style={{ fontFamily: 'Courier New', fontWeight: 'bold' }}
-                  >
-                    wallet_sessionChanged
-                  </span>{' '}
+                  <span className="code-method">wallet_sessionChanged</span>{' '}
                 </h3>
                 <div className="notification-container">
                   {walletSessionChangedHistory.length > 0 ? (
@@ -688,9 +663,7 @@ function App() {
                       ({ timestamp, data }, index) => (
                         <details key={timestamp}>
                           <summary className="result-summary">
-                            <span
-                              style={{ marginRight: '10px', color: '#666' }}
-                            >
+                            <span className="timestamp">
                               {new Date(timestamp).toLocaleString()}
                             </span>
                             {truncateJSON(data).text}
@@ -716,20 +689,14 @@ function App() {
       {currentSession?.sessionScopes && isExternallyConnectableConnected && (
         <section>
           <div>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
-            >
+            <div className="scope-header">
               <h2>Connected Scopes</h2>
               <button onClick={handleClearInvokeResults}>Clear Results</button>
             </div>
             <button
               onClick={handleInvokeAllMethods}
               disabled={Object.keys(selectedMethods).length === 0}
-              style={{ marginBottom: '1rem' }}
+              className="invoke-all-button"
             >
               Invoke All Selected Methods
             </button>
@@ -916,18 +883,14 @@ function App() {
       )}
       <section className="notifications-section">
         <h2>
-          Notifications ({' '}
-          <span style={{ fontFamily: 'Courier New', fontWeight: 'bold' }}>
-            wallet_notify
-          </span>
-          )
+          Notifications ( <span className="code-method">wallet_notify</span>)
         </h2>
         <div className="notification-container">
           {walletNotifyHistory.length > 0 ? (
             walletNotifyHistory.map(({ timestamp, data }, index) => (
               <details key={timestamp}>
                 <summary className="result-summary">
-                  <span style={{ marginRight: '10px', color: '#666' }}>
+                  <span className="timestamp">
                     {new Date(timestamp).toLocaleString()}
                   </span>
                   {truncateJSON(data).text}
