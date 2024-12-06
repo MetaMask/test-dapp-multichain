@@ -81,15 +81,10 @@ function App() {
       const connectedScopes = Object.keys(
         notification.params.sessionScopes || {},
       );
-      setSelectedScopes((prev) => {
-        const newScopes = { ...prev };
-        Object.keys(newScopes).forEach((scope) => {
-          newScopes[scope] = false;
-        });
+      setSelectedScopes(() => {
+        const newScopes: Record<string, boolean> = {};
         connectedScopes.forEach((scope) => {
-          if (scope in newScopes) {
-            newScopes[scope] = true;
-          }
+          newScopes[scope] = true;
         });
         return newScopes;
       });
@@ -202,15 +197,10 @@ function App() {
             setCurrentSession(result);
 
             const connectedScopes = Object.keys(result.sessionScopes || {});
-            setSelectedScopes((prev) => {
-              const newScopes = { ...prev };
-              Object.keys(newScopes).forEach((scope) => {
-                newScopes[scope] = false;
-              });
+            setSelectedScopes(() => {
+              const newScopes: Record<string, boolean> = {};
               connectedScopes.forEach((scope) => {
-                if (scope in newScopes) {
-                  newScopes[scope] = true;
-                }
+                newScopes[scope] = true;
               });
               return newScopes;
             });
@@ -380,7 +370,7 @@ function App() {
 
   const handleInvokeAllMethods = async () => {
     const scopesWithMethods = Object.entries(selectedMethods)
-      .filter(([_, method]) => method) // Only include scopes that have a method selected
+      .filter(([_, method]) => method)
       .map(([scope, method]) => ({ scope, method }));
 
     await Promise.all(
@@ -583,21 +573,33 @@ function App() {
                     onClick={handleCreateSession}
                     disabled={!isExternallyConnectableConnected}
                   >
-                    wallet_createSession
+                    <span
+                      style={{ fontFamily: 'Courier New', fontWeight: 'bold' }}
+                    >
+                      wallet_createSession
+                    </span>
                   </button>
                   <button
                     id="get-session-btn"
                     onClick={handleGetSession}
                     disabled={!isExternallyConnectableConnected}
                   >
-                    wallet_getSession
+                    <span
+                      style={{ fontFamily: 'Courier New', fontWeight: 'bold' }}
+                    >
+                      wallet_getSession
+                    </span>
                   </button>
                   <button
                     id="revoke-session-btn"
                     onClick={handleRevokeSession}
                     disabled={!isExternallyConnectableConnected}
                   >
-                    wallet_revokeSession
+                    <span
+                      style={{ fontFamily: 'Courier New', fontWeight: 'bold' }}
+                    >
+                      wallet_revokeSession
+                    </span>
                   </button>
                 </div>
               </div>
@@ -673,7 +675,13 @@ function App() {
 
               {/* Session Changes */}
               <div className="results-section">
-                <h3>wallet_sessionChanged results</h3>
+                <h3>
+                  <span
+                    style={{ fontFamily: 'Courier New', fontWeight: 'bold' }}
+                  >
+                    wallet_sessionChanged
+                  </span>{' '}
+                </h3>
                 <div className="notification-container">
                   {walletSessionChangedHistory.length > 0 ? (
                     walletSessionChangedHistory.map(
@@ -907,9 +915,14 @@ function App() {
         </section>
       )}
       <section className="notifications-section">
-        <h2>Notifications</h2>
+        <h2>
+          Notifications ({' '}
+          <span style={{ fontFamily: 'Courier New', fontWeight: 'bold' }}>
+            wallet_notify
+          </span>
+          )
+        </h2>
         <div className="notification-container">
-          <h3>wallet_notify</h3>
           {walletNotifyHistory.length > 0 ? (
             walletNotifyHistory.map(({ timestamp, data }, index) => (
               <details key={timestamp}>
