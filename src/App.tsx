@@ -7,11 +7,13 @@ import { parseOpenRPCDocument } from '@open-rpc/schema-utils-js';
 import React, { useEffect, useState } from 'react';
 
 import './App.css';
-import { FEATURED_NETWORKS } from './constants/networks';
 import {
+  Eip155Methods,
+  Eip155Notifications,
   insertSigningAddress,
   SIGNING_METHODS,
-} from './constants/signingMethods';
+} from './constants/methods';
+import { FEATURED_NETWORKS } from './constants/networks';
 import { openRPCExampleToJSON, truncateJSON } from './helpers/JsonHelpers';
 import MetaMaskMultichainProvider from './providers/MetaMaskMultichainProvider';
 import makeProvider from './providers/MockMultichainProvider';
@@ -195,20 +197,19 @@ function App() {
   const handleCreateSession = async () => {
     try {
       const optionalScopes: Record<string, any> = {};
-
       Object.entries(selectedScopes).forEach(([scope, isSelected]) => {
         if (isSelected) {
           optionalScopes[scope] = {
-            methods: ['eth_sendTransaction', 'eth_sign'],
-            notifications: ['eth_subscription'],
+            methods: Eip155Methods,
+            notifications: Eip155Notifications,
           };
         }
       });
 
       if (customScope) {
         optionalScopes[customScope] = {
-          methods: ['eth_sendTransaction', 'eth_sign'],
-          notifications: ['eth_subscription'],
+          methods: Eip155Methods,
+          notifications: Eip155Notifications,
         };
       }
 
