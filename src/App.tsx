@@ -323,7 +323,6 @@ function App() {
     setInvokeMethodResults({});
     setCustomScope('');
     setWalletNotifyResults(null);
-    // setWalletSessionChangedResults(null);
     setWalletSessionChangedHistory([]);
     setSelectedScopes({
       'eip155:1': false,
@@ -524,7 +523,6 @@ function App() {
   };
 
   useEffect(() => {
-    // Clear state when disconnected
     if (!isExternallyConnectableConnected) {
       handleResetState();
     }
