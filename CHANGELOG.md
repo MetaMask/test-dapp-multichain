@@ -9,9 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.0]
 
-### Uncategorized
+### Changed
 
-- further cleanups/improvements ([#18](https://github.com/MetaMask/test-dapp-multichain/pull/18))
+- Improve styling and layout ([#18](https://github.com/MetaMask/test-dapp-multichain/pull/18))
 
 ## [0.1.0]
 
