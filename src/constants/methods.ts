@@ -1,6 +1,6 @@
 import MetaMaskOpenRPCDocument from '@metamask/api-specs';
 import { parseCaipAccountId, parseCaipChainId } from '@metamask/utils';
-import type { Json } from '@metamask/utils';
+import type { CaipAccountId, CaipChainId, Json } from '@metamask/utils';
 
 export const SIGNING_METHODS = {
   eth_sendTransaction: true,
@@ -11,8 +11,8 @@ export const SIGNING_METHODS = {
 export const insertSigningAddress = (
   method: string,
   exampleParams: Json,
-  address: `${string}:${string}:${string}`,
-  scope: `${string}:${string}`,
+  address: CaipAccountId,
+  scope: CaipChainId,
 ): Json => {
   const { address: parsedAddress } = parseCaipAccountId(address);
   const { reference: chainId } = parseCaipChainId(scope);

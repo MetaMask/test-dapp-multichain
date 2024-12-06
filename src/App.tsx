@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { MetaMaskOpenRPCDocument } from '@metamask/api-specs';
 import { parseCaipAccountId } from '@metamask/utils';
-import type { Json } from '@metamask/utils';
+import type { CaipAccountId, CaipChainId, Json } from '@metamask/utils';
 import type { MethodObject, OpenrpcDocument } from '@open-rpc/meta-schema';
 import { parseOpenRPCDocument } from '@open-rpc/schema-utils-js';
 import React, { useEffect, useState } from 'react';
@@ -23,7 +23,6 @@ function App() {
   const [createSessionResult, setCreateSessionResult] = useState<any>(null);
   const [providerType, setProviderType] = useState<string>('metamask');
   const [provider, setProvider] = useState<Provider>();
-  const [getSessionResult, setGetSessionResult] = useState<any>(null);
   const [selectedMethods, setSelectedMethods] = useState<
     Record<string, string>
   >({});
@@ -56,12 +55,16 @@ function App() {
     setisExternallyConnectableConnected,
   ] = useState<boolean>(false);
   const [selectedAccounts, setSelectedAccounts] = useState<
-    Record<string, `${string}:${string}:${string}`>
+    Record<string, CaipAccountId>
   >({});
   const [walletSessionChangedHistory, setWalletSessionChangedHistory] =
     useState<{ timestamp: number; data: any }[]>([]);
   const [walletNotifyHistory, setWalletNotifyHistory] = useState<
     { timestamp: number; data: any }[]
+  >([]);
+  const [currentSession, setCurrentSession] = useState<any>(null);
+  const [sessionMethodHistory, setSessionMethodHistory] = useState<
+    { timestamp: number; method: string; data: any }[]
   >([]);
 
   const handleSessionChangedNotification = (notification: any) => {
@@ -71,10 +74,7 @@ function App() {
     ]);
 
     if (notification.params?.sessionScopes) {
-      setCreateSessionResult({
-        sessionScopes: notification.params.sessionScopes,
-      });
-      setGetSessionResult({
+      setCurrentSession({
         sessionScopes: notification.params.sessionScopes,
       });
 
@@ -95,10 +95,7 @@ function App() {
       });
 
       const initialSelectedMethods: Record<string, string> = {};
-      const initialSelectedAccounts: Record<
-        string,
-        `${string}:${string}:${string}`
-      > = {};
+      const initialSelectedAccounts: Record<string, CaipAccountId> = {};
 
       Object.entries(notification.params.sessionScopes).forEach(
         ([scope, details]: [string, any]) => {
@@ -202,8 +199,7 @@ function App() {
             params: [],
           });
           if (result) {
-            setGetSessionResult(result);
-            setCreateSessionResult(result);
+            setCurrentSession(result);
 
             const connectedScopes = Object.keys(result.sessionScopes || {});
             setSelectedScopes((prev) => {
@@ -264,12 +260,13 @@ function App() {
 
   const handleResetState = () => {
     setCreateSessionResult(null);
-    setGetSessionResult(null);
+    setCurrentSession(null);
     setSelectedMethods({});
     setInvokeMethodResults({});
     setCustomScope('');
     setWalletSessionChangedHistory([]);
     setWalletNotifyHistory([]);
+    setSessionMethodHistory([]);
     setSelectedScopes({
       'eip155:1': false,
       'eip155:59144': false,
@@ -308,6 +305,11 @@ function App() {
         params: { optionalScopes },
       });
       setCreateSessionResult(result);
+      setCurrentSession(result);
+      setSessionMethodHistory((prev) => [
+        { timestamp: Date.now(), method: 'wallet_createSession', data: result },
+        ...prev,
+      ]);
     } catch (error) {
       console.error('Error creating session:', error);
     }
@@ -319,7 +321,11 @@ function App() {
         method: 'wallet_getSession',
         params: [],
       });
-      setGetSessionResult(result);
+      setCurrentSession(result);
+      setSessionMethodHistory((prev) => [
+        { timestamp: Date.now(), method: 'wallet_getSession', data: result },
+        ...prev,
+      ]);
     } catch (error) {
       console.error('Error getting session:', error);
     }
@@ -331,9 +337,10 @@ function App() {
         method: 'wallet_revokeSession',
         params: [],
       });
-      if (result) {
-        handleResetState();
-      }
+      setSessionMethodHistory((prev) => [
+        { timestamp: Date.now(), method: 'wallet_revokeSession', data: result },
+        ...prev,
+      ]);
     } catch (error) {
       console.error('Error revoking session:', error);
     }
@@ -386,10 +393,7 @@ function App() {
   useEffect(() => {
     if (createSessionResult?.sessionScopes) {
       const initialSelectedMethods: Record<string, string> = {};
-      const initialSelectedAccounts: Record<
-        string,
-        `${string}:${string}:${string}`
-      > = {};
+      const initialSelectedAccounts: Record<string, CaipAccountId> = {};
 
       Object.entries(createSessionResult.sessionScopes).forEach(
         ([scope, details]: [string, any]) => {
@@ -424,7 +428,7 @@ function App() {
 
   const handleMethodSelect = (
     evt: React.ChangeEvent<HTMLSelectElement>,
-    scope: `${string}:${string}`,
+    scope: CaipChainId,
   ) => {
     const selectedMethod = evt.target.value;
     setSelectedMethods((prev) => ({
@@ -595,14 +599,14 @@ function App() {
                 </div>
               </div>
 
-              {createSessionResult && (
+              {currentSession && (
                 <div className="session-info">
                   <h3>Connected Accounts</h3>
                   <ul className="connection-list">
-                    {Object.values(createSessionResult.sessionScopes ?? {})
+                    {Object.values(currentSession.sessionScopes ?? {})
                       .flatMap((scope: any) => scope.accounts ?? [])
                       .map(
-                        (account: `${string}:${string}:${string}`) =>
+                        (account: CaipAccountId) =>
                           parseCaipAccountId(account).address,
                       )
                       .filter((address: string) => address !== '')
@@ -617,7 +621,7 @@ function App() {
 
                   <h3>Connected Chains</h3>
                   <ul className="connection-list">
-                    {Object.keys(createSessionResult.sessionScopes ?? {}).map(
+                    {Object.keys(currentSession.sessionScopes ?? {}).map(
                       (chain: string) => <li key={chain}>{chain}</li>,
                     ) ?? <li>No chains connected</li>}
                   </ul>
@@ -629,31 +633,37 @@ function App() {
               {/* Session Results */}
               <div className="results-section">
                 <h3>Session Lifecycle method results</h3>
-                <div className="session-result">
-                  {createSessionResult || getSessionResult ? (
-                    <div className="result-item">
-                      <h4>Session Result:</h4>
-                      <details>
-                        <summary className="result-summary">
-                          {
-                            truncateJSON(
-                              createSessionResult || getSessionResult,
-                            ).text
-                          }
-                        </summary>
-                        <code className="code-left-align">
-                          <pre id="session-result">
-                            {JSON.stringify(
-                              createSessionResult || getSessionResult,
-                              null,
-                              2,
-                            )}
-                          </pre>
-                        </code>
-                      </details>
-                    </div>
+                <div className="notification-container">
+                  {sessionMethodHistory.length > 0 ? (
+                    sessionMethodHistory.map(
+                      ({ timestamp, method, data }, index) => (
+                        <details key={timestamp}>
+                          <summary className="result-summary">
+                            <span
+                              style={{ marginRight: '10px', color: '#666' }}
+                            >
+                              {new Date(timestamp).toLocaleString()}
+                            </span>
+                            <span
+                              style={{
+                                marginRight: '10px',
+                                fontWeight: 'bold',
+                              }}
+                            >
+                              {method}
+                            </span>
+                            {truncateJSON(data).text}
+                          </summary>
+                          <code className="code-left-align">
+                            <pre id={`session-method-result-${index}`}>
+                              {JSON.stringify(data, null, 2)}
+                            </pre>
+                          </code>
+                        </details>
+                      ),
+                    )
                   ) : (
-                    <p>No active wallet session</p>
+                    <p>No session method calls</p>
                   )}
                 </div>
               </div>
@@ -692,48 +702,33 @@ function App() {
           <div className="session-divider" />
         </div>
       </section>
-      {createSessionResult?.sessionScopes &&
-        isExternallyConnectableConnected && (
-          <section>
-            <div>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <h2>Connected Scopes</h2>
-                <button onClick={handleClearInvokeResults}>
-                  Clear Results
-                </button>
-              </div>
-              <button
-                onClick={handleInvokeAllMethods}
-                disabled={Object.keys(selectedMethods).length === 0}
-                style={{ marginBottom: '1rem' }}
-              >
-                Invoke All Selected Methods
-              </button>
-              <div className="scopes-grid">
-                {Object.entries(createSessionResult.sessionScopes).map(
-                  ([scope, details]: [string, any]) => (
-                    <div key={scope} className="scope-card">
-                      <h3
-                        title={
-                          FEATURED_NETWORKS[
-                            scope as keyof typeof FEATURED_NETWORKS
-                          ]
-                            ? `${
-                                FEATURED_NETWORKS[
-                                  scope as keyof typeof FEATURED_NETWORKS
-                                ]
-                              } (${scope})`
-                            : scope
-                        }
-                        className="scope-card-title"
-                      >
-                        {FEATURED_NETWORKS[
+      {currentSession?.sessionScopes && isExternallyConnectableConnected && (
+        <section>
+          <div>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <h2>Connected Scopes</h2>
+              <button onClick={handleClearInvokeResults}>Clear Results</button>
+            </div>
+            <button
+              onClick={handleInvokeAllMethods}
+              disabled={Object.keys(selectedMethods).length === 0}
+              style={{ marginBottom: '1rem' }}
+            >
+              Invoke All Selected Methods
+            </button>
+            <div className="scopes-grid">
+              {Object.entries(currentSession.sessionScopes).map(
+                ([scope, details]: [string, any]) => (
+                  <div key={scope} className="scope-card">
+                    <h3
+                      title={
+                        FEATURED_NETWORKS[
                           scope as keyof typeof FEATURED_NETWORKS
                         ]
                           ? `${
@@ -741,179 +736,173 @@ function App() {
                                 scope as keyof typeof FEATURED_NETWORKS
                               ]
                             } (${scope})`
-                          : scope}
-                      </h3>
+                          : scope
+                      }
+                      className="scope-card-title"
+                    >
+                      {FEATURED_NETWORKS[
+                        scope as keyof typeof FEATURED_NETWORKS
+                      ]
+                        ? `${
+                            FEATURED_NETWORKS[
+                              scope as keyof typeof FEATURED_NETWORKS
+                            ]
+                          } (${scope})`
+                        : scope}
+                    </h3>
 
-                      <select
-                        className="accounts-select"
-                        value={selectedAccounts[scope] ?? ''}
-                        onChange={(evt) => {
-                          const newAddress =
-                            (evt.target
-                              .value as `${string}:${string}:${string}`) ?? '';
-                          setSelectedAccounts((prev) => ({
-                            ...prev,
-                            [scope]: newAddress,
-                          }));
+                    <select
+                      className="accounts-select"
+                      value={selectedAccounts[scope] ?? ''}
+                      onChange={(evt) => {
+                        const newAddress =
+                          (evt.target.value as CaipAccountId) ?? '';
+                        setSelectedAccounts((prev) => ({
+                          ...prev,
+                          [scope]: newAddress,
+                        }));
 
-                          // modify the method request if it's a signing method (inject selected address)
-                          const currentMethod = selectedMethods[scope];
-                          if (
-                            currentMethod &&
-                            currentMethod in SIGNING_METHODS
-                          ) {
-                            const example =
-                              metamaskOpenrpcDocument?.methods.find(
-                                (method) =>
-                                  (method as MethodObject).name ===
-                                  currentMethod,
-                              );
+                        // modify the method request if it's a signing method (inject selected address)
+                        const currentMethod = selectedMethods[scope];
+                        if (currentMethod && currentMethod in SIGNING_METHODS) {
+                          const example = metamaskOpenrpcDocument?.methods.find(
+                            (method) =>
+                              (method as MethodObject).name === currentMethod,
+                          );
 
-                            if (example) {
-                              let exampleParams: Json = openRPCExampleToJSON(
-                                example as MethodObject,
-                              );
-
-                              // inject the newly selected address
-                              exampleParams = insertSigningAddress(
-                                currentMethod,
-                                exampleParams,
-                                newAddress,
-                                scope as `${string}:${string}`,
-                              );
-
-                              const updatedRequest = {
-                                method: 'wallet_invokeMethod',
-                                params: {
-                                  scope,
-                                  request: exampleParams,
-                                },
-                              };
-
-                              setInvokeMethodRequests((prev) => ({
-                                ...prev,
-                                [scope]: JSON.stringify(
-                                  updatedRequest,
-                                  null,
-                                  2,
-                                ),
-                              }));
-                            }
-                          }
-                        }}
-                      >
-                        <option value="">Select an account</option>
-                        {(details.accounts ?? []).map(
-                          (account: `${string}:${string}:${string}`) => {
-                            const { address } = parseCaipAccountId(account);
-                            return (
-                              <option key={address} value={account}>
-                                {address}
-                              </option>
+                          if (example) {
+                            let exampleParams: Json = openRPCExampleToJSON(
+                              example as MethodObject,
                             );
-                          },
-                        )}
-                      </select>
 
-                      <select
-                        value={selectedMethods[scope] ?? ''}
-                        onChange={(evt) =>
-                          handleMethodSelect(
-                            evt,
-                            scope as `${string}:${string}`,
-                          )
+                            // inject the newly selected address
+                            exampleParams = insertSigningAddress(
+                              currentMethod,
+                              exampleParams,
+                              newAddress,
+                              scope as CaipChainId,
+                            );
+
+                            const updatedRequest = {
+                              method: 'wallet_invokeMethod',
+                              params: {
+                                scope,
+                                request: exampleParams,
+                              },
+                            };
+
+                            setInvokeMethodRequests((prev) => ({
+                              ...prev,
+                              [scope]: JSON.stringify(updatedRequest, null, 2),
+                            }));
+                          }
                         }
-                      >
-                        <option value="">Select a method</option>
-                        {details.methods.map((method: string) => (
-                          <option key={method} value={method}>
-                            {method}
-                          </option>
-                        ))}
-                      </select>
+                      }}
+                    >
+                      <option value="">Select an account</option>
+                      {(details.accounts ?? []).map(
+                        (account: CaipAccountId) => {
+                          const { address } = parseCaipAccountId(account);
+                          return (
+                            <option key={address} value={account}>
+                              {address}
+                            </option>
+                          );
+                        },
+                      )}
+                    </select>
 
-                      <details className="collapsible-section">
-                        <summary>Invoke Method Request</summary>
-                        <div className="collapsible-content">
-                          <textarea
-                            value={invokeMethodRequests[scope] ?? ''}
-                            onChange={(evt) =>
-                              setInvokeMethodRequests((prev) => ({
-                                ...prev,
-                                [scope]: evt.target.value,
-                              }))
-                            }
-                            rows={5}
-                            cols={50}
-                          />
-                        </div>
-                      </details>
+                    <select
+                      value={selectedMethods[scope] ?? ''}
+                      onChange={(evt) =>
+                        handleMethodSelect(evt, scope as CaipChainId)
+                      }
+                    >
+                      <option value="">Select a method</option>
+                      {details.methods.map((method: string) => (
+                        <option key={method} value={method}>
+                          {method}
+                        </option>
+                      ))}
+                    </select>
 
-                      <button
-                        id={`invoke-method-${scope}-btn`}
-                        onClick={async () => {
-                          const method = selectedMethods[scope];
-                          if (method) {
-                            await handleInvokeMethod(scope, method);
+                    <details className="collapsible-section">
+                      <summary>Invoke Method Request</summary>
+                      <div className="collapsible-content">
+                        <textarea
+                          value={invokeMethodRequests[scope] ?? ''}
+                          onChange={(evt) =>
+                            setInvokeMethodRequests((prev) => ({
+                              ...prev,
+                              [scope]: evt.target.value,
+                            }))
                           }
-                        }}
-                      >
-                        Invoke Method
-                      </button>
+                          rows={5}
+                          cols={50}
+                        />
+                      </div>
+                    </details>
 
-                      {Object.entries(invokeMethodResults?.[scope] ?? {}).map(
-                        ([method, results]) => {
-                          return results.map((result, index) => {
-                            const { text, truncated } = truncateJSON(
-                              result,
-                              150,
-                            );
-                            return truncated ? (
-                              <details
-                                key={`${method}-${index}`}
-                                className="collapsible-section"
-                              >
-                                <summary>
-                                  <span className="result-method">
-                                    {method}:
-                                  </span>
-                                  <span className="result-preview">{text}</span>
-                                </summary>
-                                <div className="collapsible-content">
-                                  <code className="code-left-align">
-                                    <pre
-                                      id={`invoke-method-${scope}-${method}-result-${index}`}
-                                    >
-                                      {JSON.stringify(result, null, 2)}
-                                    </pre>
-                                  </code>
-                                </div>
-                              </details>
-                            ) : (
-                              <div
-                                key={`${method}-${index}`}
-                                className="result-item-small"
-                              >
-                                <h5>{method}:</h5>
+                    <button
+                      id={`invoke-method-${scope}-btn`}
+                      onClick={async () => {
+                        const method = selectedMethods[scope];
+                        if (method) {
+                          await handleInvokeMethod(scope, method);
+                        }
+                      }}
+                    >
+                      Invoke Method
+                    </button>
+
+                    {Object.entries(invokeMethodResults?.[scope] ?? {}).map(
+                      ([method, results]) => {
+                        return results.map((result, index) => {
+                          const { text, truncated } = truncateJSON(result, 150);
+                          return truncated ? (
+                            <details
+                              key={`${method}-${index}`}
+                              className="collapsible-section"
+                            >
+                              <summary>
+                                <span className="result-method">{method}:</span>
+                                <span className="result-preview">{text}</span>
+                              </summary>
+                              <div className="collapsible-content">
                                 <code className="code-left-align">
                                   <pre
                                     id={`invoke-method-${scope}-${method}-result-${index}`}
                                   >
-                                    {text}
+                                    {JSON.stringify(result, null, 2)}
                                   </pre>
                                 </code>
                               </div>
-                            );
-                          });
-                        },
-                      )}
-                    </div>
-                  ),
-                )}
-              </div>
+                            </details>
+                          ) : (
+                            <div
+                              key={`${method}-${index}`}
+                              className="result-item-small"
+                            >
+                              <h5>{method}:</h5>
+                              <code className="code-left-align">
+                                <pre
+                                  id={`invoke-method-${scope}-${method}-result-${index}`}
+                                >
+                                  {text}
+                                </pre>
+                              </code>
+                            </div>
+                          );
+                        });
+                      },
+                    )}
+                  </div>
+                ),
+              )}
             </div>
-          </section>
-        )}
+          </div>
+        </section>
+      )}
       <section className="notifications-section">
         <h2>Notifications</h2>
         <div className="notification-container">
