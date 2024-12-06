@@ -45,7 +45,6 @@ function App() {
       'eip155:1337': false,
     },
   );
-  const [walletNotifyResults, setWalletNotifyResults] = useState<any>(null);
   const [extensionId, setExtensionId] = useState<string>('');
   const [invokeMethodRequests, setInvokeMethodRequests] = useState<
     Record<string, string>
@@ -61,6 +60,77 @@ function App() {
   >({});
   const [walletSessionChangedHistory, setWalletSessionChangedHistory] =
     useState<{ timestamp: number; data: any }[]>([]);
+  const [walletNotifyHistory, setWalletNotifyHistory] = useState<
+    { timestamp: number; data: any }[]
+  >([]);
+
+  const handleSessionChangedNotification = (notification: any) => {
+    setWalletSessionChangedHistory((prev) => [
+      { timestamp: Date.now(), data: notification },
+      ...prev,
+    ]);
+
+    if (notification.params?.sessionScopes) {
+      setCreateSessionResult({
+        sessionScopes: notification.params.sessionScopes,
+      });
+      setGetSessionResult({
+        sessionScopes: notification.params.sessionScopes,
+      });
+
+      const connectedScopes = Object.keys(
+        notification.params.sessionScopes || {},
+      );
+      setSelectedScopes((prev) => {
+        const newScopes = { ...prev };
+        Object.keys(newScopes).forEach((scope) => {
+          newScopes[scope] = false;
+        });
+        connectedScopes.forEach((scope) => {
+          if (scope in newScopes) {
+            newScopes[scope] = true;
+          }
+        });
+        return newScopes;
+      });
+
+      const initialSelectedMethods: Record<string, string> = {};
+      const initialSelectedAccounts: Record<
+        string,
+        `${string}:${string}:${string}`
+      > = {};
+
+      Object.entries(notification.params.sessionScopes).forEach(
+        ([scope, details]: [string, any]) => {
+          initialSelectedMethods[scope] = 'eth_blockNumber';
+
+          if (details.accounts && details.accounts.length > 0) {
+            initialSelectedAccounts[scope] = details.accounts[0];
+          }
+
+          const example = metamaskOpenrpcDocument?.methods.find(
+            (method) => (method as MethodObject).name === 'eth_blockNumber',
+          );
+
+          const defaultRequest = {
+            method: 'wallet_invokeMethod',
+            params: {
+              scope,
+              request: openRPCExampleToJSON(example as MethodObject),
+            },
+          };
+
+          setInvokeMethodRequests((prev) => ({
+            ...prev,
+            [scope]: JSON.stringify(defaultRequest, null, 2),
+          }));
+        },
+      );
+
+      setSelectedMethods(initialSelectedMethods);
+      setSelectedAccounts(initialSelectedAccounts);
+    }
+  };
 
   const handleConnect = () => {
     if (extensionId && provider) {
@@ -70,74 +140,12 @@ function App() {
         localStorage.setItem('extensionId', extensionId);
         provider.onNotification((notification: any) => {
           if (notification.method === 'wallet_notify') {
-            setWalletNotifyResults(notification);
-          } else if (notification.method === 'wallet_sessionChanged') {
-            setWalletSessionChangedHistory((prev) => [
+            setWalletNotifyHistory((prev) => [
               { timestamp: Date.now(), data: notification },
               ...prev,
             ]);
-
-            if (notification.params?.sessionScopes) {
-              setCreateSessionResult({
-                sessionScopes: notification.params.sessionScopes,
-              });
-              setGetSessionResult({
-                sessionScopes: notification.params.sessionScopes,
-              });
-
-              const connectedScopes = Object.keys(
-                notification.params.sessionScopes || {},
-              );
-              setSelectedScopes((prev) => {
-                const newScopes = { ...prev };
-                Object.keys(newScopes).forEach((scope) => {
-                  newScopes[scope] = false;
-                });
-                connectedScopes.forEach((scope) => {
-                  if (scope in newScopes) {
-                    newScopes[scope] = true;
-                  }
-                });
-                return newScopes;
-              });
-
-              const initialSelectedMethods: Record<string, string> = {};
-              const initialSelectedAccounts: Record<
-                string,
-                `${string}:${string}:${string}`
-              > = {};
-
-              Object.entries(notification.params.sessionScopes).forEach(
-                ([scope, details]: [string, any]) => {
-                  initialSelectedMethods[scope] = 'eth_blockNumber';
-
-                  if (details.accounts && details.accounts.length > 0) {
-                    initialSelectedAccounts[scope] = details.accounts[0];
-                  }
-
-                  const example = metamaskOpenrpcDocument?.methods.find(
-                    (method) =>
-                      (method as MethodObject).name === 'eth_blockNumber',
-                  );
-
-                  const defaultRequest = {
-                    method: 'wallet_invokeMethod',
-                    params: {
-                      scope,
-                      request: openRPCExampleToJSON(example as MethodObject),
-                    },
-                  };
-
-                  setInvokeMethodRequests((prev) => ({
-                    ...prev,
-                    [scope]: JSON.stringify(defaultRequest, null, 2),
-                  }));
-                },
-              );
-
-              setSelectedMethods(initialSelectedMethods);
-              setSelectedAccounts(initialSelectedAccounts);
-            }
+          } else if (notification.method === 'wallet_sessionChanged') {
+            handleSessionChangedNotification(notification);
           }
         });
       } catch (error) {
@@ -170,74 +178,12 @@ function App() {
         setisExternallyConnectableConnected(true);
         provider.onNotification((notification: any) => {
           if (notification.method === 'wallet_notify') {
-            setWalletNotifyResults(notification);
-          } else if (notification.method === 'wallet_sessionChanged') {
-            setWalletSessionChangedHistory((prev) => [
+            setWalletNotifyHistory((prev) => [
               { timestamp: Date.now(), data: notification },
               ...prev,
             ]);
-
-            if (notification.params?.sessionScopes) {
-              setCreateSessionResult({
-                sessionScopes: notification.params.sessionScopes,
-              });
-              setGetSessionResult({
-                sessionScopes: notification.params.sessionScopes,
-              });
-
-              const connectedScopes = Object.keys(
-                notification.params.sessionScopes || {},
-              );
-              setSelectedScopes((prev) => {
-                const newScopes = { ...prev };
-                Object.keys(newScopes).forEach((scope) => {
-                  newScopes[scope] = false;
-                });
-                connectedScopes.forEach((scope) => {
-                  if (scope in newScopes) {
-                    newScopes[scope] = true;
-                  }
-                });
-                return newScopes;
-              });
-
-              const initialSelectedMethods: Record<string, string> = {};
-              const initialSelectedAccounts: Record<
-                string,
-                `${string}:${string}:${string}`
-              > = {};
-
-              Object.entries(notification.params.sessionScopes).forEach(
-                ([scope, details]: [string, any]) => {
-                  initialSelectedMethods[scope] = 'eth_blockNumber';
-
-                  if (details.accounts && details.accounts.length > 0) {
-                    initialSelectedAccounts[scope] = details.accounts[0];
-                  }
-
-                  const example = metamaskOpenrpcDocument?.methods.find(
-                    (method) =>
-                      (method as MethodObject).name === 'eth_blockNumber',
-                  );
-
-                  const defaultRequest = {
-                    method: 'wallet_invokeMethod',
-                    params: {
-                      scope,
-                      request: openRPCExampleToJSON(example as MethodObject),
-                    },
-                  };
-
-                  setInvokeMethodRequests((prev) => ({
-                    ...prev,
-                    [scope]: JSON.stringify(defaultRequest, null, 2),
-                  }));
-                },
-              );
-
-              setSelectedMethods(initialSelectedMethods);
-              setSelectedAccounts(initialSelectedAccounts);
-            }
+          } else if (notification.method === 'wallet_sessionChanged') {
+            handleSessionChangedNotification(notification);
           }
         });
       } catch (error) {
@@ -322,8 +268,8 @@ function App() {
     setSelectedMethods({});
     setInvokeMethodResults({});
     setCustomScope('');
-    setWalletNotifyResults(null);
     setWalletSessionChangedHistory([]);
+    setWalletNotifyHistory([]);
     setSelectedScopes({
       'eip155:1': false,
       'eip155:59144': false,
@@ -972,17 +918,24 @@ function App() {
         <h2>Notifications</h2>
         <div className="notification-container">
           <h3>wallet_notify</h3>
-          {walletNotifyResults && (
-            <details>
-              <summary className="result-summary">
-                {truncateJSON(walletNotifyResults).text}
-              </summary>
-              <code className="code-left-align">
-                <pre id="wallet-notify-result">
-                  {JSON.stringify(walletNotifyResults, null, 2)}
-                </pre>
-              </code>
-            </details>
+          {walletNotifyHistory.length > 0 ? (
+            walletNotifyHistory.map(({ timestamp, data }, index) => (
+              <details key={timestamp}>
+                <summary className="result-summary">
+                  <span style={{ marginRight: '10px', color: '#666' }}>
+                    {new Date(timestamp).toLocaleString()}
+                  </span>
+                  {truncateJSON(data).text}
+                </summary>
+                <code className="code-left-align">
+                  <pre id={`wallet-notify-result-${index}`}>
+                    {JSON.stringify(data, null, 2)}
+                  </pre>
+                </code>
+              </details>
+            ))
+          ) : (
+            <p>No notifications received</p>
           )}
         </div>
       </section>

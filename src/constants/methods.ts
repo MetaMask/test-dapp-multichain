@@ -40,6 +40,8 @@ export const insertSigningAddress = (
             {
               ...exampleParams.params[0],
               from: parsedAddress,
+              to: '0xE7d522230eFf653Bb0a9B4385F0be0815420Dd98', // safe recovery address in case funds are accidentally sent
+              value: '0x0',
             },
             ...exampleParams.params.slice(1),
           ],
