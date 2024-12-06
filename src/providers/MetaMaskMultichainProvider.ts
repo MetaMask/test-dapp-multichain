@@ -21,7 +21,7 @@ class MetaMaskMultichainProvider implements Provider {
     this.#notificationCallbacks = new Set();
   }
 
-  connect(extensionId: string): void {
+  connect(extensionId: string): boolean {
     if (this.#port) {
       this.disconnect();
     }
@@ -36,7 +36,9 @@ class MetaMaskMultichainProvider implements Provider {
       console.error(
         'Error connecting to MetaMask Multichain Provider. Make sure the Multichain Enable Metamask extension is installed and enabled.',
       );
+      return false;
     }
+    return true;
   }
 
   disconnect(): void {
