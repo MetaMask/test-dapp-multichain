@@ -2,20 +2,32 @@ import MetaMaskOpenRPCDocument from '@metamask/api-specs';
 import { parseCaipAccountId, parseCaipChainId } from '@metamask/utils';
 import type { CaipAccountId, CaipChainId, Json } from '@metamask/utils';
 
-export const SIGNING_METHODS = {
+/**
+ * Methods that require an account parameter.
+ */
+export const METHODS_REQUIRING_PARAM_INJECTION = {
   eth_sendTransaction: true,
   eth_signTypedData_v4: true,
   personal_sign: true,
+  eth_getBalance: true,
 } as const;
 
-export const insertSigningAddress = (
+/**
+ * Injects address and chainId (where applicable) into example params for a given method.
+ * @param method - The method to inject the address into.
+ * @param exampleParams - The example params to inject the address into.
+ * @param addressToInject - The address to inject.
+ * @param scopeToInject - The scope to inject the address into.
+ * @returns The updated example params with the address injected.
+ */
+export const injectParams = (
   method: string,
   exampleParams: Json,
-  address: CaipAccountId,
-  scope: CaipChainId,
+  addressToInject: CaipAccountId,
+  scopeToInject: CaipChainId,
 ): Json => {
-  const { address: parsedAddress } = parseCaipAccountId(address);
-  const { reference: chainId } = parseCaipChainId(scope);
+  const { address: parsedAddress } = parseCaipAccountId(addressToInject);
+  const { reference: chainId } = parseCaipChainId(scopeToInject);
 
   if (
     typeof exampleParams !== 'object' ||
@@ -93,6 +105,12 @@ export const insertSigningAddress = (
       }
       break;
 
+    case 'eth_getBalance':
+      return {
+        ...exampleParams,
+        params: [parsedAddress, 'latest'],
+      };
+
     default:
       break;
   }
@@ -100,15 +118,27 @@ export const insertSigningAddress = (
   return exampleParams;
 };
 
+/**
+ * Known Wallet RPC methods.
+ */
 export const KnownWalletRpcMethods: string[] = [
   'wallet_registerOnboarding',
   'wallet_scanQRCode',
 ];
 
+/**
+ * Wallet methods that are EIP-155 compatible but not scoped to a specific chain.
+ */
 export const WalletEip155Methods = ['wallet_addEthereumChain'];
 
+/**
+ * EIP-155 specific notifications.
+ */
 export const Eip155Notifications = ['eth_subscription'];
 
+/**
+ * Methods that are only available in the EIP-1193 wallet provider.
+ */
 const Eip1193OnlyMethods = [
   'wallet_switchEthereumChain',
   'wallet_getPermissions',

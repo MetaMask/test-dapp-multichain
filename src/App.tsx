@@ -10,8 +10,8 @@ import './App.css';
 import {
   Eip155Methods,
   Eip155Notifications,
-  insertSigningAddress,
-  SIGNING_METHODS,
+  injectParams,
+  METHODS_REQUIRING_PARAM_INJECTION,
 } from './constants/methods';
 import { FEATURED_NETWORKS } from './constants/networks';
 import { openRPCExampleToJSON, truncateJSON } from './helpers/JsonHelpers';
@@ -27,7 +27,7 @@ function App() {
     Record<string, string>
   >({});
   const [invokeMethodResults, setInvokeMethodResults] = useState<
-    Record<string, Record<string, any[]>>
+    Record<string, Record<string, { result: any; request: any }[]>>
   >({});
   const [customScope, setCustomScope] = useState<string>('');
   const [selectedScopes, setSelectedScopes] = useState<Record<string, boolean>>(
@@ -69,8 +69,8 @@ function App() {
 
   const handleSessionChangedNotification = (notification: any) => {
     setWalletSessionChangedHistory((prev) => [
-      { timestamp: Date.now(), data: notification },
       ...prev,
+      { timestamp: Date.now(), data: notification },
     ]);
 
     if (notification.params?.sessionScopes) {
@@ -206,27 +206,37 @@ function App() {
             });
 
             const initialSelectedMethods: Record<string, string> = {};
-            Object.keys(result.sessionScopes).forEach((scope) => {
-              initialSelectedMethods[scope] = 'eth_blockNumber';
+            const initialSelectedAccounts: Record<string, CaipAccountId> = {};
 
-              const example = metamaskOpenrpcDocument?.methods.find(
-                (method) => (method as MethodObject).name === 'eth_blockNumber',
-              );
+            Object.entries(result.sessionScopes).forEach(
+              ([scope, details]: [string, any]) => {
+                initialSelectedMethods[scope] = 'eth_blockNumber';
 
-              const defaultRequest = {
-                method: 'wallet_invokeMethod',
-                params: {
-                  scope,
-                  request: openRPCExampleToJSON(example as MethodObject),
-                },
-              };
+                if (details.accounts && details.accounts.length > 0) {
+                  initialSelectedAccounts[scope] = details.accounts[0];
+                }
 
-              setInvokeMethodRequests((prev) => ({
-                ...prev,
-                [scope]: JSON.stringify(defaultRequest, null, 2),
-              }));
-            });
+                const example = metamaskOpenrpcDocument?.methods.find(
+                  (method) =>
+                    (method as MethodObject).name === 'eth_blockNumber',
+                );
+
+                const defaultRequest = {
+                  method: 'wallet_invokeMethod',
+                  params: {
+                    scope,
+                    request: openRPCExampleToJSON(example as MethodObject),
+                  },
+                };
+
+                setInvokeMethodRequests((prev) => ({
+                  ...prev,
+                  [scope]: JSON.stringify(defaultRequest, null, 2),
+                }));
+              },
+            );
             setSelectedMethods(initialSelectedMethods);
+            setSelectedAccounts(initialSelectedAccounts);
           }
         } catch (error) {
           console.error('Error checking existing session:', error);
@@ -337,8 +347,8 @@ function App() {
   };
 
   const handleInvokeMethod = async (scope: string, method: string) => {
+    const requestObject = JSON.parse(invokeMethodRequests[scope] ?? '{}');
     try {
-      const requestObject = JSON.parse(invokeMethodRequests[scope] ?? '{}');
       const result = await provider?.request(requestObject);
 
       setInvokeMethodResults((prev) => {
@@ -348,7 +358,10 @@ function App() {
           ...prev,
           [scope]: {
             ...scopeResults,
-            [method]: [...methodResults, result],
+            [method]: [
+              ...methodResults,
+              { result, request: requestObject.params.request },
+            ],
           },
         };
       });
@@ -360,7 +373,10 @@ function App() {
           ...prev,
           [scope]: {
             ...scopeResults,
-            [method]: [...methodResults, error],
+            [method]: [
+              ...methodResults,
+              { result: error, request: requestObject.params.request },
+            ],
           },
         };
       });
@@ -434,8 +450,11 @@ function App() {
       let exampleParams: Json = openRPCExampleToJSON(example as MethodObject);
       const selectedAddress = selectedAccounts[scope];
 
-      if (selectedAddress && selectedMethod in SIGNING_METHODS) {
-        exampleParams = insertSigningAddress(
+      if (
+        selectedAddress &&
+        selectedMethod in METHODS_REQUIRING_PARAM_INJECTION
+      ) {
+        exampleParams = injectParams(
           selectedMethod,
           exampleParams,
           selectedAddress,
@@ -740,9 +759,11 @@ function App() {
                           [scope]: newAddress,
                         }));
 
-                        // modify the method request if it's a signing method (inject selected address)
                         const currentMethod = selectedMethods[scope];
-                        if (currentMethod && currentMethod in SIGNING_METHODS) {
+                        if (
+                          currentMethod &&
+                          currentMethod in METHODS_REQUIRING_PARAM_INJECTION
+                        ) {
                           const example = metamaskOpenrpcDocument?.methods.find(
                             (method) =>
                               (method as MethodObject).name === currentMethod,
@@ -753,8 +774,7 @@ function App() {
                               example as MethodObject,
                             );
 
-                            // inject the newly selected address
-                            exampleParams = insertSigningAddress(
+                            exampleParams = injectParams(
                               currentMethod,
                               exampleParams,
                               newAddress,
@@ -833,9 +853,9 @@ function App() {
                       Invoke Method
                     </button>
 
-                    {Object.entries(invokeMethodResults?.[scope] ?? {}).map(
+                    {Object.entries(invokeMethodResults[scope] ?? {}).map(
                       ([method, results]) => {
-                        return results.map((result, index) => {
+                        return results.map(({ result, request }, index) => {
                           const { text, truncated } = truncateJSON(result, 150);
                           return truncated ? (
                             <details
@@ -843,7 +863,10 @@ function App() {
                               className="collapsible-section"
                             >
                               <summary>
-                                <span className="result-method">{method}:</span>
+                                <span className="result-method">{method}</span>
+                                <div className="result-params">
+                                  Params: {JSON.stringify(request.params)}
+                                </div>
                                 <span className="result-preview">{text}</span>
                               </summary>
                               <div className="collapsible-content">
@@ -861,7 +884,12 @@ function App() {
                               key={`${method}-${index}`}
                               className="result-item-small"
                             >
-                              <h5>{method}:</h5>
+                              <div className="result-header">
+                                <span className="result-method">{method}</span>
+                                <div className="result-params">
+                                  Params: {JSON.stringify(request.params)}
+                                </div>
+                              </div>
                               <code className="code-left-align">
                                 <pre
                                   id={`invoke-method-${scope}-${method}-result-${index}`}
