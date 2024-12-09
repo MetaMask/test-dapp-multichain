@@ -10,12 +10,11 @@ import './App.css';
 import { insertSigningAddress, SIGNING_METHODS } from './constants/methods';
 import { FEATURED_NETWORKS } from './constants/networks';
 import { openRPCExampleToJSON, truncateJSON } from './helpers/JsonHelpers';
-import SDK from './sdk/SDK';
+import { useSDK } from './sdk/useSDK';
 
 function App() {
   const [createSessionResult, setCreateSessionResult] = useState<any>(null);
   const [providerType, setProviderType] = useState<string>('metamask');
-  const [sdk, setSdk] = useState<SDK>();
   const [selectedMethods, setSelectedMethods] = useState<
     Record<string, string>
   >({});
@@ -43,10 +42,6 @@ function App() {
   >({});
   const [metamaskOpenrpcDocument, setMetamaskOpenrpcDocument] =
     useState<OpenrpcDocument>();
-  const [
-    isExternallyConnectableConnected,
-    setisExternallyConnectableConnected,
-  ] = useState<boolean>(false);
   const [selectedAccounts, setSelectedAccounts] = useState<
     Record<string, CaipAccountId>
   >({});
@@ -55,10 +50,22 @@ function App() {
   const [walletNotifyHistory, setWalletNotifyHistory] = useState<
     { timestamp: number; data: any }[]
   >([]);
-  const [currentSession, setCurrentSession] = useState<any>(null);
   const [sessionMethodHistory, setSessionMethodHistory] = useState<
     { timestamp: number; method: string; data: any }[]
   >([]);
+
+  const {
+    sdk,
+    isConnected: isExternallyConnectableConnected,
+    currentSession,
+    connect: handleConnect,
+    disconnect,
+    createSession,
+    revokeSession,
+    onSessionChanged,
+    onNotification,
+    extensionId: loadedExtensionId,
+  } = useSDK();
 
   const handleSessionChangedNotification = (notification: any) => {
     setWalletSessionChangedHistory((prev) => [
@@ -67,10 +74,6 @@ function App() {
     ]);
 
     if (notification.params?.sessionScopes) {
-      setCurrentSession({
-        sessionScopes: notification.params.sessionScopes,
-      });
-
       const connectedScopes = Object.keys(
         notification.params.sessionScopes || {},
       );
@@ -117,111 +120,24 @@ function App() {
     }
   };
 
-  const handleConnect = () => {
-    if (extensionId && sdk) {
+  const handleConnectClick = () => {
+    if (extensionId) {
       try {
-        const connected = sdk.setExtensionIdAndConnect(extensionId);
-        setisExternallyConnectableConnected(connected);
-        localStorage.setItem('extensionId', extensionId);
-        sdk.onNotification((notification: any) => {
+        handleConnect(extensionId);
+        onSessionChanged(handleSessionChangedNotification);
+        onNotification((notification: any) => {
           if (notification.method === 'wallet_notify') {
             setWalletNotifyHistory((prev) => [
               { timestamp: Date.now(), data: notification },
               ...prev,
             ]);
-          } else if (notification.method === 'wallet_sessionChanged') {
-            handleSessionChangedNotification(notification);
           }
         });
       } catch (error) {
-        setisExternallyConnectableConnected(false);
+        console.error('Error connecting:', error);
       }
     }
   };
-
-  useEffect(() => {
-    const newSdk = new SDK();
-
-    setSdk(newSdk);
-
-    return () => {
-      newSdk.disconnect();
-    };
-  }, [providerType]);
-
-  useEffect(() => {
-    const extensionIdFromLocalStorage = localStorage.getItem('extensionId');
-    if (extensionIdFromLocalStorage && sdk) {
-      setExtensionId(extensionIdFromLocalStorage);
-      try {
-        sdk.setExtensionIdAndConnect(extensionIdFromLocalStorage);
-        setisExternallyConnectableConnected(true);
-        sdk.onNotification((notification: any) => {
-          if (notification.method === 'wallet_notify') {
-            setWalletNotifyHistory((prev) => [
-              { timestamp: Date.now(), data: notification },
-              ...prev,
-            ]);
-          } else if (notification.method === 'wallet_sessionChanged') {
-            handleSessionChangedNotification(notification);
-          }
-        });
-      } catch (error) {
-        console.error('Error auto-connecting:', error);
-        setisExternallyConnectableConnected(false);
-      }
-    }
-  }, [sdk]);
-
-  useEffect(() => {
-    const checkExistingSession = async () => {
-      if (sdk && isExternallyConnectableConnected) {
-        try {
-          const result = await sdk.getSession();
-          if (result) {
-            setCurrentSession(result);
-
-            const connectedScopes = Object.keys(result.sessionScopes || {});
-            setSelectedScopes(() => {
-              const newScopes: Record<string, boolean> = {};
-              connectedScopes.forEach((scope) => {
-                newScopes[scope] = true;
-              });
-              return newScopes;
-            });
-
-            const initialSelectedMethods: Record<string, string> = {};
-            Object.keys(result.sessionScopes).forEach((scope) => {
-              initialSelectedMethods[scope] = 'eth_blockNumber';
-
-              const example = metamaskOpenrpcDocument?.methods.find(
-                (method) => (method as MethodObject).name === 'eth_blockNumber',
-              );
-
-              const defaultRequest = {
-                method: 'wallet_invokeMethod',
-                params: {
-                  scope,
-                  request: openRPCExampleToJSON(example as MethodObject),
-                },
-              };
-
-              setInvokeMethodRequests((prev) => ({
-                ...prev,
-                [scope]: JSON.stringify(defaultRequest, null, 2),
-              }));
-            });
-            setSelectedMethods(initialSelectedMethods);
-          }
-        } catch (error) {
-          console.error('Error checking existing session:', error);
-        }
-      }
-    };
-
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    checkExistingSession();
-  }, [sdk, isExternallyConnectableConnected, metamaskOpenrpcDocument]);
 
   useEffect(() => {
     parseOpenRPCDocument(MetaMaskOpenRPCDocument)
@@ -235,7 +151,6 @@ function App() {
 
   const handleResetState = () => {
     setCreateSessionResult(null);
-    setCurrentSession(null);
     setSelectedMethods({});
     setInvokeMethodResults({});
     setCustomScope('');
@@ -261,11 +176,8 @@ function App() {
       (scope) => selectedScopes[scope as CaipChainId],
     );
     try {
-      const result = await sdk?.createSession(
-        selectedScopesArray as CaipChainId[],
-      );
+      const result = await createSession(selectedScopesArray as CaipChainId[]);
       setCreateSessionResult(result);
-      setCurrentSession(result);
       setSessionMethodHistory((prev) => [
         { timestamp: Date.now(), method: 'wallet_createSession', data: result },
         ...prev,
@@ -278,7 +190,6 @@ function App() {
   const handleGetSession = async () => {
     try {
       const result = await sdk?.getSession();
-      setCurrentSession(result);
       setSessionMethodHistory((prev) => [
         { timestamp: Date.now(), method: 'wallet_getSession', data: result },
         ...prev,
@@ -290,7 +201,7 @@ function App() {
 
   const handleRevokeSession = async () => {
     try {
-      const result = await sdk?.revokeSession();
+      const result = await revokeSession();
       setSessionMethodHistory((prev) => [
         { timestamp: Date.now(), method: 'wallet_revokeSession', data: result },
         ...prev,
@@ -461,12 +372,12 @@ function App() {
             <input
               type="text"
               placeholder="Enter extension ID"
-              value={extensionId}
+              value={loadedExtensionId ?? extensionId}
               onChange={(evt) => setExtensionId(evt.target.value)}
               disabled={isExternallyConnectableConnected}
             />
             <button
-              onClick={handleConnect}
+              onClick={handleConnectClick}
               disabled={isExternallyConnectableConnected}
             >
               Connect
@@ -488,8 +399,8 @@ function App() {
           </span>
           <button
             onClick={() => {
+              disconnect();
               setExtensionId('');
-              setisExternallyConnectableConnected(false);
               localStorage.removeItem('extensionId');
             }}
           >
