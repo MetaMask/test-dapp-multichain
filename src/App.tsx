@@ -27,7 +27,7 @@ function App() {
     Record<string, string>
   >({});
   const [invokeMethodResults, setInvokeMethodResults] = useState<
-    Record<string, Record<string, any[]>>
+    Record<string, Record<string, { result: any; request: any }[]>>
   >({});
   const [customScope, setCustomScope] = useState<string>('');
   const [selectedScopes, setSelectedScopes] = useState<Record<string, boolean>>(
@@ -347,8 +347,8 @@ function App() {
   };
 
   const handleInvokeMethod = async (scope: string, method: string) => {
+    const requestObject = JSON.parse(invokeMethodRequests[scope] ?? '{}');
     try {
-      const requestObject = JSON.parse(invokeMethodRequests[scope] ?? '{}');
       const result = await provider?.request(requestObject);
 
       setInvokeMethodResults((prev) => {
@@ -358,7 +358,10 @@ function App() {
           ...prev,
           [scope]: {
             ...scopeResults,
-            [method]: [...methodResults, result],
+            [method]: [
+              ...methodResults,
+              { result, request: requestObject.params.request },
+            ],
           },
         };
       });
@@ -370,7 +373,10 @@ function App() {
           ...prev,
           [scope]: {
             ...scopeResults,
-            [method]: [...methodResults, error],
+            [method]: [
+              ...methodResults,
+              { result: error, request: requestObject.params.request },
+            ],
           },
         };
       });
@@ -753,7 +759,6 @@ function App() {
                           [scope]: newAddress,
                         }));
 
-                        // modify the method request if it's a signing method (inject selected address)
                         const currentMethod = selectedMethods[scope];
                         if (
                           currentMethod &&
@@ -769,7 +774,6 @@ function App() {
                               example as MethodObject,
                             );
 
-                            // inject the newly selected address
                             exampleParams = injectParams(
                               currentMethod,
                               exampleParams,
@@ -849,9 +853,9 @@ function App() {
                       Invoke Method
                     </button>
 
-                    {Object.entries(invokeMethodResults?.[scope] ?? {}).map(
+                    {Object.entries(invokeMethodResults[scope] ?? {}).map(
                       ([method, results]) => {
-                        return results.map((result, index) => {
+                        return results.map(({ result, request }, index) => {
                           const { text, truncated } = truncateJSON(result, 150);
                           return truncated ? (
                             <details
@@ -859,7 +863,10 @@ function App() {
                               className="collapsible-section"
                             >
                               <summary>
-                                <span className="result-method">{method}:</span>
+                                <span className="result-method">{method}</span>
+                                <div className="result-params">
+                                  Params: {JSON.stringify(request.params)}
+                                </div>
                                 <span className="result-preview">{text}</span>
                               </summary>
                               <div className="collapsible-content">
@@ -877,7 +884,12 @@ function App() {
                               key={`${method}-${index}`}
                               className="result-item-small"
                             >
-                              <h5>{method}:</h5>
+                              <div className="result-header">
+                                <span className="result-method">{method}</span>
+                                <div className="result-params">
+                                  Params: {JSON.stringify(request.params)}
+                                </div>
+                              </div>
                               <code className="code-left-align">
                                 <pre
                                   id={`invoke-method-${scope}-${method}-result-${index}`}

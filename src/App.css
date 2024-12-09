@@ -669,3 +669,24 @@ details[open] summary::before {
 .invoke-all-button {
   margin-bottom: 1rem;
 }
+
+.result-header {
+  margin-bottom: 0.5rem;
+}
+
+.result-params {
+  font-size: 0.85rem;
+  color: #666;
+  font-family: monospace;
+  margin: 0.25rem 0;
+  word-break: break-all;
+  white-space: normal;
+}
+
+.collapsible-section summary .result-params {
+  margin: 0.25rem 0;
+}
+
+.result-item-small .result-params {
+  max-width: 100%;
+}
