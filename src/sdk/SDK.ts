@@ -1,19 +1,11 @@
 import type { CaipChainId, Json } from '@metamask/utils';
 import { parseCaipChainId, KnownCaipNamespace } from '@metamask/utils';
 
-import { Eip155Notifications, Eip155Methods } from '../src/constants/methods';
+import { Eip155Notifications, Eip155Methods } from '../constants/methods';
 import MetaMaskMultichainProvider from './providers/MetaMaskMultichainProvider';
 
-type Scope = CaipChainId;
-
-type SessionOptions = {
-  scopes: Scope[];
-  methods?: string[];
-  notifications?: string[];
-};
-
 type InvokeOptions = {
-  scope: Scope;
+  scope: CaipChainId;
   request: {
     method: string;
     params: Json[];
@@ -39,9 +31,7 @@ class SDK {
     }
   }
 
-  public async createSession(options: SessionOptions): Promise<Json> {
-    const { scopes, methods, notifications } = options;
-
+  public async createSession(scopes: CaipChainId[]): Promise<Json> {
     const optionalScopes = scopes.reduce<
       Record<CaipChainId, { methods: string[]; notifications: string[] }>
     >((acc, scope) => {
@@ -67,8 +57,8 @@ class SDK {
       } else {
         // Any other chains we don't know the API for beforehand,
         acc[scope] = {
-          methods: methods ?? [],
-          notifications: notifications ?? [],
+          methods: [],
+          notifications: [],
         };
       }
       return acc;
@@ -98,7 +88,12 @@ class SDK {
     });
   }
 
-  public async getSession(): Promise<Json> {
+  public async getSession(): Promise<{
+    sessionScopes: Record<
+      CaipChainId,
+      { methods: string[]; notifications: string[] }
+    >;
+  } | null> {
     return this.#provider.request({
       method: 'wallet_getSession',
       params: [],
@@ -113,11 +108,10 @@ class SDK {
     this.#provider.disconnect();
   }
 
-  // Helper method to set extension ID after initialization
-  public setExtensionId(extensionId: string): void {
+  public setExtensionIdAndConnect(extensionId: string): boolean {
     // TODO add logic once we have CAIP-294 wallet discovery + or hardcode the stable extensionId
     this.#extensionId = extensionId;
-    this.#provider.connect(extensionId);
+    return this.#provider.connect(extensionId);
   }
 }
 

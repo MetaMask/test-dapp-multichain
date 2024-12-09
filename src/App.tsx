@@ -7,22 +7,15 @@ import { parseOpenRPCDocument } from '@open-rpc/schema-utils-js';
 import React, { useEffect, useState } from 'react';
 
 import './App.css';
-import MetaMaskMultichainProvider from '../sdk/providers/MetaMaskMultichainProvider';
-import makeProvider from '../sdk/providers/MockMultichainProvider';
-import type { Provider } from '../sdk/providers/Provider';
-import {
-  Eip155Methods,
-  Eip155Notifications,
-  insertSigningAddress,
-  SIGNING_METHODS,
-} from './constants/methods';
+import { insertSigningAddress, SIGNING_METHODS } from './constants/methods';
 import { FEATURED_NETWORKS } from './constants/networks';
 import { openRPCExampleToJSON, truncateJSON } from './helpers/JsonHelpers';
+import SDK from './sdk/SDK';
 
 function App() {
   const [createSessionResult, setCreateSessionResult] = useState<any>(null);
   const [providerType, setProviderType] = useState<string>('metamask');
-  const [provider, setProvider] = useState<Provider>();
+  const [sdk, setSdk] = useState<SDK>();
   const [selectedMethods, setSelectedMethods] = useState<
     Record<string, string>
   >({});
@@ -30,20 +23,20 @@ function App() {
     Record<string, Record<string, any[]>>
   >({});
   const [customScope, setCustomScope] = useState<string>('');
-  const [selectedScopes, setSelectedScopes] = useState<Record<string, boolean>>(
-    {
-      'eip155:1': true,
-      'eip155:59144': true,
-      'eip155:42161': false,
-      'eip155:43114': false,
-      'eip155:56': false,
-      'eip155:10': false,
-      'eip155:137': false,
-      'eip155:324': false,
-      'eip155:8453': false,
-      'eip155:1337': false,
-    },
-  );
+  const [selectedScopes, setSelectedScopes] = useState<
+    Record<CaipChainId, boolean>
+  >({
+    'eip155:1': true,
+    'eip155:59144': true,
+    'eip155:42161': false,
+    'eip155:43114': false,
+    'eip155:56': false,
+    'eip155:10': false,
+    'eip155:137': false,
+    'eip155:324': false,
+    'eip155:8453': false,
+    'eip155:1337': false,
+  });
   const [extensionId, setExtensionId] = useState<string>('');
   const [invokeMethodRequests, setInvokeMethodRequests] = useState<
     Record<string, string>
@@ -125,12 +118,12 @@ function App() {
   };
 
   const handleConnect = () => {
-    if (extensionId && provider) {
+    if (extensionId && sdk) {
       try {
-        const connected = provider.connect(extensionId);
+        const connected = sdk.setExtensionIdAndConnect(extensionId);
         setisExternallyConnectableConnected(connected);
         localStorage.setItem('extensionId', extensionId);
-        provider.onNotification((notification: any) => {
+        sdk.onNotification((notification: any) => {
           if (notification.method === 'wallet_notify') {
             setWalletNotifyHistory((prev) => [
               { timestamp: Date.now(), data: notification },
@@ -147,28 +140,23 @@ function App() {
   };
 
   useEffect(() => {
-    let newProvider: Provider;
-    if (providerType === 'mock') {
-      newProvider = makeProvider(() => createSessionResult);
-    } else {
-      newProvider = new MetaMaskMultichainProvider();
-    }
+    const newSdk = new SDK();
 
-    setProvider(newProvider);
+    setSdk(newSdk);
 
     return () => {
-      newProvider.disconnect();
+      newSdk.disconnect();
     };
   }, [providerType]);
 
   useEffect(() => {
     const extensionIdFromLocalStorage = localStorage.getItem('extensionId');
-    if (extensionIdFromLocalStorage && provider) {
+    if (extensionIdFromLocalStorage && sdk) {
       setExtensionId(extensionIdFromLocalStorage);
       try {
-        provider.connect(extensionIdFromLocalStorage);
+        sdk.setExtensionIdAndConnect(extensionIdFromLocalStorage);
         setisExternallyConnectableConnected(true);
-        provider.onNotification((notification: any) => {
+        sdk.onNotification((notification: any) => {
           if (notification.method === 'wallet_notify') {
             setWalletNotifyHistory((prev) => [
               { timestamp: Date.now(), data: notification },
@@ -183,16 +171,13 @@ function App() {
         setisExternallyConnectableConnected(false);
       }
     }
-  }, [provider]);
+  }, [sdk]);
 
   useEffect(() => {
     const checkExistingSession = async () => {
-      if (provider && isExternallyConnectableConnected) {
+      if (sdk && isExternallyConnectableConnected) {
         try {
-          const result = await provider.request({
-            method: 'wallet_getSession',
-            params: [],
-          });
+          const result = await sdk.getSession();
           if (result) {
             setCurrentSession(result);
 
@@ -236,7 +221,7 @@ function App() {
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     checkExistingSession();
-  }, [provider, isExternallyConnectableConnected, metamaskOpenrpcDocument]);
+  }, [sdk, isExternallyConnectableConnected, metamaskOpenrpcDocument]);
 
   useEffect(() => {
     parseOpenRPCDocument(MetaMaskOpenRPCDocument)
@@ -272,28 +257,13 @@ function App() {
   };
 
   const handleCreateSession = async () => {
+    const selectedScopesArray = Object.keys(selectedScopes).filter(
+      (scope) => selectedScopes[scope as CaipChainId],
+    );
     try {
-      const optionalScopes: Record<string, any> = {};
-      Object.entries(selectedScopes).forEach(([scope, isSelected]) => {
-        if (isSelected) {
-          optionalScopes[scope] = {
-            methods: Eip155Methods,
-            notifications: Eip155Notifications,
-          };
-        }
-      });
-
-      if (customScope) {
-        optionalScopes[customScope] = {
-          methods: Eip155Methods,
-          notifications: Eip155Notifications,
-        };
-      }
-
-      const result = await provider?.request({
-        method: 'wallet_createSession',
-        params: { optionalScopes },
-      });
+      const result = await sdk?.createSession(
+        selectedScopesArray as CaipChainId[],
+      );
       setCreateSessionResult(result);
       setCurrentSession(result);
       setSessionMethodHistory((prev) => [
@@ -307,10 +277,7 @@ function App() {
 
   const handleGetSession = async () => {
     try {
-      const result = await provider?.request({
-        method: 'wallet_getSession',
-        params: [],
-      });
+      const result = await sdk?.getSession();
       setCurrentSession(result);
       setSessionMethodHistory((prev) => [
         { timestamp: Date.now(), method: 'wallet_getSession', data: result },
@@ -323,10 +290,7 @@ function App() {
 
   const handleRevokeSession = async () => {
     try {
-      const result = await provider?.request({
-        method: 'wallet_revokeSession',
-        params: [],
-      });
+      const result = await sdk?.revokeSession();
       setSessionMethodHistory((prev) => [
         { timestamp: Date.now(), method: 'wallet_revokeSession', data: result },
         ...prev,
@@ -336,10 +300,13 @@ function App() {
     }
   };
 
-  const handleInvokeMethod = async (scope: string, method: string) => {
+  const handleInvokeMethod = async (scope: CaipChainId, method: string) => {
     try {
       const requestObject = JSON.parse(invokeMethodRequests[scope] ?? '{}');
-      const result = await provider?.request(requestObject);
+      const result = await sdk?.invoke({
+        scope,
+        request: requestObject.params.request,
+      });
 
       setInvokeMethodResults((prev) => {
         const scopeResults = prev[scope] ?? {};
@@ -374,9 +341,10 @@ function App() {
       .map(([scope, method]) => ({ scope, method }));
 
     await Promise.all(
-      scopesWithMethods.map(async ({ scope, method }) =>
-        handleInvokeMethod(scope, method),
-      ),
+      scopesWithMethods.map(async ({ scope, method }) => {
+        const scopeToInvoke = scope as keyof typeof selectedScopes;
+        return handleInvokeMethod(scopeToInvoke, method);
+      }),
     );
   };
 
@@ -542,7 +510,9 @@ function App() {
                       <input
                         type="checkbox"
                         name={chainId}
-                        checked={selectedScopes[chainId] ?? false}
+                        checked={
+                          selectedScopes[chainId as CaipChainId] ?? false
+                        }
                         onChange={(evt) =>
                           setSelectedScopes((prev) => ({
                             ...prev,
@@ -826,7 +796,10 @@ function App() {
                       onClick={async () => {
                         const method = selectedMethods[scope];
                         if (method) {
-                          await handleInvokeMethod(scope, method);
+                          await handleInvokeMethod(
+                            scope as CaipChainId,
+                            method,
+                          );
                         }
                       }}
                     >
