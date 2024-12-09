@@ -10,8 +10,8 @@ import './App.css';
 import {
   Eip155Methods,
   Eip155Notifications,
-  insertSigningAddress,
-  SIGNING_METHODS,
+  injectParams,
+  METHODS_REQUIRING_PARAM_INJECTION,
 } from './constants/methods';
 import { FEATURED_NETWORKS } from './constants/networks';
 import { openRPCExampleToJSON, truncateJSON } from './helpers/JsonHelpers';
@@ -69,8 +69,8 @@ function App() {
 
   const handleSessionChangedNotification = (notification: any) => {
     setWalletSessionChangedHistory((prev) => [
-      { timestamp: Date.now(), data: notification },
       ...prev,
+      { timestamp: Date.now(), data: notification },
     ]);
 
     if (notification.params?.sessionScopes) {
@@ -206,27 +206,37 @@ function App() {
             });
 
             const initialSelectedMethods: Record<string, string> = {};
-            Object.keys(result.sessionScopes).forEach((scope) => {
-              initialSelectedMethods[scope] = 'eth_blockNumber';
+            const initialSelectedAccounts: Record<string, CaipAccountId> = {};
 
-              const example = metamaskOpenrpcDocument?.methods.find(
-                (method) => (method as MethodObject).name === 'eth_blockNumber',
-              );
+            Object.entries(result.sessionScopes).forEach(
+              ([scope, details]: [string, any]) => {
+                initialSelectedMethods[scope] = 'eth_blockNumber';
 
-              const defaultRequest = {
-                method: 'wallet_invokeMethod',
-                params: {
-                  scope,
-                  request: openRPCExampleToJSON(example as MethodObject),
-                },
-              };
+                if (details.accounts && details.accounts.length > 0) {
+                  initialSelectedAccounts[scope] = details.accounts[0];
+                }
 
-              setInvokeMethodRequests((prev) => ({
-                ...prev,
-                [scope]: JSON.stringify(defaultRequest, null, 2),
-              }));
-            });
+                const example = metamaskOpenrpcDocument?.methods.find(
+                  (method) =>
+                    (method as MethodObject).name === 'eth_blockNumber',
+                );
+
+                const defaultRequest = {
+                  method: 'wallet_invokeMethod',
+                  params: {
+                    scope,
+                    request: openRPCExampleToJSON(example as MethodObject),
+                  },
+                };
+
+                setInvokeMethodRequests((prev) => ({
+                  ...prev,
+                  [scope]: JSON.stringify(defaultRequest, null, 2),
+                }));
+              },
+            );
             setSelectedMethods(initialSelectedMethods);
+            setSelectedAccounts(initialSelectedAccounts);
           }
         } catch (error) {
           console.error('Error checking existing session:', error);
@@ -434,8 +444,11 @@ function App() {
       let exampleParams: Json = openRPCExampleToJSON(example as MethodObject);
       const selectedAddress = selectedAccounts[scope];
 
-      if (selectedAddress && selectedMethod in SIGNING_METHODS) {
-        exampleParams = insertSigningAddress(
+      if (
+        selectedAddress &&
+        selectedMethod in METHODS_REQUIRING_PARAM_INJECTION
+      ) {
+        exampleParams = injectParams(
           selectedMethod,
           exampleParams,
           selectedAddress,
@@ -742,7 +755,10 @@ function App() {
 
                         // modify the method request if it's a signing method (inject selected address)
                         const currentMethod = selectedMethods[scope];
-                        if (currentMethod && currentMethod in SIGNING_METHODS) {
+                        if (
+                          currentMethod &&
+                          currentMethod in METHODS_REQUIRING_PARAM_INJECTION
+                        ) {
                           const example = metamaskOpenrpcDocument?.methods.find(
                             (method) =>
                               (method as MethodObject).name === currentMethod,
@@ -754,7 +770,7 @@ function App() {
                             );
 
                             // inject the newly selected address
-                            exampleParams = insertSigningAddress(
+                            exampleParams = injectParams(
                               currentMethod,
                               exampleParams,
                               newAddress,
