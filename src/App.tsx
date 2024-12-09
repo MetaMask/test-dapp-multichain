@@ -7,6 +7,9 @@ import { parseOpenRPCDocument } from '@open-rpc/schema-utils-js';
 import React, { useEffect, useState } from 'react';
 
 import './App.css';
+import MetaMaskMultichainProvider from '../sdk/providers/MetaMaskMultichainProvider';
+import makeProvider from '../sdk/providers/MockMultichainProvider';
+import type { Provider } from '../sdk/providers/Provider';
 import {
   Eip155Methods,
   Eip155Notifications,
@@ -15,9 +18,6 @@ import {
 } from './constants/methods';
 import { FEATURED_NETWORKS } from './constants/networks';
 import { openRPCExampleToJSON, truncateJSON } from './helpers/JsonHelpers';
-import MetaMaskMultichainProvider from './providers/MetaMaskMultichainProvider';
-import makeProvider from './providers/MockMultichainProvider';
-import type { Provider } from './providers/Provider';
 
 function App() {
   const [createSessionResult, setCreateSessionResult] = useState<any>(null);
