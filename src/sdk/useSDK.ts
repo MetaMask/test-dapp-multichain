@@ -16,15 +16,36 @@ type UseSDKReturn = {
     scope: CaipChainId,
     request: { method: string; params: Json[] },
   ) => Promise<Json>;
-  onSessionChanged: (callback: (notification: any) => void) => void;
   onNotification: (callback: (notification: any) => void) => void;
 };
 
-export function useSDK(): UseSDKReturn {
+export function useSDK({
+  onSessionChanged,
+  onWalletNotify,
+}: {
+  onSessionChanged: (notification: any) => void;
+  onWalletNotify: (callback: (notification: any) => void) => void;
+}): UseSDKReturn {
   const [sdk, setSdk] = useState<SDK>();
   const [isConnected, setIsConnected] = useState(false);
   const [currentSession, setCurrentSession] = useState<any>(null);
   const [extensionId, setExtensionId] = useState<string>('');
+
+  useEffect(() => {
+    if (sdk) {
+      sdk.onNotification((notification: any) => {
+        if (notification.method === 'wallet_sessionChanged') {
+          setCurrentSession(notification.params);
+          onSessionChanged(notification);
+        }
+      });
+      sdk.onNotification((notification: any) => {
+        if (notification.method === 'wallet_notify') {
+          onWalletNotify(notification);
+        }
+      });
+    }
+  }, [sdk, onWalletNotify, onSessionChanged, setCurrentSession]);
 
   // Initialize SDK
   useEffect(() => {
@@ -104,6 +125,7 @@ export function useSDK(): UseSDKReturn {
         throw new Error('SDK not initialized');
       }
       const result = await sdk.createSession(scopes);
+      console.log('result', result);
       setCurrentSession(result);
       return result;
     },
@@ -127,20 +149,6 @@ export function useSDK(): UseSDKReturn {
     setCurrentSession(null);
     return result;
   }, [sdk]);
-
-  const onSessionChanged = useCallback(
-    (callback: (notification: any) => void) => {
-      if (!sdk) {
-        throw new Error('SDK not initialized');
-      }
-      sdk.onNotification((notification: any) => {
-        if (notification.method === 'wallet_sessionChanged') {
-          callback(notification);
-        }
-      });
-    },
-    [sdk],
-  );
 
   const onNotification = useCallback(
     (callback: (notification: any) => void) => {
@@ -171,7 +179,6 @@ export function useSDK(): UseSDKReturn {
     createSession,
     getSession,
     revokeSession,
-    onSessionChanged,
     onNotification,
     invokeMethod,
   };

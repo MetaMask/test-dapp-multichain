@@ -53,6 +53,71 @@ function App() {
     { timestamp: number; method: string; data: any }[]
   >([]);
 
+  const setInitialMethodsAndAccounts = (currentSession: any) => {
+    const initialSelectedMethods: Record<string, string> = {};
+    const initialSelectedAccounts: Record<string, CaipAccountId> = {};
+
+    Object.entries(currentSession.sessionScopes).forEach(
+      ([scope, details]: [string, any]) => {
+        initialSelectedMethods[scope] = 'eth_blockNumber';
+
+        if (details.accounts && details.accounts.length > 0) {
+          initialSelectedAccounts[scope] = details.accounts[0];
+        }
+
+        const example = metamaskOpenrpcDocument?.methods.find(
+          (method) => (method as MethodObject).name === 'eth_blockNumber',
+        );
+
+        const defaultRequest = {
+          method: 'wallet_invokeMethod',
+          params: {
+            scope,
+            request: openRPCExampleToJSON(example as MethodObject),
+          },
+        };
+
+        setInvokeMethodRequests((prev) => ({
+          ...prev,
+          [scope]: JSON.stringify(defaultRequest, null, 2),
+        }));
+      },
+    );
+    setSelectedMethods(initialSelectedMethods);
+    setSelectedAccounts(initialSelectedAccounts);
+  };
+
+  const setSelectedScopesFromSession = (sessionScopes: any) => {
+    const connectedScopes = Object.keys(sessionScopes || {});
+    setSelectedScopes(() => {
+      const newScopes: Record<string, boolean> = {};
+      connectedScopes.forEach((scope) => {
+        newScopes[scope] = true;
+      });
+      return newScopes;
+    });
+  };
+
+  const handleSessionChangedNotification = (notification: any) => {
+    setWalletSessionChangedHistory((prev) => [
+      { timestamp: Date.now(), data: notification },
+      ...prev,
+    ]);
+
+    if (notification.params?.sessionScopes) {
+      setSelectedScopesFromSession(notification.params.sessionScopes);
+
+      setInitialMethodsAndAccounts(notification.params.sessionScopes);
+    }
+  };
+
+  const handleNotification = (notification: any) => {
+    setWalletNotifyHistory((prev) => [
+      { timestamp: Date.now(), data: notification },
+      ...prev,
+    ]);
+  };
+
   const {
     isConnected: isExternallyConnectableConnected,
     currentSession,
@@ -62,81 +127,20 @@ function App() {
     revokeSession,
     getSession,
     invokeMethod,
-    onSessionChanged,
-    onNotification,
     extensionId: loadedExtensionId,
-  } = useSDK();
+  } = useSDK({
+    onSessionChanged: handleSessionChangedNotification,
+    onWalletNotify: handleNotification,
+  });
 
   useEffect(() => {
     setExtensionId(loadedExtensionId);
   }, [loadedExtensionId]);
 
-  const handleSessionChangedNotification = (notification: any) => {
-    setWalletSessionChangedHistory((prev) => [
-      { timestamp: Date.now(), data: notification },
-      ...prev,
-    ]);
-
-    if (notification.params?.sessionScopes) {
-      const connectedScopes = Object.keys(
-        notification.params.sessionScopes || {},
-      );
-      setSelectedScopes(() => {
-        const newScopes: Record<string, boolean> = {};
-        connectedScopes.forEach((scope) => {
-          newScopes[scope] = true;
-        });
-        return newScopes;
-      });
-
-      const initialSelectedMethods: Record<string, string> = {};
-      const initialSelectedAccounts: Record<string, CaipAccountId> = {};
-
-      Object.entries(notification.params.sessionScopes).forEach(
-        ([scope, details]: [string, any]) => {
-          initialSelectedMethods[scope] = 'eth_blockNumber';
-
-          if (details.accounts && details.accounts.length > 0) {
-            initialSelectedAccounts[scope] = details.accounts[0];
-          }
-
-          const example = metamaskOpenrpcDocument?.methods.find(
-            (method) => (method as MethodObject).name === 'eth_blockNumber',
-          );
-
-          const defaultRequest = {
-            method: 'wallet_invokeMethod',
-            params: {
-              scope,
-              request: openRPCExampleToJSON(example as MethodObject),
-            },
-          };
-
-          setInvokeMethodRequests((prev) => ({
-            ...prev,
-            [scope]: JSON.stringify(defaultRequest, null, 2),
-          }));
-        },
-      );
-
-      setSelectedMethods(initialSelectedMethods);
-      setSelectedAccounts(initialSelectedAccounts);
-    }
-  };
-
   const handleConnectClick = () => {
     if (extensionId) {
       try {
         handleConnect(extensionId);
-        onSessionChanged(handleSessionChangedNotification);
-        onNotification((notification: any) => {
-          if (notification.method === 'wallet_notify') {
-            setWalletNotifyHistory((prev) => [
-              { timestamp: Date.now(), data: notification },
-              ...prev,
-            ]);
-          }
-        });
       } catch (error) {
         console.error('Error connecting:', error);
       }
@@ -262,43 +266,10 @@ function App() {
     );
   };
 
-  const setInitialMethodsAndAccounts = () => {
-    const initialSelectedMethods: Record<string, string> = {};
-    const initialSelectedAccounts: Record<string, CaipAccountId> = {};
-
-    Object.entries(currentSession.sessionScopes).forEach(
-      ([scope, details]: [string, any]) => {
-        initialSelectedMethods[scope] = 'eth_blockNumber';
-
-        if (details.accounts && details.accounts.length > 0) {
-          initialSelectedAccounts[scope] = details.accounts[0];
-        }
-
-        const example = metamaskOpenrpcDocument?.methods.find(
-          (method) => (method as MethodObject).name === 'eth_blockNumber',
-        );
-
-        const defaultRequest = {
-          method: 'wallet_invokeMethod',
-          params: {
-            scope,
-            request: openRPCExampleToJSON(example as MethodObject),
-          },
-        };
-
-        setInvokeMethodRequests((prev) => ({
-          ...prev,
-          [scope]: JSON.stringify(defaultRequest, null, 2),
-        }));
-      },
-    );
-    setSelectedMethods(initialSelectedMethods);
-    setSelectedAccounts(initialSelectedAccounts);
-  };
-
   useEffect(() => {
     if (currentSession?.sessionScopes) {
-      setInitialMethodsAndAccounts();
+      setInitialMethodsAndAccounts(currentSession);
+      setSelectedScopesFromSession(currentSession.sessionScopes);
     }
   }, [currentSession]);
 
