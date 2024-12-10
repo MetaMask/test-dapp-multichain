@@ -31,6 +31,7 @@ export function useSDK({
   const [currentSession, setCurrentSession] = useState<any>(null);
   const [extensionId, setExtensionId] = useState<string>('');
 
+  // Set up listeners for session changes and wallet notifications
   useEffect(() => {
     if (sdk) {
       sdk.onNotification((notification: any) => {
