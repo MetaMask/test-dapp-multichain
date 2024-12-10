@@ -132,10 +132,9 @@ function App() {
   const setExtensionIdToLocalStorage = useCallback(
     (_extensionId: string): void => {
       const walletList = Object.values(walletMapEntries);
-      const detectedExtensionIds = walletList.map(
-        (entry) => entry.params.extensionId,
-      );
-      if (detectedExtensionIds.includes(_extensionId)) {
+      if (
+        walletList.some((entry) => entry.params.extensionId === _extensionId)
+      ) {
         return;
       }
       localStorage.setItem('extensionId', _extensionId);
@@ -144,7 +143,7 @@ function App() {
   );
 
   const handleConnect = () => {
-    if (provider && extensionId) {
+    if (extensionId && provider) {
       try {
         const connected = provider.connect(extensionId);
         setIsExternallyConnectableConnected(connected);
