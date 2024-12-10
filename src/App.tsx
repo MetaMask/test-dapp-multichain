@@ -59,12 +59,10 @@ function App() {
 
     Object.entries(currentSession.sessionScopes).forEach(
       ([scope, details]: [string, any]) => {
-        initialSelectedMethods[scope] = 'eth_blockNumber';
-
         if (details.accounts && details.accounts.length > 0) {
           initialSelectedAccounts[scope] = details.accounts[0];
         }
-
+        initialSelectedMethods[scope] = 'eth_blockNumber';
         const example = metamaskOpenrpcDocument?.methods.find(
           (method) => (method as MethodObject).name === 'eth_blockNumber',
         );
@@ -126,7 +124,7 @@ function App() {
   const {
     isConnected: isExternallyConnectableConnected,
     currentSession,
-    connect: handleConnect,
+    connect,
     disconnect,
     createSession,
     revokeSession,
@@ -145,7 +143,7 @@ function App() {
   const handleConnectClick = () => {
     if (extensionId) {
       try {
-        handleConnect(extensionId);
+        connect(extensionId);
       } catch (error) {
         console.error('Error connecting:', error);
       }
@@ -182,6 +180,12 @@ function App() {
       'eip155:1337': false,
     });
   };
+
+  useEffect(() => {
+    if (!isExternallyConnectableConnected) {
+      handleResetState();
+    }
+  }, [isExternallyConnectableConnected]);
 
   const handleCreateSession = async () => {
     const selectedScopesArray = Object.keys(selectedScopes).filter(
@@ -341,12 +345,6 @@ function App() {
   const handleClearInvokeResults = () => {
     setInvokeMethodResults({});
   };
-
-  useEffect(() => {
-    if (!isExternallyConnectableConnected) {
-      handleResetState();
-    }
-  }, [isExternallyConnectableConnected]);
 
   return (
     <div className="App">
