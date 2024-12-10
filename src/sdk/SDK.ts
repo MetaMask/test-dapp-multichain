@@ -4,14 +4,6 @@ import { parseCaipChainId, KnownCaipNamespace } from '@metamask/utils';
 import { Eip155Notifications, Eip155Methods } from '../constants/methods';
 import MetaMaskMultichainProvider from './providers/MetaMaskMultichainProvider';
 
-type InvokeOptions = {
-  scope: CaipChainId;
-  request: {
-    method: string;
-    params: Json[];
-  };
-};
-
 type SDKOptions = {
   extensionId?: string;
 };
@@ -70,7 +62,13 @@ class SDK {
     });
   }
 
-  public async invoke(options: InvokeOptions): Promise<Json> {
+  public async invokeMethod(options: {
+    scope: CaipChainId;
+    request: {
+      method: string;
+      params: Json[];
+    };
+  }): Promise<Json> {
     const { scope, request } = options;
     return this.#provider.request({
       method: 'wallet_invokeMethod',

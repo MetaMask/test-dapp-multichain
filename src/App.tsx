@@ -54,13 +54,14 @@ function App() {
   >([]);
 
   const {
-    sdk,
     isConnected: isExternallyConnectableConnected,
     currentSession,
     connect: handleConnect,
     disconnect,
     createSession,
     revokeSession,
+    getSession,
+    invokeMethod,
     onSessionChanged,
     onNotification,
     extensionId: loadedExtensionId,
@@ -190,7 +191,7 @@ function App() {
 
   const handleGetSession = async () => {
     try {
-      const result = await sdk?.getSession();
+      const result = await getSession();
       setSessionMethodHistory((prev) => [
         { timestamp: Date.now(), method: 'wallet_getSession', data: result },
         ...prev,
@@ -215,9 +216,10 @@ function App() {
   const handleInvokeMethod = async (scope: CaipChainId, method: string) => {
     try {
       const requestObject = JSON.parse(invokeMethodRequests[scope] ?? '{}');
-      const result = await sdk?.invoke({
-        scope,
-        request: requestObject.params.request,
+      const { params } = requestObject.params.request;
+      const result = await invokeMethod(scope, {
+        method,
+        params,
       });
 
       setInvokeMethodResults((prev) => {
