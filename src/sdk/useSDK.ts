@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from 'react';
 import SDK from './SDK';
 
 type UseSDKReturn = {
-  sdk: SDK | undefined;
   isConnected: boolean;
   currentSession: any;
   extensionId: string;
@@ -164,7 +163,6 @@ export function useSDK(): UseSDKReturn {
   );
 
   return {
-    sdk,
     isConnected,
     currentSession,
     extensionId,
