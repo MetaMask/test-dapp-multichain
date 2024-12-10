@@ -99,23 +99,28 @@ function App() {
   };
 
   const handleSessionChangedNotification = (notification: any) => {
-    setWalletSessionChangedHistory((prev) => [
-      { timestamp: Date.now(), data: notification },
-      ...prev,
-    ]);
+    setWalletSessionChangedHistory((prev) => {
+      const timestamp = Date.now();
+      if (prev.some((entry) => entry.timestamp === timestamp)) {
+        return prev;
+      }
+      return [{ timestamp, data: notification }, ...prev];
+    });
 
     if (notification.params?.sessionScopes) {
       setSelectedScopesFromSession(notification.params.sessionScopes);
-
       setInitialMethodsAndAccounts(notification.params.sessionScopes);
     }
   };
 
   const handleNotification = (notification: any) => {
-    setWalletNotifyHistory((prev) => [
-      { timestamp: Date.now(), data: notification },
-      ...prev,
-    ]);
+    setWalletNotifyHistory((prev) => {
+      const timestamp = Date.now();
+      if (prev.some((entry) => entry.timestamp === timestamp)) {
+        return prev;
+      }
+      return [{ timestamp, data: notification }, ...prev];
+    });
   };
 
   const {
@@ -184,10 +189,16 @@ function App() {
     );
     try {
       const result = await createSession(selectedScopesArray as CaipChainId[]);
-      setSessionMethodHistory((prev) => [
-        { timestamp: Date.now(), method: 'wallet_createSession', data: result },
-        ...prev,
-      ]);
+      setSessionMethodHistory((prev) => {
+        const timestamp = Date.now();
+        if (prev.some((entry) => entry.timestamp === timestamp)) {
+          return prev;
+        }
+        return [
+          { timestamp, method: 'wallet_createSession', data: result },
+          ...prev,
+        ];
+      });
     } catch (error) {
       console.error('Error creating session:', error);
     }
@@ -196,10 +207,16 @@ function App() {
   const handleGetSession = async () => {
     try {
       const result = await getSession();
-      setSessionMethodHistory((prev) => [
-        { timestamp: Date.now(), method: 'wallet_getSession', data: result },
-        ...prev,
-      ]);
+      setSessionMethodHistory((prev) => {
+        const timestamp = Date.now();
+        if (prev.some((entry) => entry.timestamp === timestamp)) {
+          return prev;
+        }
+        return [
+          { timestamp, method: 'wallet_getSession', data: result },
+          ...prev,
+        ];
+      });
     } catch (error) {
       console.error('Error getting session:', error);
     }
@@ -208,10 +225,16 @@ function App() {
   const handleRevokeSession = async () => {
     try {
       const result = await revokeSession();
-      setSessionMethodHistory((prev) => [
-        { timestamp: Date.now(), method: 'wallet_revokeSession', data: result },
-        ...prev,
-      ]);
+      setSessionMethodHistory((prev) => {
+        const timestamp = Date.now();
+        if (prev.some((entry) => entry.timestamp === timestamp)) {
+          return prev;
+        }
+        return [
+          { timestamp, method: 'wallet_revokeSession', data: result },
+          ...prev,
+        ];
+      });
     } catch (error) {
       console.error('Error revoking session:', error);
     }
