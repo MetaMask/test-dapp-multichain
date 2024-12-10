@@ -13,7 +13,6 @@ import { openRPCExampleToJSON, truncateJSON } from './helpers/JsonHelpers';
 import { useSDK } from './sdk/useSDK';
 
 function App() {
-  const [createSessionResult, setCreateSessionResult] = useState<any>(null);
   const [providerType, setProviderType] = useState<string>('metamask');
   const [selectedMethods, setSelectedMethods] = useState<
     Record<string, string>
@@ -66,6 +65,10 @@ function App() {
     onNotification,
     extensionId: loadedExtensionId,
   } = useSDK();
+
+  useEffect(() => {
+    setExtensionId(loadedExtensionId);
+  }, [loadedExtensionId]);
 
   const handleSessionChangedNotification = (notification: any) => {
     setWalletSessionChangedHistory((prev) => [
@@ -150,7 +153,6 @@ function App() {
   }, []);
 
   const handleResetState = () => {
-    setCreateSessionResult(null);
     setSelectedMethods({});
     setInvokeMethodResults({});
     setCustomScope('');
@@ -177,7 +179,6 @@ function App() {
     );
     try {
       const result = await createSession(selectedScopesArray as CaipChainId[]);
-      setCreateSessionResult(result);
       setSessionMethodHistory((prev) => [
         { timestamp: Date.now(), method: 'wallet_createSession', data: result },
         ...prev,
@@ -259,41 +260,45 @@ function App() {
     );
   };
 
+  const setInitialMethodsAndAccounts = () => {
+    const initialSelectedMethods: Record<string, string> = {};
+    const initialSelectedAccounts: Record<string, CaipAccountId> = {};
+
+    Object.entries(currentSession.sessionScopes).forEach(
+      ([scope, details]: [string, any]) => {
+        initialSelectedMethods[scope] = 'eth_blockNumber';
+
+        if (details.accounts && details.accounts.length > 0) {
+          initialSelectedAccounts[scope] = details.accounts[0];
+        }
+
+        const example = metamaskOpenrpcDocument?.methods.find(
+          (method) => (method as MethodObject).name === 'eth_blockNumber',
+        );
+
+        const defaultRequest = {
+          method: 'wallet_invokeMethod',
+          params: {
+            scope,
+            request: openRPCExampleToJSON(example as MethodObject),
+          },
+        };
+
+        setInvokeMethodRequests((prev) => ({
+          ...prev,
+          [scope]: JSON.stringify(defaultRequest, null, 2),
+        }));
+      },
+    );
+    setSelectedMethods(initialSelectedMethods);
+    setSelectedAccounts(initialSelectedAccounts);
+  };
+
   useEffect(() => {
-    if (createSessionResult?.sessionScopes) {
-      const initialSelectedMethods: Record<string, string> = {};
-      const initialSelectedAccounts: Record<string, CaipAccountId> = {};
-
-      Object.entries(createSessionResult.sessionScopes).forEach(
-        ([scope, details]: [string, any]) => {
-          initialSelectedMethods[scope] = 'eth_blockNumber';
-
-          if (details.accounts && details.accounts.length > 0) {
-            initialSelectedAccounts[scope] = details.accounts[0];
-          }
-
-          const example = metamaskOpenrpcDocument?.methods.find(
-            (method) => (method as MethodObject).name === 'eth_blockNumber',
-          );
-
-          const defaultRequest = {
-            method: 'wallet_invokeMethod',
-            params: {
-              scope,
-              request: openRPCExampleToJSON(example as MethodObject),
-            },
-          };
-
-          setInvokeMethodRequests((prev) => ({
-            ...prev,
-            [scope]: JSON.stringify(defaultRequest, null, 2),
-          }));
-        },
-      );
-      setSelectedMethods(initialSelectedMethods);
-      setSelectedAccounts(initialSelectedAccounts);
+    if (currentSession?.sessionScopes) {
+      setInitialMethodsAndAccounts();
     }
-  }, [createSessionResult?.sessionScopes, metamaskOpenrpcDocument]);
+  }, [currentSession]);
 
   const handleMethodSelect = (
     evt: React.ChangeEvent<HTMLSelectElement>,
@@ -372,7 +377,7 @@ function App() {
             <input
               type="text"
               placeholder="Enter extension ID"
-              value={loadedExtensionId ?? extensionId}
+              value={extensionId}
               onChange={(evt) => setExtensionId(evt.target.value)}
               disabled={isExternallyConnectableConnected}
             />
