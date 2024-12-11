@@ -5,7 +5,7 @@ This SDK provides a way for dapps to connect to the MetaMask wallet via the `ext
 The MetaMask Multichain SDK simplifies interaction with MetaMask's Multichain API. It allows dApps to:
 
 - Establish connections with the MetaMask wallet via the `externally_connectable` API.
-- Manage sessions across multiple chains using [CAIP-2](https://chainagnostic.org/specs/CAIP-2) identifiers.
+- Manage sessions across multiple chains using [CAIP-2](https://chainagnostic.org/CAIPs/caip-2) identifiers.
 - Invoke methods and handle notifications from the wallet.
 
 ## Usage
@@ -104,7 +104,7 @@ export default App;
 For non-React applications or if you prefer direct usage, you can interact with the `SDK` class.
 
 ```typescript
-import SDK from '@metamask/sdk'; 
+import SDK from '@metamask/sdk';
 
 async function main() {
   const sdk = new SDK();
@@ -161,7 +161,6 @@ main();
 
 ## API Reference
 
-
 **Methods:**
 
 - `setExtensionIdAndConnect(extensionId: string): Promise<boolean>` - Sets the extension ID and attempts to connect.
@@ -171,6 +170,3 @@ main();
 - `revokeSession(): Promise<Json>` - Revokes the current session.
 - `invokeMethod({ scope, request }: { scope: CaipChainId; request: { method: string; params: Json[] } }): Promise<Json>` - Invokes a method on the specified chain.
 - `onNotification(callback: (notification: any) => void): void` - Registers a callback for notifications.
-
-
-
