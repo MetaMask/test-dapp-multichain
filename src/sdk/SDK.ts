@@ -4,23 +4,16 @@ import { parseCaipChainId, KnownCaipNamespace } from '@metamask/utils';
 import { Eip155Notifications, Eip155Methods } from '../constants/methods';
 import MetaMaskMultichainProvider from './providers/MetaMaskMultichainProvider';
 
-type SDKOptions = {
-  extensionId?: string;
-};
-
-class SDK {
+export const METAMASK_PROD_CHROME_ID = 'nkbihfbeogaeaoehlefnkodbefgpgknn';
+export class SDK {
   #provider: MetaMaskMultichainProvider;
 
   #extensionId?: string | undefined;
 
-  constructor(options: SDKOptions = {}) {
+  constructor() {
     this.#provider = new MetaMaskMultichainProvider();
 
-    this.#extensionId = options.extensionId;
-
-    if (this.#extensionId) {
-      this.#provider.connect(this.#extensionId);
-    }
+    this.#extensionId = METAMASK_PROD_CHROME_ID;
   }
 
   public async createSession(scopes: CaipChainId[]): Promise<Json> {
@@ -106,11 +99,12 @@ class SDK {
     this.#provider.disconnect();
   }
 
-  public setExtensionIdAndConnect(extensionId: string): boolean {
+  public async setExtensionIdAndConnect(extensionId: string): Promise<boolean> {
     // TODO add logic once we have CAIP-294 wallet discovery + or hardcode the stable extensionId
-    this.#extensionId = extensionId;
-    return this.#provider.connect(extensionId);
+    const connected = await this.#provider.connect(extensionId);
+    if (connected) {
+      this.#extensionId = extensionId;
+    }
+    return connected;
   }
 }
-
-export default SDK;

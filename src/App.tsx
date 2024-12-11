@@ -7,10 +7,13 @@ import { parseOpenRPCDocument } from '@open-rpc/schema-utils-js';
 import React, { useEffect, useState } from 'react';
 
 import './App.css';
-import { insertSigningAddress, SIGNING_METHODS } from './constants/methods';
+import {
+  injectParams,
+  METHODS_REQUIRING_PARAM_INJECTION,
+} from './constants/methods';
 import { FEATURED_NETWORKS } from './constants/networks';
 import { openRPCExampleToJSON, truncateJSON } from './helpers/JsonHelpers';
-import { useSDK } from './sdk/useSDK';
+import { useSDK } from './sdk';
 
 function App() {
   const [providerType, setProviderType] = useState<string>('metamask');
@@ -18,7 +21,7 @@ function App() {
     Record<string, string>
   >({});
   const [invokeMethodResults, setInvokeMethodResults] = useState<
-    Record<string, Record<string, any[]>>
+    Record<string, Record<string, { result: any; request: any }[]>>
   >({});
   const [customScope, setCustomScope] = useState<string>('');
   const [selectedScopes, setSelectedScopes] = useState<
@@ -140,10 +143,10 @@ function App() {
     setExtensionId(loadedExtensionId);
   }, [loadedExtensionId]);
 
-  const handleConnectClick = () => {
+  const handleConnectClick = async () => {
     if (extensionId) {
       try {
-        connect(extensionId);
+        await connect(extensionId);
       } catch (error) {
         console.error('Error connecting:', error);
       }
@@ -245,8 +248,8 @@ function App() {
   };
 
   const handleInvokeMethod = async (scope: CaipChainId, method: string) => {
+    const requestObject = JSON.parse(invokeMethodRequests[scope] ?? '{}');
     try {
-      const requestObject = JSON.parse(invokeMethodRequests[scope] ?? '{}');
       const { params } = requestObject.params.request;
       const result = await invokeMethod(scope, {
         method,
@@ -260,7 +263,10 @@ function App() {
           ...prev,
           [scope]: {
             ...scopeResults,
-            [method]: [...methodResults, result],
+            [method]: [
+              ...methodResults,
+              { result, request: requestObject.params.request },
+            ],
           },
         };
       });
@@ -272,7 +278,10 @@ function App() {
           ...prev,
           [scope]: {
             ...scopeResults,
-            [method]: [...methodResults, error],
+            [method]: [
+              ...methodResults,
+              { result: error, request: requestObject.params.request },
+            ],
           },
         };
       });
@@ -318,8 +327,11 @@ function App() {
       let exampleParams: Json = openRPCExampleToJSON(example as MethodObject);
       const selectedAddress = selectedAccounts[scope];
 
-      if (selectedAddress && selectedMethod in SIGNING_METHODS) {
-        exampleParams = insertSigningAddress(
+      if (
+        selectedAddress &&
+        selectedMethod in METHODS_REQUIRING_PARAM_INJECTION
+      ) {
+        exampleParams = injectParams(
           selectedMethod,
           exampleParams,
           selectedAddress,
@@ -620,9 +632,8 @@ function App() {
                           [scope]: newAddress,
                         }));
 
-                        // modify the method request if it's a signing method (inject selected address)
                         const currentMethod = selectedMethods[scope];
-                        if (currentMethod && currentMethod in SIGNING_METHODS) {
+                        if (currentMethod) {
                           const example = metamaskOpenrpcDocument?.methods.find(
                             (method) =>
                               (method as MethodObject).name === currentMethod,
@@ -633,8 +644,7 @@ function App() {
                               example as MethodObject,
                             );
 
-                            // inject the newly selected address
-                            exampleParams = insertSigningAddress(
+                            exampleParams = injectParams(
                               currentMethod,
                               exampleParams,
                               newAddress,
@@ -716,9 +726,9 @@ function App() {
                       Invoke Method
                     </button>
 
-                    {Object.entries(invokeMethodResults?.[scope] ?? {}).map(
+                    {Object.entries(invokeMethodResults[scope] ?? {}).map(
                       ([method, results]) => {
-                        return results.map((result, index) => {
+                        return results.map(({ result, request }, index) => {
                           const { text, truncated } = truncateJSON(result, 150);
                           return truncated ? (
                             <details
@@ -726,7 +736,10 @@ function App() {
                               className="collapsible-section"
                             >
                               <summary>
-                                <span className="result-method">{method}:</span>
+                                <span className="result-method">{method}</span>
+                                <div className="result-params">
+                                  Params: {JSON.stringify(request.params)}
+                                </div>
                                 <span className="result-preview">{text}</span>
                               </summary>
                               <div className="collapsible-content">
@@ -744,7 +757,12 @@ function App() {
                               key={`${method}-${index}`}
                               className="result-item-small"
                             >
-                              <h5>{method}:</h5>
+                              <div className="result-header">
+                                <span className="result-method">{method}</span>
+                                <div className="result-params">
+                                  Params: {JSON.stringify(request.params)}
+                                </div>
+                              </div>
                               <code className="code-left-align">
                                 <pre
                                   id={`invoke-method-${scope}-${method}-result-${index}`}
