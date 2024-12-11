@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0]
+
+### Uncategorized
+
+- chore: Add package publishing Github Workflow ([#24](https://github.com/MetaMask/test-dapp-multichain/pull/24))
+- Ad/yet more enhancement ([#20](https://github.com/MetaMask/test-dapp-multichain/pull/20))
+- Add mock sdk wrapper ([#21](https://github.com/MetaMask/test-dapp-multichain/pull/21))
+
 ## [0.2.0]
 
 ### Changed
@@ -88,7 +96,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix: other linting issues
 - Initial Commit of react app and module template
 
-[Unreleased]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.0.7...v0.1.0
 [0.0.7]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.0.6...v0.0.7
