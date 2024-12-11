@@ -4,9 +4,11 @@ import { parseCaipAccountId } from '@metamask/utils';
 import type { CaipAccountId, CaipChainId, Json } from '@metamask/utils';
 import type { MethodObject, OpenrpcDocument } from '@open-rpc/meta-schema';
 import { parseOpenRPCDocument } from '@open-rpc/schema-utils-js';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import './App.css';
+import WalletList from './components/WalletList';
+import type { WalletMapEntry } from './components/WalletList';
 import {
   Eip155Methods,
   Eip155Notifications,
@@ -20,6 +22,9 @@ import makeProvider from './providers/MockMultichainProvider';
 import type { Provider } from './providers/Provider';
 
 function App() {
+  const [walletMapEntries, setWalletMapEntries] = useState<
+    Record<string, WalletMapEntry>
+  >({});
   const [createSessionResult, setCreateSessionResult] = useState<any>(null);
   const [providerType, setProviderType] = useState<string>('metamask');
   const [provider, setProvider] = useState<Provider>();
@@ -52,7 +57,7 @@ function App() {
     useState<OpenrpcDocument>();
   const [
     isExternallyConnectableConnected,
-    setisExternallyConnectableConnected,
+    setIsExternallyConnectableConnected,
   ] = useState<boolean>(false);
   const [selectedAccounts, setSelectedAccounts] = useState<
     Record<string, CaipAccountId>
@@ -124,12 +129,25 @@ function App() {
     }
   };
 
+  const setExtensionIdToLocalStorage = useCallback(
+    (_extensionId: string): void => {
+      const walletList = Object.values(walletMapEntries);
+      if (
+        walletList.some((entry) => entry.params.extensionId === _extensionId)
+      ) {
+        return;
+      }
+      localStorage.setItem('extensionId', _extensionId);
+    },
+    [walletMapEntries],
+  );
+
   const handleConnect = () => {
     if (extensionId && provider) {
       try {
         const connected = provider.connect(extensionId);
-        setisExternallyConnectableConnected(connected);
-        localStorage.setItem('extensionId', extensionId);
+        setIsExternallyConnectableConnected(connected);
+        setExtensionIdToLocalStorage(extensionId);
         provider.onNotification((notification: any) => {
           if (notification.method === 'wallet_notify') {
             setWalletNotifyHistory((prev) => [
@@ -141,10 +159,18 @@ function App() {
           }
         });
       } catch (error) {
-        setisExternallyConnectableConnected(false);
+        setIsExternallyConnectableConnected(false);
       }
     }
   };
+
+  const handleWalletListClick = useCallback(
+    (_extensionId: string) => {
+      setExtensionId(_extensionId);
+      handleConnect();
+    },
+    [setExtensionId, handleConnect],
+  );
 
   useEffect(() => {
     let newProvider: Provider;
@@ -167,7 +193,7 @@ function App() {
       setExtensionId(extensionIdFromLocalStorage);
       try {
         provider.connect(extensionIdFromLocalStorage);
-        setisExternallyConnectableConnected(true);
+        setIsExternallyConnectableConnected(true);
         provider.onNotification((notification: any) => {
           if (notification.method === 'wallet_notify') {
             setWalletNotifyHistory((prev) => [
@@ -180,7 +206,7 @@ function App() {
         });
       } catch (error) {
         console.error('Error auto-connecting:', error);
-        setisExternallyConnectableConnected(false);
+        setIsExternallyConnectableConnected(false);
       }
     }
   }, [provider]);
@@ -462,6 +488,45 @@ function App() {
     setInvokeMethodResults({});
   };
 
+  /**
+   * setup caip294:wallet_announce event listener
+   * docs: https://github.com/ChainAgnostic/CAIPs/blob/bc4942857a8e04593ed92f7dc66653577a1c4435/CAIPs/caip-294.md#specification
+   */
+  useEffect(() => {
+    const handleWalletAnnounce = (ev: Event) => {
+      const customEvent = ev as CustomEvent;
+      const _extensionId = customEvent.detail.params.extensionId ?? '';
+      setExtensionId(_extensionId);
+      setWalletMapEntries((prev) => ({
+        ...prev,
+        [customEvent.detail.params.uuid]: {
+          params: customEvent.detail.params,
+          eventName: customEvent.detail.params.uuid,
+        },
+      }));
+    };
+    window.addEventListener('caip294:wallet_announce', handleWalletAnnounce);
+
+    window.dispatchEvent(
+      new CustomEvent('caip294:wallet_prompt', {
+        detail: {
+          id: 1,
+          jsonrpc: '2.0',
+          method: 'wallet_prompt',
+          params: {},
+        },
+      }),
+    );
+
+    // We make sure to dispose of event listener on app component unmount
+    return () => {
+      window.removeEventListener(
+        'caip294:wallet_announce',
+        handleWalletAnnounce,
+      );
+    };
+  }, [setExtensionId]);
+
   useEffect(() => {
     if (!isExternallyConnectableConnected) {
       handleResetState();
@@ -521,12 +586,23 @@ function App() {
           <button
             onClick={() => {
               setExtensionId('');
-              setisExternallyConnectableConnected(false);
+              setIsExternallyConnectableConnected(false);
               localStorage.removeItem('extensionId');
             }}
           >
             Clear Extension ID
           </button>
+        </div>
+      </section>
+      <section>
+        <div>
+          <h2>Detected Wallets</h2>
+        </div>
+        <div>
+          <WalletList
+            wallets={walletMapEntries}
+            handleClick={handleWalletListClick}
+          />
         </div>
       </section>
       <section>
