@@ -9,11 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.0]
 
-### Uncategorized
+### Changed
 
-- chore: Add package publishing Github Workflow ([#24](https://github.com/MetaMask/test-dapp-multichain/pull/24))
-- Ad/yet more enhancement ([#20](https://github.com/MetaMask/test-dapp-multichain/pull/20))
-- Add mock sdk wrapper ([#21](https://github.com/MetaMask/test-dapp-multichain/pull/21))
+- Make the `connect` method asynchronous in the SDK ([#20](https://github.com/MetaMask/test-dapp-multichain/pull/20)).
+- Update `MetaMaskMultichainProvider` to wait briefly after attempting to connect, allowing the onDisconnect event to fire if the connection fails, and checking the isConnected flag accordingly ([#20](https://github.com/MetaMask/test-dapp-multichain/pull/20)).
+- Changes the `invokeMethodResults` data structure to store both the result and the request object ([#20](https://github.com/MetaMask/test-dapp-multichain/pull/20)).
+- Add a `README.md` for the SDK ([#20](https://github.com/MetaMask/test-dapp-multichain/pull/20)).
+- Add mock SDK wrapper and hook for demonstrating a potential pattern for a Multichain API SDK ([#21](https://github.com/MetaMask/test-dapp-multichain/pull/21)).
 
 ## [0.2.0]
 
