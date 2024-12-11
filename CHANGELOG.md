@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0]
+
+### Changed
+
+- Make the `connect` method asynchronous in the SDK ([#20](https://github.com/MetaMask/test-dapp-multichain/pull/20)).
+- Update `MetaMaskMultichainProvider` to wait briefly after attempting to connect, allowing the onDisconnect event to fire if the connection fails, and checking the isConnected flag accordingly ([#20](https://github.com/MetaMask/test-dapp-multichain/pull/20)).
+- Changes the `invokeMethodResults` data structure to store both the result and the request object ([#20](https://github.com/MetaMask/test-dapp-multichain/pull/20)).
+- Add a `README.md` for the SDK ([#20](https://github.com/MetaMask/test-dapp-multichain/pull/20)).
+- Add mock SDK wrapper and hook for demonstrating a potential pattern for a Multichain API SDK ([#21](https://github.com/MetaMask/test-dapp-multichain/pull/21)).
+
 ## [0.2.0]
 
 ### Changed
@@ -88,7 +98,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix: other linting issues
 - Initial Commit of react app and module template
 
-[Unreleased]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.0.7...v0.1.0
 [0.0.7]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.0.6...v0.0.7
