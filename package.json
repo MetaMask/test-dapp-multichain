@@ -10,7 +10,11 @@
     "type": "git",
     "url": "https://github.com/MetaMask/test-dapp-multichain.git"
   },
-  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./package.json": "./package.json"
+  },
+  "main": "./index.js",
   "files": [
     "dist/"
   ],

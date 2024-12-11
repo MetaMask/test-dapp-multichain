@@ -241,18 +241,9 @@ module.exports = defineConfig({
     // The package must specify a minimum Node.js version of 18.18.
     workspace.set('engines.node', '^18.18 || >=20');
 
-    // The package must provide the location of the CommonJS-compatible
-    // entrypoint and its matching type declaration file.
-    workspace.set('main', './dist/index.cjs');
-    workspace.set('exports["."].require.default', './dist/index.cjs');
-    workspace.set('types', './dist/index.d.cts');
-    workspace.set('exports["."].require.types', './dist/index.d.cts');
-
-    // The package must provide the location of the ESM-compatible JavaScript
-    // entrypoint and its matching type declaration file.
-    workspace.set('module', './dist/index.mjs');
-    workspace.set('exports["."].import.default', './dist/index.mjs');
-    workspace.set('exports["."].import.types', './dist/index.d.mts');
+    // The package must provide the location of the entrypoint and its matching
+    // type declaration file.
+    workspace.set('main', './index.js');
 
     // The package must export a `package.json` file.
     workspace.set('exports["./package.json"]', './package.json');
@@ -261,7 +252,7 @@ module.exports = defineConfig({
 
     // The list of files included in the package must only include files
     // generated during the build process.
-    workspace.set('files', ['dist']);
+    workspace.set('files', ['dist/']);
 
     // The package is public, and should be published to the npm registry.
     workspace.unset('private');
