@@ -16,9 +16,10 @@ export type WalletMapEntry = {
 
 type WalletListProps = {
   wallets: Record<string, WalletMapEntry>;
+  handleClick: (extensionId: string) => void;
 };
 
-const WalletList: React.FC<WalletListProps> = ({ wallets }) => {
+const WalletList: React.FC<WalletListProps> = ({ wallets, handleClick }) => {
   const walletEntries = Object.entries(wallets);
 
   if (!walletEntries.length) {
@@ -38,7 +39,18 @@ const WalletList: React.FC<WalletListProps> = ({ wallets }) => {
             <h3 className="wallet-name">{wallet.params.name}</h3>
             <p className="wallet-uuid">UUID: {wallet.params.uuid}</p>
             <p className="wallet-rdns">RDNS: {wallet.params.rdns}</p>
+            {wallet.params.extensionId && (
+              <p className="wallet-extension-id">
+                Extension ID: {wallet.params.extensionId}
+              </p>
+            )}
           </div>
+          <button
+            disabled={Boolean(!wallet.params.extensionId)}
+            onClick={() => handleClick(String(wallet.params.extensionId))}
+          >
+            Connect wallet
+          </button>
         </div>
       ))}
     </div>

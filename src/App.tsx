@@ -164,6 +164,14 @@ function App() {
     }
   };
 
+  const handleWalletListClick = useCallback(
+    (_extensionId: string) => {
+      setExtensionId(_extensionId);
+      handleConnect();
+    },
+    [setExtensionId, handleConnect],
+  );
+
   useEffect(() => {
     let newProvider: Provider;
     if (providerType === 'mock') {
@@ -591,7 +599,10 @@ function App() {
           <h2>Detected Wallets</h2>
         </div>
         <div>
-          <WalletList wallets={walletMapEntries} />
+          <WalletList
+            wallets={walletMapEntries}
+            handleClick={handleWalletListClick}
+          />
         </div>
       </section>
       <section>
