@@ -7,7 +7,7 @@ type UseSDKReturn = {
   isConnected: boolean;
   currentSession: any;
   extensionId: string;
-  connect: (extensionId: string) => void;
+  connect: (extensionId: string) => Promise<void>;
   disconnect: () => void;
   createSession: (scopes: CaipChainId[]) => Promise<Json>;
   getSession: () => Promise<Json>;
@@ -30,7 +30,7 @@ export function useSDK({
   const [isConnected, setIsConnected] = useState(false);
   const [currentSession, setCurrentSession] = useState<any>(null);
   const [extensionId, setExtensionId] = useState<string>(
-    METAMASK_PROD_CHROME_ID,
+    METAMASK_PROD_CHROME_ID, // default to prod chrome extension id
   );
 
   // Set up listeners for session changes and wallet notifications
@@ -62,17 +62,27 @@ export function useSDK({
 
   // Auto-connect with stored extension ID
   useEffect(() => {
-    const storedExtensionId = localStorage.getItem('extensionId');
-    if (storedExtensionId && sdk) {
-      try {
-        sdk.setExtensionIdAndConnect(storedExtensionId);
-        setIsConnected(true);
-        setExtensionId(storedExtensionId);
-      } catch (error) {
-        console.error('Error auto-connecting:', error);
-        setIsConnected(false);
+    const autoConnect = async () => {
+      const storedExtensionId = localStorage.getItem('extensionId');
+      if (storedExtensionId && sdk) {
+        try {
+          const connectionSuccess = await sdk.setExtensionIdAndConnect(
+            storedExtensionId,
+          );
+          setIsConnected(connectionSuccess);
+          if (connectionSuccess) {
+            setExtensionId(storedExtensionId);
+          } else {
+            console.error('Error auto-connecting');
+          }
+        } catch (error) {
+          console.error('Error auto-connecting:', error);
+          setIsConnected(false);
+        }
       }
-    }
+    };
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    autoConnect();
   }, [sdk]);
 
   // Check for existing session when connected
@@ -94,10 +104,10 @@ export function useSDK({
   }, [sdk, isConnected]);
 
   const connect = useCallback(
-    (newExtensionId: string) => {
+    async (newExtensionId: string) => {
       if (sdk) {
         try {
-          const connected = sdk.setExtensionIdAndConnect(newExtensionId);
+          const connected = await sdk.setExtensionIdAndConnect(newExtensionId);
           setIsConnected(connected);
           if (connected) {
             localStorage.setItem('extensionId', newExtensionId);

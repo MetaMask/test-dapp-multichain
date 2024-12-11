@@ -143,10 +143,10 @@ function App() {
     setExtensionId(loadedExtensionId);
   }, [loadedExtensionId]);
 
-  const handleConnectClick = () => {
+  const handleConnectClick = async () => {
     if (extensionId) {
       try {
-        connect(extensionId);
+        await connect(extensionId);
       } catch (error) {
         console.error('Error connecting:', error);
       }

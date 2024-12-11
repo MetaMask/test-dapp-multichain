@@ -99,10 +99,13 @@ class SDK {
     this.#provider.disconnect();
   }
 
-  public setExtensionIdAndConnect(extensionId: string): boolean {
+  public async setExtensionIdAndConnect(extensionId: string): Promise<boolean> {
     // TODO add logic once we have CAIP-294 wallet discovery + or hardcode the stable extensionId
-    this.#extensionId = extensionId;
-    return this.#provider.connect(extensionId);
+    const connected = await this.#provider.connect(extensionId);
+    if (connected) {
+      this.#extensionId = extensionId;
+    }
+    return connected;
   }
 }
 

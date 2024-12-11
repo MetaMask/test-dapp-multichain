@@ -21,24 +21,49 @@ class MetaMaskMultichainProvider implements Provider {
     this.#notificationCallbacks = new Set();
   }
 
-  connect(extensionId: string): boolean {
+  async connect(extensionId: string): Promise<boolean> {
     if (this.#port) {
       this.disconnect();
     }
-    try {
-      this.#port = chrome.runtime.connect(extensionId);
-      this.#port.onMessage.addListener(this.#handleMessage.bind(this));
-      this.#port.onDisconnect.addListener(() => {
-        this.#port = null;
-        this.#requestMap.clear();
-      });
-    } catch {
+
+    this.#port = chrome.runtime.connect(extensionId);
+
+    let isConnected = true;
+
+    this.#port.onDisconnect.addListener(() => {
+      isConnected = false;
+      const errorMessage = chrome.runtime.lastError
+        ? chrome.runtime.lastError.message
+        : 'Port disconnected unexpectedly.';
+      console.error('Error connecting to extension:', errorMessage);
+      this.#port = null;
+      this.#requestMap.clear();
+    });
+
+    // Wait for the next tick to allow onDisconnect to fire if there's an error
+    // This is an unfortunate hack required to ensure the port is connected before
+    // we declare the connection successful.
+    // This gives a few ticks for the onDisconnect listener to fire if the runtime
+    // connection fails because the extension for the given extensionId is not present.
+    await new Promise((resolve) => setTimeout(resolve, 5));
+
+    if (!isConnected) {
       console.error(
-        'Error connecting to MetaMask Multichain Provider. Make sure the Multichain Enable Metamask extension is installed and enabled.',
+        'Error connecting to MetaMask Multichain Provider. Make sure the Multichain Enable MetaMask extension is installed and enabled.',
       );
       return false;
     }
-    return true;
+
+    this.#port.onMessage.addListener(this.#handleMessage.bind(this));
+
+    try {
+      this.#port.postMessage('ping');
+      console.log('Connected to MetaMask Multichain Provider');
+      return true;
+    } catch (error) {
+      console.error('Error sending message:', error);
+      return false;
+    }
   }
 
   disconnect(): void {
@@ -75,14 +100,12 @@ class MetaMaskMultichainProvider implements Provider {
     return new Promise((resolve, reject) => {
       this.#requestMap.set(_id, { resolve, reject });
       this.#port?.postMessage({ type: 'caip-x', data: request });
-
-      // Set a timeout for the request
       setTimeout(() => {
         if (this.#requestMap.has(_id)) {
           this.#requestMap.delete(_id);
           reject(new Error('Request timeout'));
         }
-      }, 30000); // 30 seconds timeout
+      }, 30000);
     });
   }
 
