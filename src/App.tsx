@@ -13,7 +13,7 @@ import {
 } from './constants/methods';
 import { FEATURED_NETWORKS } from './constants/networks';
 import { openRPCExampleToJSON, truncateJSON } from './helpers/JsonHelpers';
-import { useSDK } from './sdk/useSDK';
+import { useSDK } from './sdk';
 
 function App() {
   const [providerType, setProviderType] = useState<string>('metamask');
@@ -633,10 +633,7 @@ function App() {
                         }));
 
                         const currentMethod = selectedMethods[scope];
-                        if (
-                          currentMethod &&
-                          currentMethod in METHODS_REQUIRING_PARAM_INJECTION
-                        ) {
+                        if (currentMethod) {
                           const example = metamaskOpenrpcDocument?.methods.find(
                             (method) =>
                               (method as MethodObject).name === currentMethod,

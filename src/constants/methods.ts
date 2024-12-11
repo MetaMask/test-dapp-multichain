@@ -30,6 +30,7 @@ export const injectParams = (
   const { reference: chainId } = parseCaipChainId(scopeToInject);
 
   if (
+    !(method in METHODS_REQUIRING_PARAM_INJECTION) ||
     typeof exampleParams !== 'object' ||
     exampleParams === null ||
     !('method' in exampleParams) ||

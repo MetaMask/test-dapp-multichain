@@ -1,7 +1,7 @@
 import type { CaipChainId, Json } from '@metamask/utils';
 import { useCallback, useEffect, useState } from 'react';
 
-import SDK from './SDK';
+import SDK, { METAMASK_PROD_CHROME_ID } from './SDK';
 
 type UseSDKReturn = {
   isConnected: boolean;
@@ -29,7 +29,9 @@ export function useSDK({
   const [sdk, setSdk] = useState<SDK>();
   const [isConnected, setIsConnected] = useState(false);
   const [currentSession, setCurrentSession] = useState<any>(null);
-  const [extensionId, setExtensionId] = useState<string>('');
+  const [extensionId, setExtensionId] = useState<string>(
+    METAMASK_PROD_CHROME_ID,
+  );
 
   // Set up listeners for session changes and wallet notifications
   useEffect(() => {

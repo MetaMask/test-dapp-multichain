@@ -4,23 +4,16 @@ import { parseCaipChainId, KnownCaipNamespace } from '@metamask/utils';
 import { Eip155Notifications, Eip155Methods } from '../constants/methods';
 import MetaMaskMultichainProvider from './providers/MetaMaskMultichainProvider';
 
-type SDKOptions = {
-  extensionId?: string;
-};
-
+export const METAMASK_PROD_CHROME_ID = 'nkbihfbeogaeaoehlefnkodbefgpgknn';
 class SDK {
   #provider: MetaMaskMultichainProvider;
 
   #extensionId?: string | undefined;
 
-  constructor(options: SDKOptions = {}) {
+  constructor() {
     this.#provider = new MetaMaskMultichainProvider();
 
-    this.#extensionId = options.extensionId;
-
-    if (this.#extensionId) {
-      this.#provider.connect(this.#extensionId);
-    }
+    this.#extensionId = METAMASK_PROD_CHROME_ID;
   }
 
   public async createSession(scopes: CaipChainId[]): Promise<Json> {
