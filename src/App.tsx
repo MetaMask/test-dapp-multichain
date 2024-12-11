@@ -159,6 +159,14 @@ function App() {
     }
   };
 
+  const handleWalletListClick = useCallback(
+    (_extensionId: string) => {
+      setExtensionId(_extensionId);
+      handleConnect();
+    },
+    [setExtensionId, handleConnect],
+  );
+
   useEffect(() => {
     parseOpenRPCDocument(MetaMaskOpenRPCDocument)
       .then((parsedOpenRPCDocument) => {
@@ -475,7 +483,10 @@ function App() {
           <h2>Detected Wallets</h2>
         </div>
         <div>
-          <WalletList wallets={walletMapEntries} />
+          <WalletList
+            wallets={walletMapEntries}
+            handleClick={handleWalletListClick}
+          />
         </div>
       </section>
       <section>
