@@ -5,7 +5,7 @@ import { Eip155Notifications, Eip155Methods } from '../constants/methods';
 import MetaMaskMultichainProvider from './providers/MetaMaskMultichainProvider';
 
 export const METAMASK_PROD_CHROME_ID = 'nkbihfbeogaeaoehlefnkodbefgpgknn';
-class SDK {
+export class SDK {
   #provider: MetaMaskMultichainProvider;
 
   #extensionId?: string | undefined;
@@ -108,5 +108,3 @@ class SDK {
     return connected;
   }
 }
-
-export default SDK;

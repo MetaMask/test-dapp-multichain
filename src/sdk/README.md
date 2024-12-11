@@ -104,7 +104,7 @@ export default App;
 For non-React applications or if you prefer direct usage, you can interact with the `SDK` class.
 
 ```typescript
-import SDK from '@metamask/sdk';
+import { SDK } from '@metamask/sdk';
 
 async function main() {
   const sdk = new SDK();

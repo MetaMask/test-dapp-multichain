@@ -1,7 +1,7 @@
 import type { CaipChainId, Json } from '@metamask/utils';
 import { useCallback, useEffect, useState } from 'react';
 
-import SDK, { METAMASK_PROD_CHROME_ID } from './SDK';
+import { SDK, METAMASK_PROD_CHROME_ID } from './SDK';
 
 type UseSDKReturn = {
   isConnected: boolean;
