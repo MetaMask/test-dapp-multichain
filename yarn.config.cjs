@@ -252,7 +252,7 @@ module.exports = defineConfig({
 
     // The list of files included in the package must only include files
     // generated during the build process.
-    workspace.set('files', ['dist/']);
+    workspace.set('files', ['build/']);
 
     // The package is public, and should be published to the npm registry.
     workspace.unset('private');
