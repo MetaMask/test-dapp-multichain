@@ -9,9 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.1]
 
-### Uncategorized
+### Fixed
 
-- chore: Fix build entrypoints ([#26](https://github.com/MetaMask/test-dapp-multichain/pull/26))
+- Fix package entrypoints ([#26](https://github.com/MetaMask/test-dapp-multichain/pull/26)).
 
 ## [0.3.0]
 
