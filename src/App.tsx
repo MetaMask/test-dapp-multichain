@@ -4,7 +4,7 @@ import { parseCaipAccountId } from '@metamask/utils';
 import type { CaipAccountId, CaipChainId, Json } from '@metamask/utils';
 import type { MethodObject, OpenrpcDocument } from '@open-rpc/meta-schema';
 import { parseOpenRPCDocument } from '@open-rpc/schema-utils-js';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import './App.css';
 import WalletList from './components/WalletList';
@@ -21,7 +21,6 @@ function App() {
   const [walletMapEntries, setWalletMapEntries] = useState<
     Record<string, WalletMapEntry>
   >({});
-  const [createSessionResult, setCreateSessionResult] = useState<any>(null);
   const [providerType, setProviderType] = useState<string>('metamask');
   const [selectedMethods, setSelectedMethods] = useState<
     Record<string, string>
@@ -160,11 +159,13 @@ function App() {
   };
 
   const handleWalletListClick = useCallback(
-    (_extensionId: string) => {
-      setExtensionId(_extensionId);
-      handleConnect();
+    async (newExtensionId?: string): Promise<void> => {
+      if (newExtensionId) {
+        setExtensionId(newExtensionId);
+        await handleConnectClick();
+      }
     },
-    [setExtensionId, handleConnect],
+    [setExtensionId, handleConnectClick],
   );
 
   useEffect(() => {

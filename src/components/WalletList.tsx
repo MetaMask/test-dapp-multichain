@@ -16,7 +16,7 @@ export type WalletMapEntry = {
 
 type WalletListProps = {
   wallets: Record<string, WalletMapEntry>;
-  handleClick: (extensionId?: string) => void;
+  handleClick: (extensionId?: string) => Promise<void>;
 };
 
 const WalletList: React.FC<WalletListProps> = ({ wallets, handleClick }) => {
@@ -25,6 +25,11 @@ const WalletList: React.FC<WalletListProps> = ({ wallets, handleClick }) => {
   if (!walletEntries.length) {
     return null;
   }
+  const onClickHandler = (extensionId?: string) => {
+    handleClick(extensionId).catch((error) => {
+      console.error('Error using extension id to connect', error);
+    });
+  };
 
   return (
     <div className="wallet-list">
@@ -47,7 +52,7 @@ const WalletList: React.FC<WalletListProps> = ({ wallets, handleClick }) => {
           </div>
           <button
             disabled={Boolean(!wallet.params.extensionId)}
-            onClick={() => handleClick(wallet.params.extensionId)}
+            onClick={() => onClickHandler(wallet.params.extensionId)}
           >
             Connect wallet
           </button>
