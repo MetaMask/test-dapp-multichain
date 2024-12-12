@@ -36,7 +36,7 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: |
-            ./dist
+            ./build
             ./node_modules/.yarn-state.yml
           key: ${{ github.sha }}
       - run: yarn --immutable
@@ -63,7 +63,7 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: |
-            ./dist
+            ./build
             ./node_modules/.yarn-state.yml
           key: ${{ github.sha }}
       - name: Dry Run Publish
@@ -97,7 +97,7 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: |
-            ./dist
+            ./build
             ./node_modules/.yarn-state.yml
           key: ${{ github.sha }}
       - name: Publish
