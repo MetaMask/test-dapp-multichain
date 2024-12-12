@@ -16,7 +16,7 @@ export type WalletMapEntry = {
 
 type WalletListProps = {
   wallets: Record<string, WalletMapEntry>;
-  handleClick: (extensionId: string) => void;
+  handleClick: (extensionId?: string) => void;
 };
 
 const WalletList: React.FC<WalletListProps> = ({ wallets, handleClick }) => {
@@ -47,7 +47,7 @@ const WalletList: React.FC<WalletListProps> = ({ wallets, handleClick }) => {
           </div>
           <button
             disabled={Boolean(!wallet.params.extensionId)}
-            onClick={() => handleClick(String(wallet.params.extensionId))}
+            onClick={() => handleClick(wallet.params.extensionId)}
           >
             Connect wallet
           </button>

@@ -379,8 +379,8 @@ function App() {
   useEffect(() => {
     const handleWalletAnnounce = (ev: Event) => {
       const customEvent = ev as CustomEvent;
-      const _extensionId = customEvent.detail.params.extensionId ?? '';
-      setExtensionId(_extensionId);
+      const newExtensionId = customEvent.detail.params.extensionId ?? '';
+      setExtensionId(newExtensionId);
       setWalletMapEntries((prev) => ({
         ...prev,
         [customEvent.detail.params.uuid]: {
@@ -409,7 +409,7 @@ function App() {
         handleWalletAnnounce,
       );
     };
-  }, [setExtensionId]);
+  }, [setExtensionId, setWalletMapEntries]);
 
   useEffect(() => {
     if (!isExternallyConnectableConnected) {
