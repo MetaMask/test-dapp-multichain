@@ -142,6 +142,19 @@ function App() {
   } = useSDK({
     onSessionChanged: handleSessionChangedNotification,
     onWalletNotify: handleNotification,
+    onWalletAnnounce: (ev: Event) => {
+      const customEvent = ev as CustomEvent;
+      const newExtensionId = customEvent.detail.params.extensionId ?? '';
+      const newEntry: WalletMapEntry = {
+        params: customEvent.detail.params,
+        eventName: customEvent.detail.params.uuid,
+      };
+      setExtensionId(newExtensionId);
+      setWalletMapEntries((prev) => ({
+        ...prev,
+        [customEvent.detail.params.uuid]: newEntry,
+      }));
+    },
   });
 
   useEffect(() => {
@@ -372,45 +385,6 @@ function App() {
   const handleClearInvokeResults = () => {
     setInvokeMethodResults({});
   };
-
-  /**
-   * setup caip294:wallet_announce event listener
-   * docs: https://github.com/ChainAgnostic/CAIPs/blob/bc4942857a8e04593ed92f7dc66653577a1c4435/CAIPs/caip-294.md#specification
-   */
-  useEffect(() => {
-    const handleWalletAnnounce = (ev: Event) => {
-      const customEvent = ev as CustomEvent;
-      const newExtensionId = customEvent.detail.params.extensionId ?? '';
-      setExtensionId(newExtensionId);
-      setWalletMapEntries((prev) => ({
-        ...prev,
-        [customEvent.detail.params.uuid]: {
-          params: customEvent.detail.params,
-          eventName: customEvent.detail.params.uuid,
-        },
-      }));
-    };
-    window.addEventListener('caip294:wallet_announce', handleWalletAnnounce);
-
-    window.dispatchEvent(
-      new CustomEvent('caip294:wallet_prompt', {
-        detail: {
-          id: 1,
-          jsonrpc: '2.0',
-          method: 'wallet_prompt',
-          params: {},
-        },
-      }),
-    );
-
-    // We make sure to dispose of event listener on app component unmount
-    return () => {
-      window.removeEventListener(
-        'caip294:wallet_announce',
-        handleWalletAnnounce,
-      );
-    };
-  }, [setExtensionId, setWalletMapEntries]);
 
   useEffect(() => {
     if (!isExternallyConnectableConnected) {

@@ -22,9 +22,11 @@ type UseSDKReturn = {
 export function useSDK({
   onSessionChanged,
   onWalletNotify,
+  onWalletAnnounce,
 }: {
   onSessionChanged: (notification: any) => void;
   onWalletNotify: (callback: (notification: any) => void) => void;
+  onWalletAnnounce: (ev: Event) => void;
 }): UseSDKReturn {
   const [sdk, setSdk] = useState<SDK>();
   const [isConnected, setIsConnected] = useState(false);
@@ -33,7 +35,29 @@ export function useSDK({
     METAMASK_PROD_CHROME_ID, // default to prod chrome extension id
   );
 
-  // Set up listeners for session changes and wallet notifications
+  /**
+   * setup caip294:wallet_announce event listener
+   * docs: https://github.com/ChainAgnostic/CAIPs/blob/bc4942857a8e04593ed92f7dc66653577a1c4435/CAIPs/caip-294.md#specification
+   */
+  useEffect(() => {
+    window.addEventListener('caip294:wallet_announce', onWalletAnnounce);
+
+    window.dispatchEvent(
+      new CustomEvent('caip294:wallet_prompt', {
+        detail: {
+          id: 1,
+          jsonrpc: '2.0',
+          method: 'wallet_prompt',
+          params: {},
+        },
+      }),
+    );
+
+    return () => {
+      window.removeEventListener('caip294:wallet_announce', onWalletAnnounce);
+    };
+  }, []);
+
   useEffect(() => {
     if (sdk) {
       sdk.onNotification((notification: any) => {
