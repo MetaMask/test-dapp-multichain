@@ -7,6 +7,7 @@ import { parseOpenRPCDocument } from '@open-rpc/schema-utils-js';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import './App.css';
+import DynamicAddressInputs from './components/DynamicAddressInputs';
 import WalletList from './components/WalletList';
 import type { WalletMapEntry } from './components/WalletList';
 import {
@@ -18,6 +19,7 @@ import { openRPCExampleToJSON, truncateJSON } from './helpers/JsonHelpers';
 import { useSDK } from './sdk';
 
 function App() {
+  const [addresses, setAddresses] = useState<string[]>(['']);
   const [walletMapEntries, setWalletMapEntries] = useState<
     Record<string, WalletMapEntry>
   >({});
@@ -410,6 +412,11 @@ function App() {
   return (
     <div className="App">
       <h1>MetaMask MultiChain API Test Dapp</h1>
+      <DynamicAddressInputs
+        inputArray={addresses}
+        setInputArray={setAddresses}
+        onSubmit={() => console.log({ addresses })}
+      />
       <div className="app-subtitle">
         <i>Requires MetaMask Extension with CAIP Multichain API Enabled</i>
       </div>
