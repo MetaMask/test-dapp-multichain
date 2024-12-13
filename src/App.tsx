@@ -104,30 +104,57 @@ function App() {
     });
   };
 
-  const handleSessionChangedNotification = (notification: any) => {
-    setWalletSessionChangedHistory((prev) => {
-      const timestamp = Date.now();
-      if (prev.some((entry) => entry.timestamp === timestamp)) {
-        return prev;
-      }
-      return [{ timestamp, data: notification }, ...prev];
-    });
+  const handleSessionChangedNotification = useCallback(
+    (notification: any) => {
+      setWalletSessionChangedHistory((prev) => {
+        const timestamp = Date.now();
+        if (prev.some((entry) => entry.timestamp === timestamp)) {
+          return prev;
+        }
+        return [{ timestamp, data: notification }, ...prev];
+      });
 
-    if (notification.params?.sessionScopes) {
-      setSelectedScopesFromSession(notification.params.sessionScopes);
-      setInitialMethodsAndAccounts(notification.params.sessionScopes);
-    }
-  };
-
-  const handleNotification = (notification: any) => {
-    setWalletNotifyHistory((prev) => {
-      const timestamp = Date.now();
-      if (prev.some((entry) => entry.timestamp === timestamp)) {
-        return prev;
+      if (notification.params?.sessionScopes) {
+        setSelectedScopesFromSession(notification.params.sessionScopes);
+        setInitialMethodsAndAccounts(notification.params.sessionScopes);
       }
-      return [{ timestamp, data: notification }, ...prev];
-    });
-  };
+    },
+    [
+      setWalletSessionChangedHistory,
+      setSelectedScopesFromSession,
+      setInitialMethodsAndAccounts,
+    ],
+  );
+
+  const handleNotification = useCallback(
+    (notification: any) => {
+      setWalletNotifyHistory((prev) => {
+        const timestamp = Date.now();
+        if (prev.some((entry) => entry.timestamp === timestamp)) {
+          return prev;
+        }
+        return [{ timestamp, data: notification }, ...prev];
+      });
+    },
+    [setWalletNotifyHistory],
+  );
+
+  const handleWalletAnnounce = useCallback(
+    (ev: Event) => {
+      const customEvent = ev as CustomEvent;
+      const newExtensionId = customEvent.detail.params.extensionId ?? '';
+      const newEntry: WalletMapEntry = {
+        params: customEvent.detail.params,
+        eventName: customEvent.detail.params.uuid,
+      };
+      setExtensionId(newExtensionId);
+      setWalletMapEntries((prev) => ({
+        ...prev,
+        [customEvent.detail.params.uuid]: newEntry,
+      }));
+    },
+    [setExtensionId, setWalletMapEntries],
+  );
 
   const {
     isConnected: isExternallyConnectableConnected,
@@ -142,19 +169,7 @@ function App() {
   } = useSDK({
     onSessionChanged: handleSessionChangedNotification,
     onWalletNotify: handleNotification,
-    onWalletAnnounce: (ev: Event) => {
-      const customEvent = ev as CustomEvent;
-      const newExtensionId = customEvent.detail.params.extensionId ?? '';
-      const newEntry: WalletMapEntry = {
-        params: customEvent.detail.params,
-        eventName: customEvent.detail.params.uuid,
-      };
-      setExtensionId(newExtensionId);
-      setWalletMapEntries((prev) => ({
-        ...prev,
-        [customEvent.detail.params.uuid]: newEntry,
-      }));
-    },
+    onWalletAnnounce: handleWalletAnnounce,
   });
 
   useEffect(() => {

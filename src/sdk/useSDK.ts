@@ -56,7 +56,7 @@ export function useSDK({
     return () => {
       window.removeEventListener('caip294:wallet_announce', onWalletAnnounce);
     };
-  }, []);
+  }, [onWalletAnnounce]);
 
   useEffect(() => {
     if (sdk) {
