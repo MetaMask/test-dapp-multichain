@@ -4,9 +4,11 @@ import { parseCaipAccountId } from '@metamask/utils';
 import type { CaipAccountId, CaipChainId, Json } from '@metamask/utils';
 import type { MethodObject, OpenrpcDocument } from '@open-rpc/meta-schema';
 import { parseOpenRPCDocument } from '@open-rpc/schema-utils-js';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import './App.css';
+import WalletList from './components/WalletList';
+import type { WalletMapEntry } from './components/WalletList';
 import {
   injectParams,
   METHODS_REQUIRING_PARAM_INJECTION,
@@ -16,6 +18,9 @@ import { openRPCExampleToJSON, truncateJSON } from './helpers/JsonHelpers';
 import { useSDK } from './sdk';
 
 function App() {
+  const [walletMapEntries, setWalletMapEntries] = useState<
+    Record<string, WalletMapEntry>
+  >({});
   const [providerType, setProviderType] = useState<string>('metamask');
   const [selectedMethods, setSelectedMethods] = useState<
     Record<string, string>
@@ -152,6 +157,16 @@ function App() {
       }
     }
   };
+
+  const handleWalletListClick = useCallback(
+    async (newExtensionId?: string): Promise<void> => {
+      if (newExtensionId) {
+        setExtensionId(newExtensionId);
+        await handleConnectClick();
+      }
+    },
+    [setExtensionId, handleConnectClick],
+  );
 
   useEffect(() => {
     parseOpenRPCDocument(MetaMaskOpenRPCDocument)
@@ -358,6 +373,51 @@ function App() {
     setInvokeMethodResults({});
   };
 
+  /**
+   * setup caip294:wallet_announce event listener
+   * docs: https://github.com/ChainAgnostic/CAIPs/blob/bc4942857a8e04593ed92f7dc66653577a1c4435/CAIPs/caip-294.md#specification
+   */
+  useEffect(() => {
+    const handleWalletAnnounce = (ev: Event) => {
+      const customEvent = ev as CustomEvent;
+      const newExtensionId = customEvent.detail.params.extensionId ?? '';
+      setExtensionId(newExtensionId);
+      setWalletMapEntries((prev) => ({
+        ...prev,
+        [customEvent.detail.params.uuid]: {
+          params: customEvent.detail.params,
+          eventName: customEvent.detail.params.uuid,
+        },
+      }));
+    };
+    window.addEventListener('caip294:wallet_announce', handleWalletAnnounce);
+
+    window.dispatchEvent(
+      new CustomEvent('caip294:wallet_prompt', {
+        detail: {
+          id: 1,
+          jsonrpc: '2.0',
+          method: 'wallet_prompt',
+          params: {},
+        },
+      }),
+    );
+
+    // We make sure to dispose of event listener on app component unmount
+    return () => {
+      window.removeEventListener(
+        'caip294:wallet_announce',
+        handleWalletAnnounce,
+      );
+    };
+  }, [setExtensionId, setWalletMapEntries]);
+
+  useEffect(() => {
+    if (!isExternallyConnectableConnected) {
+      handleResetState();
+    }
+  }, [isExternallyConnectableConnected]);
+
   return (
     <div className="App">
       <h1>MetaMask MultiChain API Test Dapp</h1>
@@ -417,6 +477,17 @@ function App() {
           >
             Clear Extension ID
           </button>
+        </div>
+      </section>
+      <section>
+        <div>
+          <h2>Detected Wallets</h2>
+        </div>
+        <div>
+          <WalletList
+            wallets={walletMapEntries}
+            handleClick={handleWalletListClick}
+          />
         </div>
       </section>
       <section>
