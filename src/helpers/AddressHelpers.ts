@@ -4,7 +4,7 @@
  * @param addresses - The addresses to format. If address is empty, we remove it from the array.
  * @returns The formatted addresses with the scope to create session for.
  */
-export const getCreateSessionOptionalScopesFormattedAddresses = (
+export const getCaip25FormattedAddresses = (
   scope: string,
   addresses: string[],
 ): string[] => {

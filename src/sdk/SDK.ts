@@ -2,7 +2,7 @@ import type { CaipChainId, Json } from '@metamask/utils';
 import { parseCaipChainId, KnownCaipNamespace } from '@metamask/utils';
 
 import { Eip155Notifications, Eip155Methods } from '../constants/methods';
-import { getCreateSessionOptionalScopesFormattedAddresses } from '../helpers/AddressHelpers';
+import { getCaip25FormattedAddresses } from '../helpers/AddressHelpers';
 import MetaMaskMultichainProvider from './providers/MetaMaskMultichainProvider';
 
 export const METAMASK_PROD_CHROME_ID = 'nkbihfbeogaeaoehlefnkodbefgpgknn';
@@ -33,10 +33,7 @@ export class SDK {
         acc[scope] = {
           methods: Eip155Methods,
           notifications: Eip155Notifications,
-          accounts: getCreateSessionOptionalScopesFormattedAddresses(
-            scope,
-            addresses,
-          ),
+          accounts: getCaip25FormattedAddresses(scope, addresses),
         };
       } else if (namespace === KnownCaipNamespace.Solana) {
         // TODO: add solana methods and notifications that our Solana snap supports
