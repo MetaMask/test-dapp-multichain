@@ -7,6 +7,7 @@ import { parseOpenRPCDocument } from '@open-rpc/schema-utils-js';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import './App.css';
+import DynamicAddressInputs from './components/DynamicAddressInputs';
 import WalletList from './components/WalletList';
 import type { WalletMapEntry } from './components/WalletList';
 import {
@@ -18,6 +19,7 @@ import { openRPCExampleToJSON, truncateJSON } from './helpers/JsonHelpers';
 import { useSDK } from './sdk';
 
 function App() {
+  const [addresses, setAddresses] = useState<string[]>(['']);
   const [walletMapEntries, setWalletMapEntries] = useState<
     Record<string, WalletMapEntry>
   >({});
@@ -238,7 +240,10 @@ function App() {
       (scope) => selectedScopes[scope as CaipChainId],
     );
     try {
-      const result = await createSession(selectedScopesArray as CaipChainId[]);
+      const result = await createSession(
+        selectedScopesArray as CaipChainId[],
+        addresses,
+      );
       setSessionMethodHistory((prev) => {
         const timestamp = Date.now();
         if (prev.some((entry) => entry.timestamp === timestamp)) {
@@ -518,6 +523,12 @@ function App() {
                       disabled={!isExternallyConnectableConnected}
                     />
                   </label>
+                </div>
+                <div>
+                  <DynamicAddressInputs
+                    inputArray={addresses}
+                    setInputArray={setAddresses}
+                  />
                 </div>
                 <div className="session-lifecycle-buttons">
                   <button

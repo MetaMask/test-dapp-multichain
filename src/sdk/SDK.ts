@@ -2,6 +2,7 @@ import type { CaipChainId, Json } from '@metamask/utils';
 import { parseCaipChainId, KnownCaipNamespace } from '@metamask/utils';
 
 import { Eip155Notifications, Eip155Methods } from '../constants/methods';
+import { getCaip25FormattedAddresses } from '../helpers/AddressHelpers';
 import MetaMaskMultichainProvider from './providers/MetaMaskMultichainProvider';
 
 export const METAMASK_PROD_CHROME_ID = 'nkbihfbeogaeaoehlefnkodbefgpgknn';
@@ -16,9 +17,15 @@ export class SDK {
     this.#extensionId = METAMASK_PROD_CHROME_ID;
   }
 
-  public async createSession(scopes: CaipChainId[]): Promise<Json> {
+  public async createSession(
+    scopes: CaipChainId[],
+    addresses: string[],
+  ): Promise<Json> {
     const optionalScopes = scopes.reduce<
-      Record<CaipChainId, { methods: string[]; notifications: string[] }>
+      Record<
+        CaipChainId,
+        { methods: string[]; notifications: string[]; accounts: string[] }
+      >
     >((acc, scope) => {
       const { reference, namespace } = parseCaipChainId(scope);
       // if this is an EVM chain, prepopulate the createSession request all the EIP155 methods and notifications that we support
@@ -26,24 +33,28 @@ export class SDK {
         acc[scope] = {
           methods: Eip155Methods,
           notifications: Eip155Notifications,
+          accounts: getCaip25FormattedAddresses(scope, addresses),
         };
       } else if (namespace === KnownCaipNamespace.Solana) {
         // TODO: add solana methods and notifications that our Solana snap supports
         // acc[scope] = {
         //   methods: SolanaMethods,
         //   notifications: SolanaNotifications,
+        //   accounts: SolanaAccounts,
         // };
       } else if (namespace === KnownCaipNamespace.Bip122) {
         // TODO: add bip122 methods and notifications that our Bitcoin snap supports
         // acc[scope] = {
         //   methods: Bip122Methods,
         //   notifications: Bip122Notifications,
+        //   accounts: Bip122Accounts,
         // };
       } else {
         // Any other chains we don't know the API for beforehand,
         acc[scope] = {
           methods: [],
           notifications: [],
+          accounts: [],
         };
       }
       return acc;
