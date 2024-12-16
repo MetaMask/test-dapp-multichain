@@ -9,11 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.4.0]
 
-### Uncategorized
+### Added
 
-- Multichain Test Dapp: Add (multi)input to request accounts in `wallet_createSession` call #23 ([#31](https://github.com/MetaMask/test-dapp-multichain/pull/31))
-- move caip-294 events into useSDK ([#30](https://github.com/MetaMask/test-dapp-multichain/pull/30))
-- Implement Wallet Discovery For Multichain API ([#22](https://github.com/MetaMask/test-dapp-multichain/pull/22))
+- Add input to support requesting accounts as part of `wallet_createSession` call ([#31](https://github.com/MetaMask/test-dapp-multichain/pull/31))
+- Implement CAIP-294 Wallet Discovery support Multichain API ([#22](https://github.com/MetaMask/test-dapp-multichain/pull/22)) ([#30](https://github.com/MetaMask/test-dapp-multichain/pull/30))
 
 ## [0.3.2]
 
