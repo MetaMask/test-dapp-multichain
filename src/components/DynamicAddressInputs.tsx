@@ -3,13 +3,11 @@ import React, { useCallback } from 'react';
 type DynamicInputsProps = {
   inputArray: string[];
   setInputArray: React.Dispatch<React.SetStateAction<string[]>>;
-  onSubmit: (inputs: string[]) => void;
 };
 
 const DynamicAddressInputs: React.FC<DynamicInputsProps> = ({
   inputArray,
   setInputArray,
-  onSubmit,
 }) => {
   const handleInputChange = useCallback(
     (index: number, value: string) => {
@@ -45,7 +43,6 @@ const DynamicAddressInputs: React.FC<DynamicInputsProps> = ({
           )}
         </div>
       ))}
-      <button onClick={() => onSubmit(inputArray)}>Submit</button>
     </div>
   );
 };

@@ -240,7 +240,10 @@ function App() {
       (scope) => selectedScopes[scope as CaipChainId],
     );
     try {
-      const result = await createSession(selectedScopesArray as CaipChainId[]);
+      const result = await createSession(
+        selectedScopesArray as CaipChainId[],
+        addresses,
+      );
       setSessionMethodHistory((prev) => {
         const timestamp = Date.now();
         if (prev.some((entry) => entry.timestamp === timestamp)) {
@@ -415,7 +418,6 @@ function App() {
       <DynamicAddressInputs
         inputArray={addresses}
         setInputArray={setAddresses}
-        onSubmit={() => console.log({ addresses })}
       />
       <div className="app-subtitle">
         <i>Requires MetaMask Extension with CAIP Multichain API Enabled</i>
