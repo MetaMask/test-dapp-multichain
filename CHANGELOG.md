@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0]
+
+### Added
+
+- Add input to support requesting accounts as part of `wallet_createSession` call ([#31](https://github.com/MetaMask/test-dapp-multichain/pull/31))
+- Implement CAIP-294 Wallet Discovery support Multichain API ([#22](https://github.com/MetaMask/test-dapp-multichain/pull/22)) ([#30](https://github.com/MetaMask/test-dapp-multichain/pull/30))
+
 ## [0.3.2]
 
 ### Fixed
@@ -110,7 +117,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix: other linting issues
 - Initial Commit of react app and module template
 
-[Unreleased]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.3.2...HEAD
+[Unreleased]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.3.2...v0.4.0
 [0.3.2]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.2.0...v0.3.0
