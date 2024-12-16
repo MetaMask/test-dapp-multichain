@@ -415,10 +415,6 @@ function App() {
   return (
     <div className="App">
       <h1>MetaMask MultiChain API Test Dapp</h1>
-      <DynamicAddressInputs
-        inputArray={addresses}
-        setInputArray={setAddresses}
-      />
       <div className="app-subtitle">
         <i>Requires MetaMask Extension with CAIP Multichain API Enabled</i>
       </div>
@@ -527,6 +523,12 @@ function App() {
                       disabled={!isExternallyConnectableConnected}
                     />
                   </label>
+                </div>
+                <div>
+                  <DynamicAddressInputs
+                    inputArray={addresses}
+                    setInputArray={setAddresses}
+                  />
                 </div>
                 <div className="session-lifecycle-buttons">
                   <button

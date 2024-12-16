@@ -18,24 +18,27 @@ const DynamicAddressInputs: React.FC<DynamicInputsProps> = ({
     [inputArray, setInputArray],
   );
 
-  const addInput = () => {
+  const addInput = useCallback(() => {
     if (inputArray.length < 5) {
       setInputArray([...inputArray, '']);
     }
-  };
+  }, [setInputArray, inputArray]);
 
   return (
     <div>
       {inputArray.map((input, index) => (
         <div key={index}>
-          <input
-            type="text"
-            value={input}
-            onChange={(inputEvent) =>
-              handleInputChange(index, inputEvent.target.value)
-            }
-            placeholder={`Input ${index + 1}`}
-          />
+          <label>
+            Address:
+            <input
+              type="text"
+              value={input}
+              onChange={(inputEvent) =>
+                handleInputChange(index, inputEvent.target.value)
+              }
+              placeholder="0x483b...5f97"
+            />
+          </label>
           {index === inputArray.length - 1 && inputArray.length < 5 && (
             <button onClick={addInput} disabled={!input}>
               +
