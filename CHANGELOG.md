@@ -9,9 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.4.1]
 
-### Uncategorized
+### Changed
 
-- move deps into devDeps ([#33](https://github.com/MetaMask/test-dapp-multichain/pull/33))
+- Move package entries from `dependencies` into `devDependencies` ([#33](https://github.com/MetaMask/test-dapp-multichain/pull/33))
 
 ## [0.4.0]
 
