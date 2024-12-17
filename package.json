@@ -16,7 +16,8 @@
   },
   "main": "./index.js",
   "files": [
-    "build/"
+    "build/",
+    "public/"
   ],
   "scripts": {
     "build": "react-scripts build",
