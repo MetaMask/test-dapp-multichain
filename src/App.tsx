@@ -7,7 +7,7 @@ import { parseOpenRPCDocument } from '@open-rpc/schema-utils-js';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import './App.css';
-import DynamicAddressInputs from './components/DynamicAddressInputs';
+import DynamicInputs, { INPUT_LABEL_TYPE } from './components/DynamicInputs';
 import WalletList from './components/WalletList';
 import type { WalletMapEntry } from './components/WalletList';
 import {
@@ -30,7 +30,7 @@ function App() {
   const [invokeMethodResults, setInvokeMethodResults] = useState<
     Record<string, Record<string, { result: any; request: any }[]>>
   >({});
-  const [customScope, setCustomScope] = useState<string>('');
+  const [customScopes, setCustomScopes] = useState<string[]>(['']);
   const [selectedScopes, setSelectedScopes] = useState<
     Record<CaipChainId, boolean>
   >({
@@ -211,7 +211,7 @@ function App() {
   const handleResetState = () => {
     setSelectedMethods({});
     setInvokeMethodResults({});
-    setCustomScope('');
+    setCustomScopes(['']);
     setWalletSessionChangedHistory([]);
     setWalletNotifyHistory([]);
     setSessionMethodHistory([]);
@@ -236,9 +236,13 @@ function App() {
   }, [isExternallyConnectableConnected]);
 
   const handleCreateSession = async () => {
-    const selectedScopesArray = Object.keys(selectedScopes).filter(
-      (scope) => selectedScopes[scope as CaipChainId],
-    );
+    const selectedScopesArray = [
+      ...Object.keys(selectedScopes).filter(
+        (scope) => selectedScopes[scope as CaipChainId],
+      ),
+      ...customScopes.filter((scope) => scope.length),
+    ];
+
     try {
       const result = await createSession(
         selectedScopesArray as CaipChainId[],
@@ -513,21 +517,17 @@ function App() {
                   ),
                 )}
                 <div>
-                  <label>
-                    Custom:
-                    <input
-                      type="text"
-                      placeholder="e.g., eip155:5"
-                      value={customScope}
-                      onChange={(evt) => setCustomScope(evt.target.value)}
-                      disabled={!isExternallyConnectableConnected}
-                    />
-                  </label>
+                  <DynamicInputs
+                    inputArray={customScopes}
+                    setInputArray={setCustomScopes}
+                    label={INPUT_LABEL_TYPE.SCOPE}
+                  />
                 </div>
                 <div>
-                  <DynamicAddressInputs
+                  <DynamicInputs
                     inputArray={addresses}
                     setInputArray={setAddresses}
+                    label={INPUT_LABEL_TYPE.ADDRESS}
                   />
                 </div>
                 <div className="session-lifecycle-buttons">
