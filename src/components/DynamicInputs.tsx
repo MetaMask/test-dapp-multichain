@@ -2,22 +2,12 @@ import React, { useCallback } from 'react';
 
 export enum INPUT_LABEL_TYPE {
   ADDRESS = 'Address',
-  SCOPE = 'Custom',
+  SCOPE = 'Scope',
 }
 
 const LABEL_PLACEHOLDER = {
   [INPUT_LABEL_TYPE.ADDRESS]: '0x483b...5f97',
   [INPUT_LABEL_TYPE.SCOPE]: 'eip155:1',
-};
-
-const INPUT_ID = {
-  [INPUT_LABEL_TYPE.ADDRESS]: 'custom-address-input',
-  [INPUT_LABEL_TYPE.SCOPE]: 'custom-scope-input',
-};
-
-const ADD_BUTTON_ID = {
-  [INPUT_LABEL_TYPE.ADDRESS]: 'add-custom-address-button',
-  [INPUT_LABEL_TYPE.SCOPE]: 'add-custom-scope-button',
 };
 
 type DynamicInputsProps = {
@@ -53,7 +43,7 @@ const DynamicInputs: React.FC<DynamicInputsProps> = ({
           <label>
             {label}:
             <input
-              id={`${INPUT_ID[label]}-${index}`}
+              id={`custom-${label}-input-${index}`}
               type="text"
               value={input}
               onChange={(inputEvent) =>
@@ -64,7 +54,7 @@ const DynamicInputs: React.FC<DynamicInputsProps> = ({
           </label>
           {index === inputArray.length - 1 && inputArray.length < 5 && (
             <button
-              id={`${ADD_BUTTON_ID[label]}-${index}`}
+              id={`add-custom-${label.toLowerCase()}-button-${index}`}
               onClick={addInput}
               disabled={!input}
             >
