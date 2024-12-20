@@ -5,6 +5,7 @@
   padding: 20px;
 }
 
+
 .wallet-card {
   background-color: #f0f0f0;
   border-radius: 10px;
@@ -16,6 +17,16 @@
   width: 350px;
 }
 
+.wallet-card button:disabled {
+  background-color: #4299e1;
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.wallet-card button:disabled:hover {
+  background-color: #4299e1;
+}
+
 .wallet-icon {
   width: 50px;
   height: 50px;
@@ -24,8 +35,15 @@
 }
 
 .wallet-info {
-  flex-grow: 1;
-  word-break: break-word;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+}
+
+.wallet-info button {
+  margin-top: 1rem;
 }
 
 .wallet-name {
