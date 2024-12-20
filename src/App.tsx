@@ -147,7 +147,6 @@ function App() {
       const newExtensionId = customEvent.detail.params.extensionId ?? '';
       const newEntry: WalletMapEntry = {
         params: customEvent.detail.params,
-        eventName: customEvent.detail.params.uuid,
       };
       setExtensionId(newExtensionId);
       setWalletMapEntries((prev) => ({
@@ -189,10 +188,12 @@ function App() {
   };
 
   const handleWalletListClick = useCallback(
-    async (newExtensionId?: string): Promise<void> => {
-      if (newExtensionId) {
-        setExtensionId(newExtensionId);
-        await handleConnectClick();
+    async (newExtensionId: string): Promise<void> => {
+      setExtensionId(newExtensionId);
+      try {
+        await connect(newExtensionId);
+      } catch (error) {
+        console.error('Error connecting:', error);
       }
     },
     [setExtensionId, handleConnectClick],
@@ -485,6 +486,9 @@ function App() {
           <WalletList
             wallets={walletMapEntries}
             handleClick={handleWalletListClick}
+            connectedExtensionId={
+              isExternallyConnectableConnected ? extensionId : ''
+            }
           />
         </div>
       </section>
