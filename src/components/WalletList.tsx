@@ -51,7 +51,7 @@ function WalletList({
               <p className="wallet-uuid">UUID: {wallet.params.uuid}</p>
               <p className="wallet-rdns">RDNS: {wallet.params.rdns}</p>
               {wallet.params.extensionId && (
-              <>
+                <>
                   <p className="wallet-extension-id">
                     Extension ID: {wallet.params.extensionId}
                   </p>
@@ -61,8 +61,8 @@ function WalletList({
                   >
                     {isConnected ? 'Connected' : 'Connect'}
                   </button>
-              </>
-            )}
+                </>
+              )}
             </div>
           </div>
         );
