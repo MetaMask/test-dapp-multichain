@@ -51,18 +51,18 @@ function WalletList({
               <p className="wallet-uuid">UUID: {wallet.params.uuid}</p>
               <p className="wallet-rdns">RDNS: {wallet.params.rdns}</p>
               {wallet.params.extensionId && (
-                <p className="wallet-extension-id">
-                  Extension ID: {wallet.params.extensionId}
-                </p>
-              )}
-              {wallet.params.extensionId && (
-                <button
-                  onClick={handleWalletClick(wallet.params.extensionId)}
-                  disabled={isConnected}
-                >
-                  {isConnected ? 'Connected' : 'Connect'}
-                </button>
-              )}
+              <>
+                  <p className="wallet-extension-id">
+                    Extension ID: {wallet.params.extensionId}
+                  </p>
+                  <button
+                    onClick={handleWalletClick(wallet.params.extensionId)}
+                    disabled={isConnected}
+                  >
+                    {isConnected ? 'Connected' : 'Connect'}
+                  </button>
+              </>
+            )}
             </div>
           </div>
         );
