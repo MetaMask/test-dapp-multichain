@@ -752,7 +752,7 @@ function App() {
                           const { address } = parseCaipAccountId(account);
                           return (
                             <option
-                              data-testid={`${account}`}
+                              data-testid={`${account}-option`}
                               key={address}
                               value={account}
                             >
@@ -764,6 +764,7 @@ function App() {
                     </select>
 
                     <select
+                      datatest-id={`${scope}-select`}
                       value={selectedMethods[scope] ?? ''}
                       onChange={(evt) =>
                         handleMethodSelect(evt, scope as CaipChainId)
@@ -772,7 +773,7 @@ function App() {
                       <option value="">Select a method</option>
                       {details.methods.map((method: string) => (
                         <option
-                          data-testid={`${scope}-${method}`}
+                          data-testid={`${scope}-${method}-option`}
                           key={method}
                           value={method}
                         >
@@ -785,6 +786,7 @@ function App() {
                       <summary>Invoke Method Request</summary>
                       <div className="collapsible-content">
                         <textarea
+                          data-testid={`${scope}-collapsible-content-textarea`}
                           value={invokeMethodRequests[scope] ?? ''}
                           onChange={(evt) =>
                             setInvokeMethodRequests((prev) => ({
