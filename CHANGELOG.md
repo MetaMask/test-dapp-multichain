@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.6.0]
 
-### Uncategorized
+### Changed
 
 - Improve testability for Connected Scope related work#40 ([#41](https://github.com/MetaMask/test-dapp-multichain/pull/41))
 - small UX improvements to detected wallet UX ([#39](https://github.com/MetaMask/test-dapp-multichain/pull/39))
