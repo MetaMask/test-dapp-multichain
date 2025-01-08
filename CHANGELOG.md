@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Improve testability for Connected Scope related work#40 ([#41](https://github.com/MetaMask/test-dapp-multichain/pull/41))
-- small UX improvements to detected wallet UX ([#39](https://github.com/MetaMask/test-dapp-multichain/pull/39))
+- Improvements to detected wallet UX ([#39](https://github.com/MetaMask/test-dapp-multichain/pull/39))
 - Make `from` and `to` addresses the same by default `eth_sendTransaction` calls ([#37](https://github.com/MetaMask/test-dapp-multichain/pull/37))
 
 ## [0.5.0]
