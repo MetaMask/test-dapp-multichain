@@ -670,7 +670,11 @@ function App() {
             <div className="scopes-grid">
               {Object.entries(currentSession.sessionScopes).map(
                 ([scope, details]: [string, any]) => (
-                  <div key={scope} className="scope-card">
+                  <div
+                    data-testid={`scope-card-${scope}`}
+                    key={scope}
+                    className="scope-card"
+                  >
                     <h3
                       title={
                         FEATURED_NETWORKS[
@@ -747,7 +751,11 @@ function App() {
                         (account: CaipAccountId) => {
                           const { address } = parseCaipAccountId(account);
                           return (
-                            <option key={address} value={account}>
+                            <option
+                              data-testid={`${account}`}
+                              key={address}
+                              value={account}
+                            >
                               {address}
                             </option>
                           );
@@ -763,7 +771,11 @@ function App() {
                     >
                       <option value="">Select a method</option>
                       {details.methods.map((method: string) => (
-                        <option key={method} value={method}>
+                        <option
+                          data-testid={`${scope}-${method}`}
+                          key={method}
+                          value={method}
+                        >
                           {method}
                         </option>
                       ))}
@@ -787,7 +799,7 @@ function App() {
                     </details>
 
                     <button
-                      id={`invoke-method-${scope}-btn`}
+                      data-testid={`invoke-method-${scope}-btn`}
                       onClick={async () => {
                         const method = selectedMethods[scope];
                         if (method) {
