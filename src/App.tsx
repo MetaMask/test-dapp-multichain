@@ -764,7 +764,7 @@ function App() {
                     </select>
 
                     <select
-                      datatest-id={`${scope}-select`}
+                      data-testid={`${scope}-select`}
                       value={selectedMethods[scope] ?? ''}
                       onChange={(evt) =>
                         handleMethodSelect(evt, scope as CaipChainId)
