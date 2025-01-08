@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0]
+
+### Uncategorized
+
+- Improve testability for Connected Scope related work#40 ([#41](https://github.com/MetaMask/test-dapp-multichain/pull/41))
+- small UX improvements to detected wallet UX ([#39](https://github.com/MetaMask/test-dapp-multichain/pull/39))
+- for `eth_sendTransaction` calls we should just make from and to address the same by default ([#37](https://github.com/MetaMask/test-dapp-multichain/pull/37))
+
 ## [0.5.0]
 
 ### Added
@@ -129,7 +137,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix: other linting issues
 - Initial Commit of react app and module template
 
-[Unreleased]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.3.2...v0.4.0
