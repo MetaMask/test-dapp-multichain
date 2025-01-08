@@ -670,7 +670,11 @@ function App() {
             <div className="scopes-grid">
               {Object.entries(currentSession.sessionScopes).map(
                 ([scope, details]: [string, any]) => (
-                  <div key={scope} className="scope-card">
+                  <div
+                    data-testid={`scope-card-${scope}`}
+                    key={scope}
+                    className="scope-card"
+                  >
                     <h3
                       title={
                         FEATURED_NETWORKS[
@@ -747,7 +751,11 @@ function App() {
                         (account: CaipAccountId) => {
                           const { address } = parseCaipAccountId(account);
                           return (
-                            <option key={address} value={account}>
+                            <option
+                              data-testid={`${account}-option`}
+                              key={address}
+                              value={account}
+                            >
                               {address}
                             </option>
                           );
@@ -756,6 +764,7 @@ function App() {
                     </select>
 
                     <select
+                      data-testid={`${scope}-select`}
                       value={selectedMethods[scope] ?? ''}
                       onChange={(evt) =>
                         handleMethodSelect(evt, scope as CaipChainId)
@@ -763,7 +772,11 @@ function App() {
                     >
                       <option value="">Select a method</option>
                       {details.methods.map((method: string) => (
-                        <option key={method} value={method}>
+                        <option
+                          data-testid={`${scope}-${method}-option`}
+                          key={method}
+                          value={method}
+                        >
                           {method}
                         </option>
                       ))}
@@ -773,6 +786,7 @@ function App() {
                       <summary>Invoke Method Request</summary>
                       <div className="collapsible-content">
                         <textarea
+                          data-testid={`${scope}-collapsible-content-textarea`}
                           value={invokeMethodRequests[scope] ?? ''}
                           onChange={(evt) =>
                             setInvokeMethodRequests((prev) => ({
@@ -787,7 +801,7 @@ function App() {
                     </details>
 
                     <button
-                      id={`invoke-method-${scope}-btn`}
+                      data-testid={`invoke-method-${scope}-btn`}
                       onClick={async () => {
                         const method = selectedMethods[scope];
                         if (method) {
