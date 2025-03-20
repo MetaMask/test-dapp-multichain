@@ -34,7 +34,7 @@ abstract class MetaMaskMultichainBaseProvider implements Provider {
 
   abstract _sendRequest(request: JsonRpcRequest): void;
 
-  abstract _parseMessage(message: Json): JsonRpcResponse<Json>;
+  abstract _parseMessage(message: Json): JsonRpcResponse;
 
   disconnect(): void {
     this._disconnect();

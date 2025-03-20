@@ -45,7 +45,9 @@ class MetaMaskMultichainExternallyConnectableProvider extends MetaMaskMultichain
 
     try {
       this.#port.postMessage('ping');
-      console.log('Connected to MetaMask Multichain Provider');
+      console.log(
+        'Connected to MetaMask Multichain Provider via externally_connectable',
+      );
       return true;
     } catch (error) {
       console.error('Error sending message:', error);
