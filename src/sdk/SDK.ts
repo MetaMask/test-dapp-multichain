@@ -3,16 +3,16 @@ import { parseCaipChainId, KnownCaipNamespace } from '@metamask/utils';
 
 import { Eip155Notifications, Eip155Methods } from '../constants/methods';
 import { getCaip25FormattedAddresses } from '../helpers/AddressHelpers';
-import MetaMaskMultichainProvider from './providers/MetaMaskMultichainProvider';
+import MetaMaskMultichainExternallyConnectableProvider from './providers/MetaMaskMultichainProvider';
 
 export const METAMASK_PROD_CHROME_ID = 'nkbihfbeogaeaoehlefnkodbefgpgknn';
 export class SDK {
-  #provider: MetaMaskMultichainProvider;
+  #provider: MetaMaskMultichainExternallyConnectableProvider;
 
   #extensionId?: string | undefined;
 
   constructor() {
-    this.#provider = new MetaMaskMultichainProvider();
+    this.#provider = new MetaMaskMultichainExternallyConnectableProvider();
 
     this.#extensionId = METAMASK_PROD_CHROME_ID;
   }
