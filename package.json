@@ -57,6 +57,7 @@
     "@metamask/utils": "^11.0.0",
     "@open-rpc/meta-schema": "^1.14.9",
     "@open-rpc/schema-utils-js": "^2.0.5",
+    "@solana/web3.js": "^1.98.0",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@types/chrome": "^0.0.279",
@@ -95,7 +96,10 @@
     "allowScripts": {
       "@lavamoat/preinstall-always-fail": false,
       "react-scripts>@pmmmwh/react-refresh-webpack-plugin>core-js-pure": false,
-      "react-scripts>react-app-polyfill>core-js": false
+      "react-scripts>react-app-polyfill>core-js": false,
+      "@solana/web3.js>bigint-buffer": false,
+      "@solana/web3.js>rpc-websockets>bufferutil": false,
+      "@solana/web3.js>rpc-websockets>utf-8-validate": false
     }
   }
 }

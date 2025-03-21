@@ -16,6 +16,7 @@ import {
 } from './constants/methods';
 import { FEATURED_NETWORKS } from './constants/networks';
 import { openRPCExampleToJSON, truncateJSON } from './helpers/JsonHelpers';
+import { generateSolanaMethodExamples } from './helpers/solana-method-signatures';
 import { useSDK } from './sdk';
 import { WINDOW_POST_MESSAGE_ID } from './sdk/SDK';
 
@@ -404,31 +405,26 @@ function App() {
       [scope]: selectedMethod,
     }));
 
-    const example = metamaskOpenrpcDocument?.methods.find(
-      (method) => (method as MethodObject).name === selectedMethod,
-    );
+    const selectedAddress = selectedAccounts[scope];
 
-    if (example) {
-      let exampleParams: Json = openRPCExampleToJSON(example as MethodObject);
-      const selectedAddress = selectedAccounts[scope];
+    if (scope.startsWith('solana:')) {
+      const address = selectedAddress
+        ? parseCaipAccountId(selectedAddress).address
+        : '';
 
-      if (
-        selectedAddress &&
-        selectedMethod in METHODS_REQUIRING_PARAM_INJECTION
-      ) {
-        exampleParams = injectParams(
-          selectedMethod,
-          exampleParams,
-          selectedAddress,
-          scope,
-        );
-      }
+      const solanaExample = generateSolanaMethodExamples(
+        selectedMethod,
+        address,
+      );
 
       const defaultRequest = {
         method: 'wallet_invokeMethod',
         params: {
           scope,
-          request: exampleParams,
+          request: {
+            method: selectedMethod,
+            ...solanaExample,
+          },
         },
       };
 
@@ -436,6 +432,40 @@ function App() {
         ...prev,
         [scope]: JSON.stringify(defaultRequest, null, 2),
       }));
+    } else {
+      // Original handling for EVM methods using OpenRPC
+      const example = metamaskOpenrpcDocument?.methods.find(
+        (method) => (method as MethodObject).name === selectedMethod,
+      );
+
+      if (example) {
+        let exampleParams: Json = openRPCExampleToJSON(example as MethodObject);
+
+        if (
+          selectedAddress &&
+          selectedMethod in METHODS_REQUIRING_PARAM_INJECTION
+        ) {
+          exampleParams = injectParams(
+            selectedMethod,
+            exampleParams,
+            selectedAddress,
+            scope,
+          );
+        }
+
+        const defaultRequest = {
+          method: 'wallet_invokeMethod',
+          params: {
+            scope,
+            request: exampleParams,
+          },
+        };
+
+        setInvokeMethodRequests((prev) => ({
+          ...prev,
+          [scope]: JSON.stringify(defaultRequest, null, 2),
+        }));
+      }
     }
   };
 
