@@ -1,9 +1,4 @@
-import ObjectMultiplex from '@metamask/object-multiplex';
-import { WindowPostMessageStream } from '@metamask/post-message-stream';
-import type { Json, JsonRpcRequest, JsonRpcResponse } from '@metamask/utils';
-import { assertIsJsonRpcResponse, isObject } from '@metamask/utils';
-import type { Duplex, DuplexOptions } from 'readable-stream';
-import { pipeline } from 'readable-stream';
+import type { JsonRpcRequest } from '@metamask/utils';
 
 import MetaMaskMultichainBaseProvider from './MetaMaskMultichainBaseProvider';
 
@@ -13,79 +8,61 @@ const INPAGE = 'metamask-inpage';
 const MULTICHAIN_SUBSTREAM_NAME = 'metamask-multichain-provider';
 
 class MetaMaskMultichainWindowPostMessageProvider extends MetaMaskMultichainBaseProvider {
-  #stream: Duplex | null;
+  #listener: ((message: MessageEvent) => void) | null;
 
   constructor() {
     super();
-    this.#stream = null;
+    this.#listener = null;
   }
 
   async connect(): Promise<boolean> {
-    if (this.#stream) {
+    if (this.#listener) {
       this.disconnect();
     }
 
-    const metamaskStream = new WindowPostMessageStream({
-      name: INPAGE,
-      target: CONTENT_SCRIPT,
-    });
+    this.#listener = (messageEvent: MessageEvent) => {
+      const { target, data } = messageEvent.data;
+      console.log(data);
+      if (
+        target !== INPAGE ||
+        data?.name !== MULTICHAIN_SUBSTREAM_NAME ||
+        data?.data.type !== 'caip-x'
+      ) {
+        return;
+      }
+      this._handleMessage(data.data.data);
+    };
 
-    const mux = new ObjectMultiplex(metamaskStream as DuplexOptions);
-    this.#stream = mux.createStream(MULTICHAIN_SUBSTREAM_NAME);
+    window.addEventListener('message', this.#listener);
 
-    pipeline(mux, metamaskStream, mux, (error) => {
-      this.#stream = null;
-      console.error('Error connecting to extension:', error);
-      this.disconnect();
-    });
-
-    // Wait for the next tick to allow onDisconnect to fire if there's an error
-    // This is an unfortunate hack required to ensure the port is connected before
-    // we declare the connection successful.
-    // This gives a few ticks for the onDisconnect listener to fire if the runtime
-    // connection fails because the extension for the given extensionId is not present.
-    await new Promise((resolve) => setTimeout(resolve, 5));
-
-    if (!this.isConnected()) {
-      console.error(
-        'Error connecting to MetaMask Multichain Provider. Make sure the Multichain Enable MetaMask extension is installed and enabled.',
-      );
-      return false;
-    }
-
-    this.#stream.on('data', this._handleMessage.bind(this));
-
-    try {
-      this.#stream.write('ping');
-      console.log(
-        'Connected to MetaMask Multichain Provider via window.postMessage',
-      );
-      return true;
-    } catch (error) {
-      console.error('Error sending message:', error);
-      return false;
-    }
+    return true;
   }
 
   _disconnect(): void {
-    if (this.#stream) {
-      this.#stream.destroy();
-      this.#stream = null;
+    if (this.#listener !== null) {
+      window.removeEventListener('message', this.#listener);
+      this.#listener = null;
     }
   }
 
   isConnected(): boolean {
-    return Boolean(this.#stream);
+    return Boolean(this.#listener);
   }
 
   _sendRequest(request: JsonRpcRequest) {
-    this.#stream?.write({ type: 'caip-x', data: request });
-  }
-
-  _parseMessage(message: Json): JsonRpcResponse {
-    const data = isObject(message) ? message.data : null;
-    assertIsJsonRpcResponse(data);
-    return data;
+    window.postMessage(
+      {
+        target: CONTENT_SCRIPT,
+        data: {
+          name: MULTICHAIN_SUBSTREAM_NAME,
+          data: {
+            type: 'caip-x',
+            data: request,
+          },
+        },
+      },
+      location.origin,
+    );
   }
 }
 
