@@ -3,18 +3,18 @@ import { parseCaipChainId, KnownCaipNamespace } from '@metamask/utils';
 
 import { Eip155Notifications, Eip155Methods } from '../constants/methods';
 import { getCaip25FormattedAddresses } from '../helpers/AddressHelpers';
+import type MetaMaskMultichainBaseProvider from './providers/MetaMaskMultichainBaseProvider';
+import MetaMaskMultichainExternallyConnectableProvider from './providers/MetaMaskMultichainExternallyConnectableProvider';
 import MetaMaskMultichainWindowPostMessageProvider from './providers/MetaMaskMultichainWindowPostMessageProvider';
 
+export const WINDOW_POST_MESSAGE_ID = 'window.postMessage';
 export const METAMASK_PROD_CHROME_ID = 'nkbihfbeogaeaoehlefnkodbefgpgknn';
-export class SDK {
-  #provider: MetaMaskMultichainWindowPostMessageProvider;
 
-  #extensionId?: string | undefined;
+export class SDK {
+  #provider: MetaMaskMultichainBaseProvider | null;
 
   constructor() {
-    this.#provider = new MetaMaskMultichainWindowPostMessageProvider();
-
-    this.#extensionId = METAMASK_PROD_CHROME_ID;
+    this.#provider = null;
   }
 
   public async createSession(
@@ -60,7 +60,7 @@ export class SDK {
       return acc;
     }, {});
 
-    return this.#provider.request({
+    return this.#provider?.request({
       method: 'wallet_createSession',
       params: { optionalScopes },
     });
@@ -74,7 +74,7 @@ export class SDK {
     };
   }): Promise<Json> {
     const { scope, request } = options;
-    return this.#provider.request({
+    return this.#provider?.request({
       method: 'wallet_invokeMethod',
       params: {
         scope,
@@ -84,7 +84,7 @@ export class SDK {
   }
 
   public async revokeSession(): Promise<Json> {
-    return this.#provider.request({
+    return this.#provider?.request({
       method: 'wallet_revokeSession',
       params: [],
     });
@@ -96,26 +96,31 @@ export class SDK {
       { methods: string[]; notifications: string[] }
     >;
   } | null> {
-    return this.#provider.request({
+    return this.#provider?.request({
       method: 'wallet_getSession',
       params: [],
     });
   }
 
   public onNotification(listener: (notification: Json) => void): void {
-    this.#provider.onNotification(listener);
+    this.#provider?.onNotification(listener);
   }
 
   public disconnect(): void {
-    this.#provider.disconnect();
+    this.#provider?.disconnect();
   }
 
   public async setExtensionIdAndConnect(extensionId: string): Promise<boolean> {
     // TODO add logic once we have CAIP-294 wallet discovery + or hardcode the stable extensionId
-    const connected = await this.#provider.connect();
-    if (connected) {
-      this.#extensionId = extensionId;
+    let connected;
+    if (extensionId === WINDOW_POST_MESSAGE_ID) {
+      this.#provider = new MetaMaskMultichainWindowPostMessageProvider();
+      connected = await this.#provider.connect();
+    } else {
+      this.#provider = new MetaMaskMultichainExternallyConnectableProvider();
+      connected = await this.#provider.connect(extensionId);
     }
+
     return connected;
   }
 }
