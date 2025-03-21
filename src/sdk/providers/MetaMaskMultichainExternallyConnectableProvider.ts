@@ -1,5 +1,4 @@
-import type { Json, JsonRpcRequest, JsonRpcResponse } from '@metamask/utils';
-import { assertIsJsonRpcResponse, isObject } from '@metamask/utils';
+import type { JsonRpcRequest } from '@metamask/utils';
 
 import MetaMaskMultichainBaseProvider from './MetaMaskMultichainBaseProvider';
 
@@ -41,7 +40,13 @@ class MetaMaskMultichainExternallyConnectableProvider extends MetaMaskMultichain
       return false;
     }
 
-    this.#port.onMessage.addListener(this._handleMessage.bind(this));
+    this.#port.onMessage.addListener((message) => {
+      const { type, data } = message;
+      if (type !== 'caip-x') {
+        return;
+      }
+      this._handleMessage(data);
+    });
 
     try {
       this.#port.postMessage('ping');
@@ -68,12 +73,6 @@ class MetaMaskMultichainExternallyConnectableProvider extends MetaMaskMultichain
 
   _sendRequest(request: JsonRpcRequest) {
     this.#port?.postMessage({ type: 'caip-x', data: request });
-  }
-
-  _parseMessage(message: Json): JsonRpcResponse<Json> {
-    const data = isObject(message) ? message.data : null;
-    assertIsJsonRpcResponse(data);
-    return data;
   }
 }
 

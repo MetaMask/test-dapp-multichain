@@ -1,10 +1,4 @@
-import type {
-  Json,
-  JsonRpcId,
-  JsonRpcRequest,
-  JsonRpcResponse,
-} from '@metamask/utils';
-import { isJsonRpcSuccess } from '@metamask/utils';
+import type { JsonRpcId, JsonRpcRequest } from '@metamask/utils';
 
 import type { Provider } from './Provider';
 
@@ -33,8 +27,6 @@ abstract class MetaMaskMultichainBaseProvider implements Provider {
   abstract isConnected(): boolean;
 
   abstract _sendRequest(request: JsonRpcRequest): void;
-
-  abstract _parseMessage(message: Json): JsonRpcResponse;
 
   disconnect(): void {
     this._disconnect();
@@ -77,21 +69,20 @@ abstract class MetaMaskMultichainBaseProvider implements Provider {
   }
 
   protected _handleMessage(message: any): void {
-    const response = this._parseMessage(message);
-    if (response.id && this.#requestMap.has(response.id)) {
-      const { resolve, reject } = this.#requestMap.get(response.id) ?? {};
-      this.#requestMap.delete(response.id);
+    if (message.id && this.#requestMap.has(message.id)) {
+      const { resolve, reject } = this.#requestMap.get(message.id) ?? {};
+      this.#requestMap.delete(message.id);
 
       if (resolve && reject) {
-        if (isJsonRpcSuccess(response)) {
-          resolve(response.result);
+        if (message.error) {
+          reject(new Error(message.error.message));
         } else {
-          reject(new Error(response.error.message));
+          resolve(message.result);
         }
       }
-    } else if (!response.id) {
+    } else if (!message.id) {
       // It's a notification
-      this.#notifyCallbacks(response);
+      this.#notifyCallbacks(message);
     }
   }
 
