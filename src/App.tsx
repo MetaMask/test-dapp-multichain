@@ -21,6 +21,7 @@ import { WINDOW_POST_MESSAGE_ID } from './sdk/SDK';
 
 function App() {
   const [addresses, setAddresses] = useState<string[]>(['']);
+  const [solanaAddresses, setSolanaAddresses] = useState<string[]>(['']);
   const [walletMapEntries, setWalletMapEntries] = useState<
     Record<string, WalletMapEntry>
   >({});
@@ -45,7 +46,6 @@ function App() {
     'eip155:324': false,
     'eip155:8453': false,
     'eip155:1337': false,
-    'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp': false,
   });
   const [extensionId, setExtensionId] = useState<string>('');
   const [invokeMethodRequests, setInvokeMethodRequests] = useState<
@@ -255,9 +255,31 @@ function App() {
     ];
 
     try {
+      const evmScopes = selectedScopesArray.filter((scope) =>
+        scope.startsWith('eip155:'),
+      );
+      const solanaScopes = selectedScopesArray.filter((scope) =>
+        scope.startsWith('solana:'),
+      );
+
+      let evmScopeAddressList: string[] = [];
+      let solanaScopeAddressList: string[] = [];
+
+      if (evmScopes.length > 0) {
+        evmScopeAddressList = [
+          ...addresses.filter((addr) => addr.trim() !== ''),
+        ];
+      }
+
+      if (solanaScopes.length > 0) {
+        solanaScopeAddressList = [
+          ...solanaAddresses.filter((addr) => addr.trim() !== ''),
+        ];
+      }
       const result = await createSession(
         selectedScopesArray as CaipChainId[],
-        addresses,
+        evmScopeAddressList,
+        solanaScopeAddressList,
       );
       setSessionMethodHistory((prev) => {
         const timestamp = Date.now();
@@ -541,7 +563,14 @@ function App() {
                   <DynamicInputs
                     inputArray={addresses}
                     setInputArray={setAddresses}
-                    label={INPUT_LABEL_TYPE.ADDRESS}
+                    label={INPUT_LABEL_TYPE.EVM_ADDRESS}
+                  />
+                </div>
+                <div>
+                  <DynamicInputs
+                    inputArray={solanaAddresses}
+                    setInputArray={setSolanaAddresses}
+                    label={INPUT_LABEL_TYPE.SOLANA_ADDRESS}
                   />
                 </div>
                 <div className="session-lifecycle-buttons">
@@ -710,141 +739,68 @@ function App() {
                         : scope}
                     </h3>
 
-                    {(details.accounts ?? []).length > 0 ? (
-                      <select
-                        className="accounts-select"
-                        value={selectedAccounts[scope] ?? ''}
-                        onChange={(evt) => {
-                          const newAddress =
-                            (evt.target.value as CaipAccountId) ?? '';
-                          setSelectedAccounts((prev) => ({
-                            ...prev,
-                            [scope]: newAddress,
-                          }));
+                    <select
+                      className="accounts-select"
+                      value={selectedAccounts[scope] ?? ''}
+                      onChange={(evt) => {
+                        const newAddress =
+                          (evt.target.value as CaipAccountId) ?? '';
+                        setSelectedAccounts((prev) => ({
+                          ...prev,
+                          [scope]: newAddress,
+                        }));
 
-                          const currentMethod = selectedMethods[scope];
-                          if (currentMethod) {
-                            const example =
-                              metamaskOpenrpcDocument?.methods.find(
-                                (method) =>
-                                  (method as MethodObject).name ===
-                                  currentMethod,
-                              );
+                        const currentMethod = selectedMethods[scope];
+                        if (currentMethod) {
+                          const example = metamaskOpenrpcDocument?.methods.find(
+                            (method) =>
+                              (method as MethodObject).name === currentMethod,
+                          );
 
-                            if (example) {
-                              let exampleParams: Json = openRPCExampleToJSON(
-                                example as MethodObject,
-                              );
-
-                              exampleParams = injectParams(
-                                currentMethod,
-                                exampleParams,
-                                newAddress,
-                                scope as CaipChainId,
-                              );
-
-                              const updatedRequest = {
-                                method: 'wallet_invokeMethod',
-                                params: {
-                                  scope,
-                                  request: exampleParams,
-                                },
-                              };
-
-                              setInvokeMethodRequests((prev) => ({
-                                ...prev,
-                                [scope]: JSON.stringify(
-                                  updatedRequest,
-                                  null,
-                                  2,
-                                ),
-                              }));
-                            }
-                          }
-                        }}
-                      >
-                        <option value="">Select an account</option>
-                        {(details.accounts ?? []).map(
-                          (account: CaipAccountId) => {
-                            const { address } = parseCaipAccountId(account);
-                            return (
-                              <option
-                                data-testid={`${String(account)}-option`}
-                                key={address}
-                                value={account}
-                              >
-                                {address}
-                              </option>
+                          if (example) {
+                            let exampleParams: Json = openRPCExampleToJSON(
+                              example as MethodObject,
                             );
-                          },
-                        )}
-                      </select>
-                    ) : (
-                      <div
-                        className="manual-account-input"
-                        style={{ width: '100%' }}
-                      >
-                        <input
-                          type="text"
-                          className="accounts-select"
-                          style={{ width: '100%', boxSizing: 'border-box' }}
-                          placeholder="Enter account address manually"
-                          value={
-                            selectedAccounts[scope] &&
-                            typeof selectedAccounts[scope] === 'string'
-                              ? selectedAccounts[scope]
-                              : ''
-                          }
-                          onChange={(evt) => {
-                            const newAddress = evt.target.value;
-                            setSelectedAccounts((prev) => ({
+
+                            exampleParams = injectParams(
+                              currentMethod,
+                              exampleParams,
+                              newAddress,
+                              scope as CaipChainId,
+                            );
+
+                            const updatedRequest = {
+                              method: 'wallet_invokeMethod',
+                              params: {
+                                scope,
+                                request: exampleParams,
+                              },
+                            };
+
+                            setInvokeMethodRequests((prev) => ({
                               ...prev,
-                              [scope]: newAddress,
+                              [scope]: JSON.stringify(updatedRequest, null, 2),
                             }));
-
-                            const currentMethod = selectedMethods[scope];
-                            if (currentMethod) {
-                              const example =
-                                metamaskOpenrpcDocument?.methods.find(
-                                  (method) =>
-                                    (method as MethodObject).name ===
-                                    currentMethod,
-                                );
-
-                              if (example) {
-                                let exampleParams: Json = openRPCExampleToJSON(
-                                  example as MethodObject,
-                                );
-
-                                exampleParams = injectParams(
-                                  currentMethod,
-                                  exampleParams,
-                                  newAddress as CaipAccountId,
-                                  scope as CaipChainId,
-                                );
-
-                                const updatedRequest = {
-                                  method: 'wallet_invokeMethod',
-                                  params: {
-                                    scope,
-                                    request: exampleParams,
-                                  },
-                                };
-
-                                setInvokeMethodRequests((prev) => ({
-                                  ...prev,
-                                  [scope]: JSON.stringify(
-                                    updatedRequest,
-                                    null,
-                                    2,
-                                  ),
-                                }));
-                              }
-                            }
-                          }}
-                        />
-                      </div>
-                    )}
+                          }
+                        }
+                      }}
+                    >
+                      <option value="">Select an account</option>
+                      {(details.accounts ?? []).map(
+                        (account: CaipAccountId) => {
+                          const { address } = parseCaipAccountId(account);
+                          return (
+                            <option
+                              data-testid={`${String(account)}-option`}
+                              key={address}
+                              value={account}
+                            >
+                              {address}
+                            </option>
+                          );
+                        },
+                      )}
+                    </select>
 
                     <select
                       data-testid={`${scope}-select`}

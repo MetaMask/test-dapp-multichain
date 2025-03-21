@@ -19,7 +19,8 @@ export class SDK {
 
   public async createSession(
     scopes: CaipChainId[],
-    addresses: string[],
+    evmAddresses: string[],
+    solanaAddresses: string[],
   ): Promise<Json> {
     const optionalScopes = scopes.reduce<
       Record<
@@ -33,14 +34,13 @@ export class SDK {
         acc[scope] = {
           methods: Eip155Methods,
           notifications: Eip155Notifications,
-          accounts: getCaip25FormattedAddresses(scope, addresses),
+          accounts: getCaip25FormattedAddresses(scope, evmAddresses),
         };
       } else if (namespace === KnownCaipNamespace.Solana) {
-        console.log('solana scope', scope);
         acc[scope] = {
           methods: [],
           notifications: [],
-          accounts: [],
+          accounts: getCaip25FormattedAddresses(scope, solanaAddresses),
         };
         // TODO: add solana methods and notifications that our Solana snap supports
         // acc[scope] = {

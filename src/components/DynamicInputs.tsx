@@ -3,11 +3,15 @@ import React, { useCallback } from 'react';
 export enum INPUT_LABEL_TYPE {
   ADDRESS = 'Address',
   SCOPE = 'Scope',
+  SOLANA_ADDRESS = 'Solana Address',
+  EVM_ADDRESS = 'EVM Address',
 }
 
 const LABEL_PLACEHOLDER = {
   [INPUT_LABEL_TYPE.ADDRESS]: '0x483b...5f97',
   [INPUT_LABEL_TYPE.SCOPE]: 'eip155:1',
+  [INPUT_LABEL_TYPE.SOLANA_ADDRESS]: '5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+  [INPUT_LABEL_TYPE.EVM_ADDRESS]: '0x483b...5f97',
 };
 
 type DynamicInputsProps = {

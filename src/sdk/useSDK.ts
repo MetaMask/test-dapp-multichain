@@ -9,7 +9,11 @@ type UseSDKReturn = {
   extensionId: string;
   connect: (extensionId: string) => Promise<void>;
   disconnect: () => void;
-  createSession: (scopes: CaipChainId[], addresses: string[]) => Promise<Json>;
+  createSession: (
+    scopes: CaipChainId[],
+    evmAddresses: string[],
+    solanaAddresses: string[],
+  ) => Promise<Json>;
   getSession: () => Promise<Json>;
   revokeSession: () => Promise<Json>;
   invokeMethod: (
@@ -157,13 +161,22 @@ export function useSDK({
   }, [sdk]);
 
   const createSession = useCallback(
-    async (scopes: CaipChainId[], addresses: string[]) => {
+    async (
+      scopes: CaipChainId[],
+      evmAddresses: string[],
+      solanaAddresses: string[],
+    ) => {
       if (!sdk) {
         throw new Error('SDK not initialized');
       }
       console.log('scopes', scopes);
-      console.log('addresses', addresses);
-      const result = await sdk.createSession(scopes, addresses);
+      console.log('evmAddresses', evmAddresses);
+      console.log('solanaAddresses', solanaAddresses);
+      const result = await sdk.createSession(
+        scopes,
+        evmAddresses,
+        solanaAddresses,
+      );
       console.log('result', result);
       setCurrentSession(result);
       return result;
