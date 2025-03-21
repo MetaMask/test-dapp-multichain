@@ -36,6 +36,12 @@ export class SDK {
           accounts: getCaip25FormattedAddresses(scope, addresses),
         };
       } else if (namespace === KnownCaipNamespace.Solana) {
+        console.log('solana scope', scope);
+        acc[scope] = {
+          methods: [],
+          notifications: [],
+          accounts: [],
+        };
         // TODO: add solana methods and notifications that our Solana snap supports
         // acc[scope] = {
         //   methods: SolanaMethods,

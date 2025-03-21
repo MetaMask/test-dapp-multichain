@@ -161,6 +161,8 @@ export function useSDK({
       if (!sdk) {
         throw new Error('SDK not initialized');
       }
+      console.log('scopes', scopes);
+      console.log('addresses', addresses);
       const result = await sdk.createSession(scopes, addresses);
       console.log('result', result);
       setCurrentSession(result);

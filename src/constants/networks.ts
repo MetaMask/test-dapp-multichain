@@ -9,4 +9,5 @@ export const FEATURED_NETWORKS = {
   'eip155:324': 'zkSync Era Mainnet',
   'eip155:8453': 'Base Mainnet',
   'eip155:1337': 'Localhost',
+  'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp': 'Solana Mainnet',
 } as const;
