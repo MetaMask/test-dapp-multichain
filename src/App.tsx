@@ -17,6 +17,7 @@ import {
 import { FEATURED_NETWORKS } from './constants/networks';
 import { openRPCExampleToJSON, truncateJSON } from './helpers/JsonHelpers';
 import { useSDK } from './sdk';
+import { WINDOW_POST_MESSAGE_ID } from './sdk/SDK';
 
 function App() {
   const [addresses, setAddresses] = useState<string[]>(['']);
@@ -148,7 +149,7 @@ function App() {
       const newEntry: WalletMapEntry = {
         params: customEvent.detail.params,
       };
-      setExtensionId(newExtensionId);
+      setExtensionId(newExtensionId ?? WINDOW_POST_MESSAGE_ID);
       setWalletMapEntries((prev) => ({
         ...prev,
         [customEvent.detail.params.uuid]: newEntry,
