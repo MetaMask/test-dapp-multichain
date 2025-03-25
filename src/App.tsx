@@ -17,6 +17,7 @@ import {
 import { FEATURED_NETWORKS } from './constants/networks';
 import { openRPCExampleToJSON, truncateJSON } from './helpers/JsonHelpers';
 import { useSDK } from './sdk';
+import { WINDOW_POST_MESSAGE_ID } from './sdk/SDK';
 
 function App() {
   const [addresses, setAddresses] = useState<string[]>(['']);
@@ -144,9 +145,16 @@ function App() {
   const handleWalletAnnounce = useCallback(
     (ev: Event) => {
       const customEvent = ev as CustomEvent;
-      const newExtensionId = customEvent.detail.params.extensionId ?? '';
+      const { extensionId: announcedId, rdns } = customEvent.detail.params;
+      const newExtensionId =
+        rdns === 'io.metamask.flask' && !announcedId
+          ? WINDOW_POST_MESSAGE_ID
+          : announcedId;
       const newEntry: WalletMapEntry = {
-        params: customEvent.detail.params,
+        params: {
+          ...customEvent.detail.params,
+          extensionId: newExtensionId,
+        },
       };
       setExtensionId(newExtensionId);
       setWalletMapEntries((prev) => ({

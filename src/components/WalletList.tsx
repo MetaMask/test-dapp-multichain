@@ -1,6 +1,8 @@
-import type { MouseEventHandler } from 'react';
 import React from 'react';
+import type { MouseEventHandler } from 'react';
+
 import './WalletList.css';
+import { WINDOW_POST_MESSAGE_ID } from '../sdk/SDK';
 
 export type WalletMapEntry = {
   params: {
@@ -53,7 +55,10 @@ function WalletList({
               {wallet.params.extensionId && (
                 <>
                   <p className="wallet-extension-id">
-                    Extension ID: {wallet.params.extensionId}
+                    {wallet.params.extensionId === WINDOW_POST_MESSAGE_ID
+                      ? null
+                      : 'Extension ID: '}
+                    {wallet.params.extensionId}
                   </p>
                   <button
                     onClick={handleWalletClick(wallet.params.extensionId)}

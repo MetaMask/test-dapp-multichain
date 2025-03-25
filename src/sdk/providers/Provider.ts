@@ -1,5 +1,5 @@
 export type Provider = {
-  connect(extensionId?: string): Promise<boolean>;
+  connect(...args: any): Promise<boolean>;
   disconnect(): void;
   request(params: { method: string; params: any }): Promise<any>;
   onNotification(callback: (notification: any) => void): void;
