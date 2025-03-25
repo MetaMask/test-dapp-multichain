@@ -1,5 +1,6 @@
-import type { MouseEventHandler } from 'react';
 import React from 'react';
+import type { MouseEventHandler } from 'react';
+
 import './WalletList.css';
 import { WINDOW_POST_MESSAGE_ID } from '../sdk/SDK';
 
@@ -54,9 +55,10 @@ function WalletList({
               {wallet.params.extensionId && (
                 <>
                   <p className="wallet-extension-id">
-                    { wallet.params.extensionId !== WINDOW_POST_MESSAGE_ID ?
-                      'Extension ID: ' : null
-                    }{wallet.params.extensionId}
+                    {wallet.params.extensionId === WINDOW_POST_MESSAGE_ID
+                      ? null
+                      : 'Extension ID: '}
+                    {wallet.params.extensionId}
                   </p>
                   <button
                     onClick={handleWalletClick(wallet.params.extensionId)}

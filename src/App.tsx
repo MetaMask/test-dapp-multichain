@@ -145,12 +145,15 @@ function App() {
   const handleWalletAnnounce = useCallback(
     (ev: Event) => {
       const customEvent = ev as CustomEvent;
-      const { extensionId: announcedId, rdns } = customEvent.detail.params
-      const newExtensionId = rdns === 'io.metamask.flask' && !announcedId ? WINDOW_POST_MESSAGE_ID : announcedId;
+      const { extensionId: announcedId, rdns } = customEvent.detail.params;
+      const newExtensionId =
+        rdns === 'io.metamask.flask' && !announcedId
+          ? WINDOW_POST_MESSAGE_ID
+          : announcedId;
       const newEntry: WalletMapEntry = {
         params: {
           ...customEvent.detail.params,
-          extensionId: newExtensionId
+          extensionId: newExtensionId,
         },
       };
       setExtensionId(newExtensionId);

@@ -22,7 +22,6 @@ class MetaMaskMultichainWindowPostMessageProvider extends MetaMaskMultichainBase
 
     this.#listener = (messageEvent: MessageEvent) => {
       const { target, data } = messageEvent.data;
-      console.log(data);
       if (
         target !== INPAGE ||
         data?.name !== MULTICHAIN_SUBSTREAM_NAME ||
