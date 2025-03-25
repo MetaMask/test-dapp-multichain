@@ -9,10 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.7.0]
 
-### Uncategorized
+### Added
 
-- feat: Add firefox window.postMessage support ([#48](https://github.com/MetaMask/test-dapp-multichain/pull/48))
-- chore: add workflow_dispatch to security-code-scanner ([#47](https://github.com/MetaMask/test-dapp-multichain/pull/47))
+- Add Firefox window.postMessage support ([#48](https://github.com/MetaMask/test-dapp-multichain/pull/48))
 
 ## [0.6.0]
 
