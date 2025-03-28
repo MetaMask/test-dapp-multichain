@@ -1,11 +1,6 @@
 import type { CaipAccountId, CaipChainId, Json } from '@metamask/utils';
-import {
-  parseCaipChainId,
-  KnownCaipNamespace,
-  parseCaipAccountId,
-} from '@metamask/utils';
+import { parseCaipChainId, parseCaipAccountId } from '@metamask/utils';
 
-import { Eip155Notifications, Eip155Methods } from '../constants/methods';
 import type MetaMaskMultichainBaseProvider from './providers/MetaMaskMultichainBaseProvider';
 import MetaMaskMultichainExternallyConnectableProvider from './providers/MetaMaskMultichainExternallyConnectableProvider';
 import MetaMaskMultichainWindowPostMessageProvider from './providers/MetaMaskMultichainWindowPostMessageProvider';
@@ -24,31 +19,17 @@ export class SDK {
     scopes: CaipChainId[],
     caipAccountIds: CaipAccountId[],
   ): Promise<Json> {
-    const optionalScopes = scopes.reduce<
-      Record<
-        CaipChainId,
-        { methods: string[]; notifications: string[]; accounts: string[] }
-      >
-    >((acc, scope) => {
-      const { reference, namespace } = parseCaipChainId(scope);
-      acc[scope] = {
+    const optionalScopes: Record<
+      CaipChainId,
+      { methods: string[]; notifications: string[]; accounts: CaipAccountId[] }
+    > = {};
+    scopes.forEach((scope) => {
+      optionalScopes[scope] = {
         methods: [],
         notifications: [],
         accounts: [],
       };
-
-      // Set methods and notifications based on namespace
-      // TODO possibly can remove this since these will be added by default by the wallet
-      if (namespace === KnownCaipNamespace.Eip155 && reference !== undefined) {
-        const scopeData = acc[scope];
-        if (scopeData) {
-          scopeData.methods = Eip155Methods;
-          scopeData.notifications = Eip155Notifications;
-        }
-      }
-
-      return acc;
-    }, {});
+    });
 
     caipAccountIds.forEach((accountId: CaipAccountId) => {
       try {

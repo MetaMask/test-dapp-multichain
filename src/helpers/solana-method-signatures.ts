@@ -30,7 +30,6 @@ const generateBase64Transaction = (address: string) => {
   return base64Transaction;
 };
 
-// Helper function to convert string to base64
 const stringToBase64 = (str: string): string => {
   const encoder = new TextEncoder();
   const bytes = encoder.encode(str);

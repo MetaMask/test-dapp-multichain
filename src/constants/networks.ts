@@ -14,7 +14,6 @@ export const FEATURED_NETWORKS = {
   'Solana Mainnet': 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
 } as const;
 
-// Helper function to get network name from chain ID
 export const getNetworkName = (chainId: CaipChainId): string => {
   const entry = Object.entries(FEATURED_NETWORKS).find(
     ([_, id]) => id === chainId,
