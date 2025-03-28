@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 
 export enum INPUT_LABEL_TYPE {
   ADDRESS = 'Address',
@@ -23,6 +23,10 @@ const DynamicInputs: React.FC<DynamicInputsProps> = ({
   setInputArray,
   label,
 }) => {
+  const [confirmedIndices, setConfirmedIndices] = useState<Set<number>>(
+    new Set(),
+  );
+
   const handleInputChange = useCallback(
     (index: number, value: string) => {
       const newInputs = [...inputArray];
@@ -33,38 +37,83 @@ const DynamicInputs: React.FC<DynamicInputsProps> = ({
   );
 
   const addInput = useCallback(() => {
+    if (inputArray.length > 0 && inputArray[inputArray.length - 1] !== '') {
+      setConfirmedIndices((prev) => {
+        const newSet = new Set(prev);
+        newSet.add(inputArray.length - 1);
+        return newSet;
+      });
+    }
+
     if (inputArray.length < 5) {
       setInputArray([...inputArray, '']);
     }
   }, [setInputArray, inputArray]);
 
+  const removeInput = useCallback(
+    (indexToRemove: number) => {
+      setInputArray((prev) => prev.filter((_, i) => i !== indexToRemove));
+
+      setConfirmedIndices((prev) => {
+        const newSet = new Set<number>();
+        prev.forEach((idx) => {
+          if (idx < indexToRemove) {
+            newSet.add(idx);
+          } else if (idx > indexToRemove) {
+            newSet.add(idx - 1);
+          }
+        });
+        return newSet;
+      });
+    },
+    [setInputArray],
+  );
+
   return (
-    <div>
-      {inputArray.map((input, index) => (
-        <div key={index}>
-          <label>
-            {label}:
-            <input
-              id={`custom-${label}-input-${index}`}
-              type="text"
-              value={input}
-              onChange={(inputEvent) =>
-                handleInputChange(index, inputEvent.target.value)
-              }
-              placeholder={LABEL_PLACEHOLDER[label]}
-            />
-          </label>
-          {index === inputArray.length - 1 && inputArray.length < 5 && (
-            <button
-              id={`add-custom-${label.toLowerCase()}-button-${index}`}
-              onClick={addInput}
-              disabled={!input}
-            >
-              +
-            </button>
-          )}
-        </div>
-      ))}
+    <div className="dynamic-inputs-container">
+      {inputArray.map((input, index) => {
+        const isConfirmed = confirmedIndices.has(index);
+        const isLastInput = index === inputArray.length - 1;
+
+        return (
+          <div key={index} className="dynamic-input-row">
+            <label>
+              {label}:
+              <input
+                id={`custom-${label}-input-${index}`}
+                type="text"
+                value={input}
+                onChange={(inputEvent) =>
+                  handleInputChange(index, inputEvent.target.value)
+                }
+                placeholder={LABEL_PLACEHOLDER[label]}
+                readOnly={isConfirmed}
+                className={isConfirmed ? 'input-confirmed' : ''}
+              />
+            </label>
+
+            {isLastInput && !isConfirmed && inputArray.length < 5 && (
+              <button
+                id={`add-custom-${label.toLowerCase()}-button-${index}`}
+                onClick={addInput}
+                disabled={!input}
+                className="add-button"
+              >
+                +
+              </button>
+            )}
+
+            {isConfirmed && (
+              <button
+                onClick={() => removeInput(index)}
+                className="remove-button"
+              >
+                ×
+              </button>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 };

@@ -50,7 +50,6 @@ export class SDK {
       return acc;
     }, {});
 
-    // Filter and add accounts to their appropriate scopes based on namespace
     caipAccountIds.forEach((accountId: CaipAccountId) => {
       try {
         const {

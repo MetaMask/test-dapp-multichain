@@ -775,3 +775,63 @@ details[open] summary::before {
   0% { opacity: 0; }
   100% { opacity: 1; }
 }
+
+.dynamic-inputs-container {
+  margin: 1rem 0;
+}
+
+.dynamic-input-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  position: relative;
+}
+
+.input-confirmed {
+  background-color: #f0f0f0 !important;
+  border-color: #ccc !important;
+  color: #555 !important;
+  cursor: not-allowed;
+}
+
+.add-button {
+  background-color: #48bb78;
+  color: white;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  padding: 0;
+  font-size: 18px;
+  line-height: 1;
+  margin-left: 0.5rem;
+}
+
+.add-button:hover {
+  background-color: #38a169;
+}
+
+.add-button:disabled {
+  background-color: #a0aec0;
+}
+
+.remove-button {
+  background-color: #e53e3e;
+  color: white;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  padding: 0;
+  font-size: 18px;
+  line-height: 1;
+  margin-left: 0.5rem;
+}
+
+.remove-button:hover {
+  background-color: #c53030;
+}
