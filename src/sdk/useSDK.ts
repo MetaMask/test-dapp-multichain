@@ -169,15 +169,11 @@ export function useSDK({
       if (!sdk) {
         throw new Error('SDK not initialized');
       }
-      console.log('scopes', scopes);
-      console.log('evmAddresses', evmAddresses);
-      console.log('solanaAddresses', solanaAddresses);
       const result = await sdk.createSession(
         scopes,
         evmAddresses,
         solanaAddresses,
       );
-      console.log('result', result);
       setCurrentSession(result);
       return result;
     },

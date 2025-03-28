@@ -6,37 +6,28 @@ import { FEATURED_NETWORKS } from '../constants/networks';
 window.Buffer = Buffer;
 
 const generateBase64Transaction = (address: string) => {
-  try {
-    const publicKey = new PublicKey(address);
+  const publicKey = new PublicKey(address);
 
-    const transaction = new Transaction();
-    transaction.recentBlockhash =
-      'EETubP5AKHgjPAhzPAFcb8BAY1hMH639CWCFTqi3hq1k';
-    transaction.feePayer = publicKey;
+  const transaction = new Transaction();
+  transaction.recentBlockhash = 'EETubP5AKHgjPAhzPAFcb8BAY1hMH639CWCFTqi3hq1k';
+  transaction.feePayer = publicKey;
 
-    transaction.add(
-      SystemProgram.transfer({
-        fromPubkey: publicKey,
-        toPubkey: publicKey,
-        lamports: 1000,
-      }),
-    );
+  transaction.add(
+    SystemProgram.transfer({
+      fromPubkey: publicKey,
+      toPubkey: publicKey,
+      lamports: 1000,
+    }),
+  );
 
-    const serializedTransaction = transaction.serialize({
-      verifySignatures: false,
-    });
-    const base64Transaction = btoa(
-      String.fromCharCode.apply(null, [
-        ...new Uint8Array(serializedTransaction),
-      ]),
-    );
+  const serializedTransaction = transaction.serialize({
+    verifySignatures: false,
+  });
+  const base64Transaction = btoa(
+    String.fromCharCode.apply(null, [...new Uint8Array(serializedTransaction)]),
+  );
 
-    return base64Transaction;
-  } catch (error) {
-    console.error('Error generating transaction:', error);
-    // Fallback to a pre-encoded transaction in case of errors
-    return 'AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAEDAgROw8oBzcUQJ3MAAAAAAAMCAgABDAIAAQwAAAAAAJnXk2sByMsAAAAAGGSF776IFi6/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAvQMAAAAAAAAAjEBiYVkSY3oXgvOs8iINDpa98gy8Q+E69vdmZjirciE7xBwmP4LHikKQZRLRjmJJrCJqVIup3YR6sUje0UYfcgsBAAAAAAAAAGQJa0ZXrO6tLjQ1XnnNJQgQI3cAAAAAAA==';
-  }
+  return base64Transaction;
 };
 
 // Helper function to convert string to base64
