@@ -1,6 +1,7 @@
 import { Transaction, PublicKey, SystemProgram } from '@solana/web3.js';
 // eslint-disable-next-line
 import { Buffer } from 'buffer';
+
 import { FEATURED_NETWORKS } from '../constants/networks';
 
 window.Buffer = Buffer;
