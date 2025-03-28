@@ -2654,6 +2654,7 @@ __metadata:
     "@typescript-eslint/eslint-plugin": "npm:^5.43.0"
     "@typescript-eslint/parser": "npm:^5.43.0"
     "@yarnpkg/types": "npm:^4.0.0-rc.52"
+    buffer: "npm:^6.0.3"
     depcheck: "npm:^1.4.3"
     eslint: "npm:^8.44.0"
     eslint-config-prettier: "npm:^8.8.0"

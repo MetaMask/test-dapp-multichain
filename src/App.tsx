@@ -14,7 +14,7 @@ import {
   injectParams,
   METHODS_REQUIRING_PARAM_INJECTION,
 } from './constants/methods';
-import { FEATURED_NETWORKS } from './constants/networks';
+import { FEATURED_NETWORKS, getNetworkName } from './constants/networks';
 import { openRPCExampleToJSON, truncateJSON } from './helpers/JsonHelpers';
 import { generateSolanaMethodExamples } from './helpers/solana-method-signatures';
 import { useSDK } from './sdk';
@@ -37,16 +37,18 @@ function App() {
   const [selectedScopes, setSelectedScopes] = useState<
     Record<CaipChainId, boolean>
   >({
-    'eip155:1': true,
-    'eip155:59144': true,
-    'eip155:42161': false,
-    'eip155:43114': false,
-    'eip155:56': false,
-    'eip155:10': false,
-    'eip155:137': false,
-    'eip155:324': false,
-    'eip155:8453': false,
-    'eip155:1337': false,
+    [FEATURED_NETWORKS['Ethereum Mainnet']]: true,
+    [FEATURED_NETWORKS['Linea Mainnet']]: true,
+    [FEATURED_NETWORKS['Arbitrum One']]: false,
+    [FEATURED_NETWORKS['Avalanche Network C-Chain']]: false,
+    [FEATURED_NETWORKS['BNB Chain']]: false,
+    [FEATURED_NETWORKS['OP Mainnet']]: false,
+    [FEATURED_NETWORKS['Polygon Mainnet']]: false,
+    [FEATURED_NETWORKS['zkSync Era Mainnet']]: false,
+    [FEATURED_NETWORKS['Base Mainnet']]: false,
+    // eslint-disable-next-line
+    [FEATURED_NETWORKS['Localhost']]: false,
+    [FEATURED_NETWORKS['Solana Mainnet']]: false,
   });
   const [extensionId, setExtensionId] = useState<string>('');
   const [invokeMethodRequests, setInvokeMethodRequests] = useState<
@@ -227,17 +229,18 @@ function App() {
     setWalletNotifyHistory([]);
     setSessionMethodHistory([]);
     setSelectedScopes({
-      'eip155:1': false,
-      'eip155:59144': false,
-      'eip155:42161': false,
-      'eip155:43114': false,
-      'eip155:56': false,
-      'eip155:10': false,
-      'eip155:137': false,
-      'eip155:324': false,
-      'eip155:8453': false,
-      'eip155:1337': false,
-      'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp': false,
+      [FEATURED_NETWORKS['Ethereum Mainnet']]: false,
+      [FEATURED_NETWORKS['Linea Mainnet']]: false,
+      [FEATURED_NETWORKS['Arbitrum One']]: false,
+      [FEATURED_NETWORKS['Avalanche Network C-Chain']]: false,
+      [FEATURED_NETWORKS['BNB Chain']]: false,
+      [FEATURED_NETWORKS['OP Mainnet']]: false,
+      [FEATURED_NETWORKS['Polygon Mainnet']]: false,
+      [FEATURED_NETWORKS['zkSync Era Mainnet']]: false,
+      [FEATURED_NETWORKS['Base Mainnet']]: false,
+      // eslint-disable-next-line
+      [FEATURED_NETWORKS['Localhost']]: false,
+      [FEATURED_NETWORKS['Solana Mainnet']]: false,
     });
   };
 
@@ -249,9 +252,10 @@ function App() {
 
   const handleCreateSession = async () => {
     const selectedScopesArray = [
-      ...Object.keys(selectedScopes).filter(
-        (scope) => selectedScopes[scope as CaipChainId],
-      ),
+      ...Object.keys(selectedScopes).filter((scope) => {
+        const caipChainId = scope as CaipChainId;
+        return selectedScopes[caipChainId];
+      }),
       ...customScopes.filter((scope) => scope.length),
     ];
 
@@ -562,7 +566,7 @@ function App() {
               <div className="create-session-container">
                 <h3>Create Session</h3>
                 {Object.entries(FEATURED_NETWORKS).map(
-                  ([chainId, networkName]) => (
+                  ([networkName, chainId]) => (
                     <label key={chainId}>
                       <input
                         type="checkbox"
@@ -738,154 +742,146 @@ function App() {
             </button>
             <div className="scopes-grid">
               {Object.entries(currentSession.sessionScopes).map(
-                ([scope, details]: [string, any]) => (
-                  <div
-                    data-testid={`scope-card-${scope}`}
-                    key={scope}
-                    className="scope-card"
-                  >
-                    <h3
-                      title={
-                        FEATURED_NETWORKS[
-                          scope as keyof typeof FEATURED_NETWORKS
-                        ]
-                          ? `${
-                              FEATURED_NETWORKS[
-                                scope as keyof typeof FEATURED_NETWORKS
-                              ]
-                            } (${scope})`
-                          : scope
-                      }
-                      className="scope-card-title"
+                ([scope, details]) => {
+                  const caipChainId = scope as CaipChainId;
+                  const scopeDetails = details as {
+                    accounts: CaipAccountId[];
+                    methods: string[];
+                  };
+                  return (
+                    <div
+                      data-testid={`scope-card-${caipChainId}`}
+                      key={caipChainId}
+                      className="scope-card"
                     >
-                      {FEATURED_NETWORKS[
-                        scope as keyof typeof FEATURED_NETWORKS
-                      ]
-                        ? `${
-                            FEATURED_NETWORKS[
-                              scope as keyof typeof FEATURED_NETWORKS
-                            ]
-                          } (${scope})`
-                        : scope}
-                    </h3>
+                      <h3
+                        title={`${getNetworkName(
+                          caipChainId,
+                        )} (${caipChainId})`}
+                        className="scope-card-title"
+                      >
+                        {`${getNetworkName(caipChainId)} (${caipChainId})`}
+                      </h3>
 
-                    <select
-                      className="accounts-select"
-                      value={selectedAccounts[scope] ?? ''}
-                      onChange={(evt) => {
-                        const newAddress =
-                          (evt.target.value as CaipAccountId) ?? '';
-                        setSelectedAccounts((prev) => ({
-                          ...prev,
-                          [scope]: newAddress,
-                        }));
+                      <select
+                        className="accounts-select"
+                        value={selectedAccounts[caipChainId] ?? ''}
+                        onChange={(evt) => {
+                          const newAddress =
+                            (evt.target.value as CaipAccountId) ?? '';
+                          setSelectedAccounts((prev) => ({
+                            ...prev,
+                            [caipChainId]: newAddress,
+                          }));
 
-                        const currentMethod = selectedMethods[scope];
-                        if (currentMethod) {
-                          const example = metamaskOpenrpcDocument?.methods.find(
-                            (method) =>
-                              (method as MethodObject).name === currentMethod,
-                          );
+                          const currentMethod = selectedMethods[caipChainId];
+                          if (currentMethod) {
+                            const example =
+                              metamaskOpenrpcDocument?.methods.find(
+                                (method) =>
+                                  (method as MethodObject).name ===
+                                  currentMethod,
+                              );
 
-                          if (example) {
-                            let exampleParams: Json = openRPCExampleToJSON(
-                              example as MethodObject,
-                            );
+                            if (example) {
+                              let exampleParams: Json = openRPCExampleToJSON(
+                                example as MethodObject,
+                              );
 
-                            exampleParams = injectParams(
-                              currentMethod,
-                              exampleParams,
-                              newAddress,
-                              scope as CaipChainId,
-                            );
+                              exampleParams = injectParams(
+                                currentMethod,
+                                exampleParams,
+                                newAddress,
+                                caipChainId,
+                              );
 
-                            const updatedRequest = {
-                              method: 'wallet_invokeMethod',
-                              params: {
-                                scope,
-                                request: exampleParams,
-                              },
-                            };
+                              const updatedRequest = {
+                                method: 'wallet_invokeMethod',
+                                params: {
+                                  scope: caipChainId,
+                                  request: exampleParams,
+                                },
+                              };
 
-                            setInvokeMethodRequests((prev) => ({
-                              ...prev,
-                              [scope]: JSON.stringify(updatedRequest, null, 2),
-                            }));
+                              setInvokeMethodRequests((prev) => ({
+                                ...prev,
+                                [caipChainId]: JSON.stringify(
+                                  updatedRequest,
+                                  null,
+                                  2,
+                                ),
+                              }));
+                            }
                           }
-                        }
-                      }}
-                    >
-                      <option value="">Select an account</option>
-                      {(details.accounts ?? []).map(
-                        (account: CaipAccountId) => {
-                          const { address } = parseCaipAccountId(account);
-                          return (
-                            <option
-                              data-testid={`${String(account)}-option`}
-                              key={address}
-                              value={account}
-                            >
-                              {address}
-                            </option>
-                          );
-                        },
-                      )}
-                    </select>
+                        }}
+                      >
+                        <option value="">Select an account</option>
+                        {(scopeDetails.accounts ?? []).map(
+                          (account: CaipAccountId) => {
+                            const { address } = parseCaipAccountId(account);
+                            return (
+                              <option
+                                data-testid={`${String(account)}-option`}
+                                key={address}
+                                value={account}
+                              >
+                                {address}
+                              </option>
+                            );
+                          },
+                        )}
+                      </select>
 
-                    <select
-                      data-testid={`${scope}-select`}
-                      value={selectedMethods[scope] ?? ''}
-                      onChange={(evt) =>
-                        handleMethodSelect(evt, scope as CaipChainId)
-                      }
-                    >
-                      <option value="">Select a method</option>
-                      {details.methods.map((method: string) => (
-                        <option
-                          data-testid={`${scope}-${method}-option`}
-                          key={method}
-                          value={method}
-                        >
-                          {method}
-                        </option>
-                      ))}
-                    </select>
+                      <select
+                        data-testid={`${caipChainId}-select`}
+                        value={selectedMethods[caipChainId] ?? ''}
+                        onChange={(evt) => handleMethodSelect(evt, caipChainId)}
+                      >
+                        <option value="">Select a method</option>
+                        {(scopeDetails.methods ?? []).map((method: string) => (
+                          <option
+                            data-testid={`${caipChainId}-${method}-option`}
+                            key={method}
+                            value={method}
+                          >
+                            {method}
+                          </option>
+                        ))}
+                      </select>
 
-                    <details className="collapsible-section">
-                      <summary>Invoke Method Request</summary>
-                      <div className="collapsible-content">
-                        <textarea
-                          data-testid={`${scope}-collapsible-content-textarea`}
-                          value={invokeMethodRequests[scope] ?? ''}
-                          onChange={(evt) =>
-                            setInvokeMethodRequests((prev) => ({
-                              ...prev,
-                              [scope]: evt.target.value,
-                            }))
+                      <details className="collapsible-section">
+                        <summary>Invoke Method Request</summary>
+                        <div className="collapsible-content">
+                          <textarea
+                            data-testid={`${caipChainId}-collapsible-content-textarea`}
+                            value={invokeMethodRequests[caipChainId] ?? ''}
+                            onChange={(evt) =>
+                              setInvokeMethodRequests((prev) => ({
+                                ...prev,
+                                [caipChainId]: evt.target.value,
+                              }))
+                            }
+                            rows={5}
+                            cols={50}
+                          />
+                        </div>
+                      </details>
+
+                      <button
+                        data-testid={`invoke-method-${caipChainId}-btn`}
+                        onClick={async () => {
+                          const method = selectedMethods[caipChainId];
+                          if (method) {
+                            await handleInvokeMethod(caipChainId, method);
                           }
-                          rows={5}
-                          cols={50}
-                        />
-                      </div>
-                    </details>
+                        }}
+                      >
+                        Invoke Method
+                      </button>
 
-                    <button
-                      data-testid={`invoke-method-${scope}-btn`}
-                      onClick={async () => {
-                        const method = selectedMethods[scope];
-                        if (method) {
-                          await handleInvokeMethod(
-                            scope as CaipChainId,
-                            method,
-                          );
-                        }
-                      }}
-                    >
-                      Invoke Method
-                    </button>
-
-                    {Object.entries(invokeMethodResults[scope] ?? {}).map(
-                      ([method, results]) => {
+                      {Object.entries(
+                        invokeMethodResults[caipChainId] ?? {},
+                      ).map(([method, results]) => {
                         return results.map(({ result, request }, index) => {
                           const { text, truncated } = truncateJSON(result, 150);
                           return truncated ? (
@@ -903,7 +899,7 @@ function App() {
                               <div className="collapsible-content">
                                 <code className="code-left-align">
                                   <pre
-                                    id={`invoke-method-${scope}-${method}-result-${index}`}
+                                    id={`invoke-method-${caipChainId}-${method}-result-${index}`}
                                   >
                                     {JSON.stringify(result, null, 2)}
                                   </pre>
@@ -923,7 +919,7 @@ function App() {
                               </div>
                               <code className="code-left-align">
                                 <pre
-                                  id={`invoke-method-${scope}-${method}-result-${index}`}
+                                  id={`invoke-method-${caipChainId}-${method}-result-${index}`}
                                 >
                                   {text}
                                 </pre>
@@ -931,10 +927,10 @@ function App() {
                             </div>
                           );
                         });
-                      },
-                    )}
-                  </div>
-                ),
+                      })}
+                    </div>
+                  );
+                },
               )}
             </div>
           </div>

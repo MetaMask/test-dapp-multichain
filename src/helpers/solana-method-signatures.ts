@@ -1,26 +1,42 @@
-// Buffer polyfill for browser environment
-// if (typeof window !== 'undefined' && !window.Buffer) {
-//   window.Buffer = {
-//     from: (data: any, _encoding?: string) => {
-//       if (typeof data === 'string') {
-//         const encoder = new TextEncoder();
-//         return encoder.encode(data);
-//       }
-//       return new Uint8Array(data);
-//     },
-//     alloc: (size: number) => new Uint8Array(size),
-//     allocUnsafe: (size: number) => new Uint8Array(size),
-//     isBuffer: (obj: any) => obj instanceof Uint8Array,
-//   } as any;
-// }
+import { Transaction, PublicKey, SystemProgram } from '@solana/web3.js';
+// eslint-disable-next-line
+import { Buffer } from 'buffer';
+import { FEATURED_NETWORKS } from '../constants/networks';
 
-const generateBase64Transaction = (_address: string) => {
-  // This is a mock transaction in base64 format - we're not actually using it on-chain
-  // so we can use a static value that represents a valid transaction format
-  const mockTransactionBase64 =
-    'AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAEDAgROw8oBzcUQJ3MAAAAAAAMCAgABDAIAAQwAAAAAAJnXk2sByMsAAAAAGGSF776IFi6/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAvQMAAAAAAAAAjEBiYVkSY3oXgvOs8iINDpa98gy8Q+E69vdmZjirciE7xBwmP4LHikKQZRLRjmJJrCJqVIup3YR6sUje0UYfcgsBAAAAAAAAAGQJa0ZXrO6tLjQ1XnnNJQgQI3cAAAAAAA==';
+window.Buffer = Buffer;
 
-  return mockTransactionBase64;
+const generateBase64Transaction = (address: string) => {
+  try {
+    const publicKey = new PublicKey(address);
+
+    const transaction = new Transaction();
+    transaction.recentBlockhash =
+      'EETubP5AKHgjPAhzPAFcb8BAY1hMH639CWCFTqi3hq1k';
+    transaction.feePayer = publicKey;
+
+    transaction.add(
+      SystemProgram.transfer({
+        fromPubkey: publicKey,
+        toPubkey: publicKey,
+        lamports: 1000,
+      }),
+    );
+
+    const serializedTransaction = transaction.serialize({
+      verifySignatures: false,
+    });
+    const base64Transaction = btoa(
+      String.fromCharCode.apply(null, [
+        ...new Uint8Array(serializedTransaction),
+      ]),
+    );
+
+    return base64Transaction;
+  } catch (error) {
+    console.error('Error generating transaction:', error);
+    // Fallback to a pre-encoded transaction in case of errors
+    return 'AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAEDAgROw8oBzcUQJ3MAAAAAAAMCAgABDAIAAQwAAAAAAJnXk2sByMsAAAAAGGSF776IFi6/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAvQMAAAAAAAAAjEBiYVkSY3oXgvOs8iINDpa98gy8Q+E69vdmZjirciE7xBwmP4LHikKQZRLRjmJJrCJqVIup3YR6sUje0UYfcgsBAAAAAAAAAGQJa0ZXrO6tLjQ1XnnNJQgQI3cAAAAAAA==';
+  }
 };
 
 // Helper function to convert string to base64
@@ -47,7 +63,7 @@ export const generateSolanaMethodExamples = (
         params: {
           account: { address },
           transaction: generateBase64Transaction(address),
-          scope: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+          scope: FEATURED_NETWORKS['Solana Mainnet'],
         },
       };
     case 'signAllTransactions':
@@ -58,19 +74,23 @@ export const generateSolanaMethodExamples = (
             generateBase64Transaction(address),
             generateBase64Transaction(address),
           ],
-          scope: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+          scope: FEATURED_NETWORKS['Solana Mainnet'],
         },
       };
-    case 'getBalance':
+    case 'signAndSendTransaction':
       return {
         params: {
           account: { address },
+          transaction: generateBase64Transaction(address),
+          scope: FEATURED_NETWORKS['Solana Mainnet'],
         },
       };
-    case 'getAccountInfo':
+    case 'signIn':
       return {
         params: {
-          account: { address },
+          address,
+          domain: window.location.host,
+          statement: 'Please sign in.',
         },
       };
     default:
