@@ -1,8 +1,11 @@
-import type { CaipChainId, Json } from '@metamask/utils';
-import { parseCaipChainId, KnownCaipNamespace } from '@metamask/utils';
+import type { CaipAccountId, CaipChainId, Json } from '@metamask/utils';
+import {
+  parseCaipChainId,
+  KnownCaipNamespace,
+  parseCaipAccountId,
+} from '@metamask/utils';
 
 import { Eip155Notifications, Eip155Methods } from '../constants/methods';
-import { getCaip25FormattedAddresses } from '../helpers/AddressHelpers';
 import type MetaMaskMultichainBaseProvider from './providers/MetaMaskMultichainBaseProvider';
 import MetaMaskMultichainExternallyConnectableProvider from './providers/MetaMaskMultichainExternallyConnectableProvider';
 import MetaMaskMultichainWindowPostMessageProvider from './providers/MetaMaskMultichainWindowPostMessageProvider';
@@ -19,8 +22,7 @@ export class SDK {
 
   public async createSession(
     scopes: CaipChainId[],
-    evmAddresses: string[],
-    solanaAddresses: string[],
+    caipAccountIds: CaipAccountId[],
   ): Promise<Json> {
     const optionalScopes = scopes.reduce<
       Record<
@@ -29,42 +31,51 @@ export class SDK {
       >
     >((acc, scope) => {
       const { reference, namespace } = parseCaipChainId(scope);
-      // if this is an EVM chain, prepopulate the createSession request all the EIP155 methods and notifications that we support
+      acc[scope] = {
+        methods: [],
+        notifications: [],
+        accounts: [],
+      };
+
+      // Set methods and notifications based on namespace
+      // TODO possibly can remove this since these will be added by default by the wallet
       if (namespace === KnownCaipNamespace.Eip155 && reference !== undefined) {
-        acc[scope] = {
-          methods: Eip155Methods,
-          notifications: Eip155Notifications,
-          accounts: getCaip25FormattedAddresses(scope, evmAddresses),
-        };
-      } else if (namespace === KnownCaipNamespace.Solana) {
-        acc[scope] = {
-          methods: [],
-          notifications: [],
-          accounts: getCaip25FormattedAddresses(scope, solanaAddresses),
-        };
-        // TODO: add solana methods and notifications that our Solana snap supports
-        // acc[scope] = {
-        //   methods: SolanaMethods,
-        //   notifications: SolanaNotifications,
-        //   accounts: SolanaAccounts,
-        // };
-      } else if (namespace === KnownCaipNamespace.Bip122) {
-        // TODO: add bip122 methods and notifications that our Bitcoin snap supports
-        // acc[scope] = {
-        //   methods: Bip122Methods,
-        //   notifications: Bip122Notifications,
-        //   accounts: Bip122Accounts,
-        // };
-      } else {
-        // Any other chains we don't know the API for beforehand,
-        acc[scope] = {
-          methods: [],
-          notifications: [],
-          accounts: [],
-        };
+        const scopeData = acc[scope];
+        if (scopeData) {
+          scopeData.methods = Eip155Methods;
+          scopeData.notifications = Eip155Notifications;
+        }
       }
+
       return acc;
     }, {});
+
+    // Filter and add accounts to their appropriate scopes based on namespace
+    caipAccountIds.forEach((accountId: CaipAccountId) => {
+      try {
+        const {
+          chain: { namespace: accountNamespace },
+        } = parseCaipAccountId(accountId);
+
+        Object.keys(optionalScopes).forEach((scopeKey) => {
+          const scope = scopeKey as CaipChainId;
+          const scopeDetails = parseCaipChainId(scope);
+
+          if (scopeDetails.namespace === accountNamespace) {
+            const scopeData = optionalScopes[scope];
+            if (scopeData) {
+              scopeData.accounts.push(accountId);
+            }
+          }
+        });
+      } catch (error) {
+        const stringifiedAccountId = JSON.stringify(accountId);
+        console.error(
+          `Invalid CAIP account ID: ${stringifiedAccountId}`,
+          error,
+        );
+      }
+    });
 
     return this.#provider?.request({
       method: 'wallet_createSession',

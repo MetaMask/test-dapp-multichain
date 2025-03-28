@@ -690,3 +690,88 @@ details[open] summary::before {
 .result-item-small .result-params {
   max-width: 100%;
 }
+
+.network-label {
+  display: inline-flex;
+  align-items: center;
+  margin: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+/* Namespace Copy Buttons */
+.convenience-buttons-section {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.convenience-buttons-section h4 {
+  margin: 0 0 0.75rem 0;
+  font-size: 1rem;
+  color: #4a5568;
+}
+
+.namespace-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.namespace-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  background-color: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #4a5568;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.namespace-button:hover {
+  background-color: #edf2f7;
+  border-color: #cbd5e0;
+}
+
+.copy-icon {
+  margin-right: 0.5rem;
+  font-size: 1rem;
+}
+
+.namespace-copied {
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #2b6cb0;
+  color: white;
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+  animation: fadeIn 0.3s ease-in-out;
+  white-space: nowrap;
+}
+
+.namespace-copied::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #2b6cb0 transparent transparent transparent;
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}

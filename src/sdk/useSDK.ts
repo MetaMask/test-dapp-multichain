@@ -1,4 +1,4 @@
-import type { CaipChainId, Json } from '@metamask/utils';
+import type { CaipAccountId, CaipChainId, Json } from '@metamask/utils';
 import { useCallback, useEffect, useState } from 'react';
 
 import { SDK, METAMASK_PROD_CHROME_ID } from './SDK';
@@ -11,8 +11,7 @@ type UseSDKReturn = {
   disconnect: () => void;
   createSession: (
     scopes: CaipChainId[],
-    evmAddresses: string[],
-    solanaAddresses: string[],
+    caipAccountIds: CaipAccountId[],
   ) => Promise<Json>;
   getSession: () => Promise<Json>;
   revokeSession: () => Promise<Json>;
@@ -161,19 +160,11 @@ export function useSDK({
   }, [sdk]);
 
   const createSession = useCallback(
-    async (
-      scopes: CaipChainId[],
-      evmAddresses: string[],
-      solanaAddresses: string[],
-    ) => {
+    async (scopes: CaipChainId[], caipAccountIds: CaipAccountId[]) => {
       if (!sdk) {
         throw new Error('SDK not initialized');
       }
-      const result = await sdk.createSession(
-        scopes,
-        evmAddresses,
-        solanaAddresses,
-      );
+      const result = await sdk.createSession(scopes, caipAccountIds);
       setCurrentSession(result);
       return result;
     },

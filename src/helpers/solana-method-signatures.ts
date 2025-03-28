@@ -84,6 +84,10 @@ export const generateSolanaMethodExamples = (
           statement: 'Please sign in.',
         },
       };
+    case 'getGenesisHash':
+      return {
+        params: {},
+      };
     default:
       return {};
   }

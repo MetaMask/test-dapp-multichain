@@ -21,8 +21,7 @@ import { useSDK } from './sdk';
 import { WINDOW_POST_MESSAGE_ID } from './sdk/SDK';
 
 function App() {
-  const [addresses, setAddresses] = useState<string[]>(['']);
-  const [solanaAddresses, setSolanaAddresses] = useState<string[]>(['']);
+  const [caipAccountIds, setCaipAccountIds] = useState<string[]>(['']);
   const [walletMapEntries, setWalletMapEntries] = useState<
     Record<string, WalletMapEntry>
   >({});
@@ -67,6 +66,7 @@ function App() {
   const [sessionMethodHistory, setSessionMethodHistory] = useState<
     { timestamp: number; method: string; data: any }[]
   >([]);
+  const [copiedNamespace, setCopiedNamespace] = useState<string | null>(null);
 
   const setInitialMethodsAndAccounts = (currentSession: any) => {
     const initialSelectedMethods: Record<string, string> = {};
@@ -260,31 +260,13 @@ function App() {
     ];
 
     try {
-      const evmScopes = selectedScopesArray.filter((scope) =>
-        scope.startsWith('eip155:'),
-      );
-      const solanaScopes = selectedScopesArray.filter((scope) =>
-        scope.startsWith('solana:'),
+      const filteredAccountIds = caipAccountIds.filter(
+        (addr) => addr.trim() !== '',
       );
 
-      let evmScopeAddressList: string[] = [];
-      let solanaScopeAddressList: string[] = [];
-
-      if (evmScopes.length > 0) {
-        evmScopeAddressList = [
-          ...addresses.filter((addr) => addr.trim() !== ''),
-        ];
-      }
-
-      if (solanaScopes.length > 0) {
-        solanaScopeAddressList = [
-          ...solanaAddresses.filter((addr) => addr.trim() !== ''),
-        ];
-      }
       const result = await createSession(
         selectedScopesArray as CaipChainId[],
-        evmScopeAddressList,
-        solanaScopeAddressList,
+        filteredAccountIds as CaipAccountId[],
       );
       setSessionMethodHistory((prev) => {
         const timestamp = Date.now();
@@ -483,6 +465,16 @@ function App() {
     }
   }, [isExternallyConnectableConnected]);
 
+  const copyNamespaceToClipboard = async (namespace: string) => {
+    try {
+      await navigator.clipboard.writeText(namespace);
+      setCopiedNamespace(namespace);
+      setTimeout(() => setCopiedNamespace(null), 2000);
+    } catch (error) {
+      console.error('Failed to copy to clipboard:', error);
+    }
+  };
+
   return (
     <div className="App">
       <h1>MetaMask MultiChain API Test Dapp</h1>
@@ -567,7 +559,7 @@ function App() {
                 <h3>Create Session</h3>
                 {Object.entries(FEATURED_NETWORKS).map(
                   ([networkName, chainId]) => (
-                    <label key={chainId}>
+                    <label key={chainId} className="network-label">
                       <input
                         type="checkbox"
                         name={chainId}
@@ -586,6 +578,38 @@ function App() {
                     </label>
                   ),
                 )}
+
+                <div className="convenience-buttons-section">
+                  <h4>Convenience Buttons (Copy CaipChainIds to Clipboard)</h4>
+                  <div className="namespace-buttons">
+                    <button
+                      className="namespace-button"
+                      onClick={async () => {
+                        await copyNamespaceToClipboard('eip155:1');
+                      }}
+                    >
+                      <span className="copy-icon">📋</span> Ethereum Mainnet
+                      {copiedNamespace === 'eip155:1' && (
+                        <span className="namespace-copied">Copied!</span>
+                      )}
+                    </button>
+                    <button
+                      className="namespace-button"
+                      onClick={async () => {
+                        await copyNamespaceToClipboard(
+                          'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+                        );
+                      }}
+                    >
+                      <span className="copy-icon">📋</span> Solana Mainnet
+                      {copiedNamespace ===
+                        'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp' && (
+                        <span className="namespace-copied">Copied!</span>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
                 <div>
                   <DynamicInputs
                     inputArray={customScopes}
@@ -595,16 +619,9 @@ function App() {
                 </div>
                 <div>
                   <DynamicInputs
-                    inputArray={addresses}
-                    setInputArray={setAddresses}
-                    label={INPUT_LABEL_TYPE.EVM_ADDRESS}
-                  />
-                </div>
-                <div>
-                  <DynamicInputs
-                    inputArray={solanaAddresses}
-                    setInputArray={setSolanaAddresses}
-                    label={INPUT_LABEL_TYPE.SOLANA_ADDRESS}
+                    inputArray={caipAccountIds}
+                    setInputArray={setCaipAccountIds}
+                    label={INPUT_LABEL_TYPE.CAIP_ACCOUNT_ID}
                   />
                 </div>
                 <div className="session-lifecycle-buttons">
