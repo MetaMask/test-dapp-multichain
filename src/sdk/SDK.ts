@@ -1,8 +1,6 @@
-import type { CaipChainId, Json } from '@metamask/utils';
-import { parseCaipChainId, KnownCaipNamespace } from '@metamask/utils';
+import type { CaipAccountId, CaipChainId, Json } from '@metamask/utils';
+import { parseCaipChainId, parseCaipAccountId } from '@metamask/utils';
 
-import { Eip155Notifications, Eip155Methods } from '../constants/methods';
-import { getCaip25FormattedAddresses } from '../helpers/AddressHelpers';
 import type MetaMaskMultichainBaseProvider from './providers/MetaMaskMultichainBaseProvider';
 import MetaMaskMultichainExternallyConnectableProvider from './providers/MetaMaskMultichainExternallyConnectableProvider';
 import MetaMaskMultichainWindowPostMessageProvider from './providers/MetaMaskMultichainWindowPostMessageProvider';
@@ -19,46 +17,45 @@ export class SDK {
 
   public async createSession(
     scopes: CaipChainId[],
-    addresses: string[],
+    caipAccountIds: CaipAccountId[],
   ): Promise<Json> {
-    const optionalScopes = scopes.reduce<
-      Record<
-        CaipChainId,
-        { methods: string[]; notifications: string[]; accounts: string[] }
-      >
-    >((acc, scope) => {
-      const { reference, namespace } = parseCaipChainId(scope);
-      // if this is an EVM chain, prepopulate the createSession request all the EIP155 methods and notifications that we support
-      if (namespace === KnownCaipNamespace.Eip155 && reference !== undefined) {
-        acc[scope] = {
-          methods: Eip155Methods,
-          notifications: Eip155Notifications,
-          accounts: getCaip25FormattedAddresses(scope, addresses),
-        };
-      } else if (namespace === KnownCaipNamespace.Solana) {
-        // TODO: add solana methods and notifications that our Solana snap supports
-        // acc[scope] = {
-        //   methods: SolanaMethods,
-        //   notifications: SolanaNotifications,
-        //   accounts: SolanaAccounts,
-        // };
-      } else if (namespace === KnownCaipNamespace.Bip122) {
-        // TODO: add bip122 methods and notifications that our Bitcoin snap supports
-        // acc[scope] = {
-        //   methods: Bip122Methods,
-        //   notifications: Bip122Notifications,
-        //   accounts: Bip122Accounts,
-        // };
-      } else {
-        // Any other chains we don't know the API for beforehand,
-        acc[scope] = {
-          methods: [],
-          notifications: [],
-          accounts: [],
-        };
+    const optionalScopes: Record<
+      CaipChainId,
+      { methods: string[]; notifications: string[]; accounts: CaipAccountId[] }
+    > = {};
+    scopes.forEach((scope) => {
+      optionalScopes[scope] = {
+        methods: [],
+        notifications: [],
+        accounts: [],
+      };
+    });
+
+    caipAccountIds.forEach((accountId: CaipAccountId) => {
+      try {
+        const {
+          chain: { namespace: accountNamespace },
+        } = parseCaipAccountId(accountId);
+
+        Object.keys(optionalScopes).forEach((scopeKey) => {
+          const scope = scopeKey as CaipChainId;
+          const scopeDetails = parseCaipChainId(scope);
+
+          if (scopeDetails.namespace === accountNamespace) {
+            const scopeData = optionalScopes[scope];
+            if (scopeData) {
+              scopeData.accounts.push(accountId);
+            }
+          }
+        });
+      } catch (error) {
+        const stringifiedAccountId = JSON.stringify(accountId);
+        console.error(
+          `Invalid CAIP account ID: ${stringifiedAccountId}`,
+          error,
+        );
       }
-      return acc;
-    }, {});
+    });
 
     return this.#provider?.request({
       method: 'wallet_createSession',

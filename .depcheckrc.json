@@ -7,6 +7,7 @@
     "@yarnpkg/types",
     "prettier-plugin-packagejson",
     "ts-node",
-    "typedoc"
+    "typedoc",
+    "buffer"
   ]
 }
