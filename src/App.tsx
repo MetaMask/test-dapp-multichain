@@ -4,7 +4,7 @@ import { parseCaipAccountId } from '@metamask/utils';
 import type { CaipAccountId, CaipChainId, Json } from '@metamask/utils';
 import type { MethodObject, OpenrpcDocument } from '@open-rpc/meta-schema';
 import { parseOpenRPCDocument } from '@open-rpc/schema-utils-js';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 
 import './App.css';
 import DynamicInputs, { INPUT_LABEL_TYPE } from './components/DynamicInputs';
@@ -66,7 +66,16 @@ function App() {
   const [sessionMethodHistory, setSessionMethodHistory] = useState<
     { timestamp: number; method: string; data: any }[]
   >([]);
+  const [consoleErrorHistory, setConsoleErrorHistory] = useState<
+    {
+      timestamp: number;
+      error: any;
+      stack: string | undefined;
+      fullErrorText: string;
+    }[]
+  >([]);
   const [copiedNamespace, setCopiedNamespace] = useState<string | null>(null);
+  const originalConsoleError = useRef<typeof console.error | null>(null);
 
   const setInitialMethodsAndAccounts = (currentSession: any) => {
     const initialSelectedMethods: Record<string, string> = {};
@@ -221,6 +230,55 @@ function App() {
       });
   }, []);
 
+  useEffect(() => {
+    // Save the original console.error and override it
+    originalConsoleError.current = console.error;
+
+    console.error = (...args) => {
+      // Call the original console.error
+      if (originalConsoleError.current) {
+        originalConsoleError.current.apply(console, args);
+      }
+
+      // Add error to history
+      setConsoleErrorHistory((prev) => {
+        const timestamp = Date.now();
+
+        // Capture the full console.error arguments to preserve context
+        const fullErrorText = args
+          .map((arg) => {
+            if (typeof arg === 'string') {
+              return arg;
+            } 
+            if (arg instanceof Error) {
+              return String(arg);
+            }
+            return JSON.stringify(arg);
+          })
+          .join(' ');
+
+        const error = args[0];
+        const stack = error instanceof Error ? error.stack : undefined;
+
+        // Create new entry with the correct type and full error text
+        const newEntry = {
+          timestamp,
+          error,
+          stack,
+          fullErrorText,
+        };
+        return [newEntry, ...prev].slice(0, 50); // Keep last 50 errors
+      });
+    };
+
+    // Restore original console.error on cleanup
+    return () => {
+      if (originalConsoleError.current) {
+        console.error = originalConsoleError.current;
+      }
+    };
+  }, []);
+
   const handleResetState = () => {
     setSelectedMethods({});
     setInvokeMethodResults({});
@@ -228,6 +286,7 @@ function App() {
     setWalletSessionChangedHistory([]);
     setWalletNotifyHistory([]);
     setSessionMethodHistory([]);
+    setConsoleErrorHistory([]);
     setSelectedScopes({
       [FEATURED_NETWORKS['Ethereum Mainnet']]: false,
       [FEATURED_NETWORKS['Linea Mainnet']]: false,
@@ -381,7 +440,7 @@ function App() {
     }
   }, [currentSession]);
 
-  const handleMethodSelect = (
+  const handleMethodSelect = async (
     evt: React.ChangeEvent<HTMLSelectElement>,
     scope: CaipChainId,
   ) => {
@@ -398,7 +457,7 @@ function App() {
         ? parseCaipAccountId(selectedAddress).address
         : '';
 
-      const solanaExample = generateSolanaMethodExamples(
+      const solanaExample = await generateSolanaMethodExamples(
         selectedMethod,
         address,
       );
@@ -473,6 +532,42 @@ function App() {
     } catch (error) {
       console.error('Failed to copy to clipboard:', error);
     }
+  };
+
+  // Format error message for display
+  const formatError = (
+    errorObj: any,
+    _errStack?: string,
+    fullText?: string,
+  ): string => {
+    if (fullText) {
+      return fullText;
+    }
+    if (typeof errorObj === 'string') {
+      return errorObj;
+    }
+    if (errorObj instanceof Error) {
+      return String(errorObj);
+    }
+    return JSON.stringify(errorObj);
+  };
+
+  // Format detailed error content
+  const formatErrorContent = (
+    errorObj: any,
+    errStack?: string,
+    fullText?: string,
+  ): string => {
+    if (fullText) {
+      return fullText;
+    }
+    if (typeof errorObj === 'string') {
+      return errorObj;
+    }
+    if (errorObj instanceof Error) {
+      return `${String(errorObj)}\n\n${errStack ?? ''}`;
+    }
+    return JSON.stringify(errorObj, null, 2);
   };
 
   return (
@@ -738,6 +833,44 @@ function App() {
                   )}
                 </div>
               </div>
+
+              {/* Console Errors */}
+              <div className="results-section">
+                <h3>
+                  <span className="code-method">Console Errors</span>{' '}
+                </h3>
+                <div className="notification-container">
+                  {consoleErrorHistory.length > 0 ? (
+                    consoleErrorHistory.map(
+                      ({ timestamp, error, stack, fullErrorText }, index) => {
+                        // Use the helper functions in the component
+                        const displayError = formatError(error, stack, fullErrorText);
+                        const errorContent = formatErrorContent(error, stack, fullErrorText);
+
+                        return (
+                          <details key={timestamp}>
+                            <summary className="result-summary">
+                              <span className="timestamp">
+                                {new Date(timestamp).toLocaleString()}
+                              </span>
+                              <span className="error-message">
+                                {displayError}
+                              </span>
+                            </summary>
+                            <code className="code-left-align">
+                              <pre id={`console-error-${index}`}>
+                                {errorContent}
+                              </pre>
+                            </code>
+                          </details>
+                        );
+                      },
+                    )
+                  ) : (
+                    <p>No console errors</p>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
           <div className="session-divider" />
@@ -852,7 +985,9 @@ function App() {
                       <select
                         data-testid={`${caipChainId}-select`}
                         value={selectedMethods[caipChainId] ?? ''}
-                        onChange={(evt) => handleMethodSelect(evt, caipChainId)}
+                        onChange={async (evt) => {
+                          await handleMethodSelect(evt, caipChainId);
+                        }}
                       >
                         <option value="">Select a method</option>
                         {(scopeDetails.methods ?? []).map((method: string) => (

@@ -1,4 +1,10 @@
-import { Transaction, PublicKey, SystemProgram } from '@solana/web3.js';
+import {
+  Transaction,
+  PublicKey,
+  SystemProgram,
+  Connection,
+} from '@solana/web3.js';
+import type { Commitment } from '@solana/web3.js';
 // eslint-disable-next-line
 import { Buffer } from 'buffer';
 
@@ -6,11 +12,45 @@ import { FEATURED_NETWORKS } from '../constants/networks';
 
 window.Buffer = Buffer;
 
-const generateBase64Transaction = (address: string) => {
+const SOLANA_RPC_CONFIG = {
+  endpoints: [
+    'https://api.helius-rpc.com/?api-key=15319146-89d5-4685-a3c4-811991e5212f', // Free tier Helius endpoint (for demo only)
+    'https://api.devnet.solana.com', // Devnet for testing
+    'https://api.mainnet-beta.solana.com', // Public endpoint (rate limited)
+  ],
+  commitment: 'confirmed' as Commitment,
+  // Fallback blockhash in case all RPC endpoints fail
+  fallbackBlockhash: 'EETubP5AKHgjPAhzPAFcb8BAY1hMH639CWCFTqi3hq1k',
+};
+
+const generateBase64Transaction = async (address: string) => {
   const publicKey = new PublicKey(address);
 
+  let blockhash;
+  let error;
+
+  for (const endpoint of SOLANA_RPC_CONFIG.endpoints) {
+    try {
+      const connection = new Connection(endpoint, SOLANA_RPC_CONFIG.commitment);
+      const response = await connection.getLatestBlockhash();
+      blockhash = response.blockhash;
+      console.log(`Successfully connected to Solana RPC endpoint`);
+      break;
+    } catch (connectionError) {
+      console.error(`Failed to connect to RPC endpoint:`, connectionError);
+      error = connectionError;
+    }
+  }
+
+  // If all endpoints failed, use the fallback blockhash
+  if (!blockhash) {
+    console.warn('All RPC endpoints failed, using fallback blockhash');
+    blockhash = SOLANA_RPC_CONFIG.fallbackBlockhash;
+    console.error('Original error:', error);
+  }
+
   const transaction = new Transaction();
-  transaction.recentBlockhash = 'EETubP5AKHgjPAhzPAFcb8BAY1hMH639CWCFTqi3hq1k';
+  transaction.recentBlockhash = blockhash;
   transaction.feePayer = publicKey;
 
   transaction.add(
@@ -37,7 +77,7 @@ const stringToBase64 = (str: string): string => {
   return btoa(String.fromCharCode.apply(null, [...bytes]));
 };
 
-export const generateSolanaMethodExamples = (
+export const generateSolanaMethodExamples = async (
   method: string,
   address: string,
 ) => {
@@ -53,7 +93,7 @@ export const generateSolanaMethodExamples = (
       return {
         params: {
           account: { address },
-          transaction: generateBase64Transaction(address),
+          transaction: await generateBase64Transaction(address),
           scope: FEATURED_NETWORKS['Solana Mainnet'],
         },
       };
@@ -62,8 +102,8 @@ export const generateSolanaMethodExamples = (
         params: {
           account: { address },
           transactions: [
-            generateBase64Transaction(address),
-            generateBase64Transaction(address),
+            await generateBase64Transaction(address),
+            await generateBase64Transaction(address),
           ],
           scope: FEATURED_NETWORKS['Solana Mainnet'],
         },
@@ -72,7 +112,7 @@ export const generateSolanaMethodExamples = (
       return {
         params: {
           account: { address },
-          transaction: generateBase64Transaction(address),
+          transaction: await generateBase64Transaction(address),
           scope: FEATURED_NETWORKS['Solana Mainnet'],
         },
       };
