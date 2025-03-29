@@ -249,7 +249,7 @@ function App() {
           .map((arg) => {
             if (typeof arg === 'string') {
               return arg;
-            } 
+            }
             if (arg instanceof Error) {
               return String(arg);
             }
@@ -844,8 +844,16 @@ function App() {
                     consoleErrorHistory.map(
                       ({ timestamp, error, stack, fullErrorText }, index) => {
                         // Use the helper functions in the component
-                        const displayError = formatError(error, stack, fullErrorText);
-                        const errorContent = formatErrorContent(error, stack, fullErrorText);
+                        const displayError = formatError(
+                          error,
+                          stack,
+                          fullErrorText,
+                        );
+                        const errorContent = formatErrorContent(
+                          error,
+                          stack,
+                          fullErrorText,
+                        );
 
                         return (
                           <details key={timestamp}>
