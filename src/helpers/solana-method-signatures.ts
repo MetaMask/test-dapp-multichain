@@ -14,12 +14,11 @@ window.Buffer = Buffer;
 
 const SOLANA_RPC_CONFIG = {
   endpoints: [
-    'https://api.helius-rpc.com/?api-key=15319146-89d5-4685-a3c4-811991e5212f', // Free tier Helius endpoint (for demo only)
-    'https://api.devnet.solana.com', // Devnet for testing
-    'https://api.mainnet-beta.solana.com', // Public endpoint (rate limited)
+    'https://api.helius-rpc.com/?api-key=15319146-89d5-4685-a3c4-811991e5212f',
+    'https://api.devnet.solana.com',
+    'https://api.mainnet-beta.solana.com',
   ],
   commitment: 'confirmed' as Commitment,
-  // Fallback blockhash in case all RPC endpoints fail
   fallbackBlockhash: 'EETubP5AKHgjPAhzPAFcb8BAY1hMH639CWCFTqi3hq1k',
 };
 

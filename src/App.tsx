@@ -45,8 +45,7 @@ function App() {
     [FEATURED_NETWORKS['Polygon Mainnet']]: false,
     [FEATURED_NETWORKS['zkSync Era Mainnet']]: false,
     [FEATURED_NETWORKS['Base Mainnet']]: false,
-    // eslint-disable-next-line
-    [FEATURED_NETWORKS['Localhost']]: false,
+    [FEATURED_NETWORKS.Localhost]: false,
     [FEATURED_NETWORKS['Solana Mainnet']]: false,
   });
   const [extensionId, setExtensionId] = useState<string>('');
@@ -69,6 +68,7 @@ function App() {
   const [consoleErrorHistory, setConsoleErrorHistory] = useState<
     {
       timestamp: number;
+      uniqueKey?: string;
       error: any;
       stack: string | undefined;
       fullErrorText: string;
@@ -132,7 +132,9 @@ function App() {
 
       if (notification.params?.sessionScopes) {
         setSelectedScopesFromSession(notification.params.sessionScopes);
-        setInitialMethodsAndAccounts(notification.params.sessionScopes);
+        setInitialMethodsAndAccounts({
+          sessionScopes: notification.params.sessionScopes,
+        });
       }
     },
     [
@@ -231,20 +233,16 @@ function App() {
   }, []);
 
   useEffect(() => {
-    // Save the original console.error and override it
     originalConsoleError.current = console.error;
 
     console.error = (...args) => {
-      // Call the original console.error
       if (originalConsoleError.current) {
         originalConsoleError.current.apply(console, args);
       }
 
-      // Add error to history
       setConsoleErrorHistory((prev) => {
         const timestamp = Date.now();
 
-        // Capture the full console.error arguments to preserve context
         const fullErrorText = args
           .map((arg) => {
             if (typeof arg === 'string') {
@@ -257,21 +255,31 @@ function App() {
           })
           .join(' ');
 
+        // Create a unique key using timestamp + first 20 chars of error text
+        const errorSummary = fullErrorText
+          .substring(0, 20)
+          .replace(/\s+/gu, '');
+        const uniqueKey = `${timestamp}-${errorSummary}`;
+
+        // Check if an entry with the same unique key already exists
+        if (prev.some((entry) => entry.uniqueKey === uniqueKey)) {
+          return prev;
+        }
+
         const error = args[0];
         const stack = error instanceof Error ? error.stack : undefined;
 
-        // Create new entry with the correct type and full error text
         const newEntry = {
           timestamp,
+          uniqueKey,
           error,
           stack,
           fullErrorText,
         };
-        return [newEntry, ...prev].slice(0, 50); // Keep last 50 errors
+        return [newEntry, ...prev].slice(0, 15);
       });
     };
 
-    // Restore original console.error on cleanup
     return () => {
       if (originalConsoleError.current) {
         console.error = originalConsoleError.current;
@@ -297,8 +305,7 @@ function App() {
       [FEATURED_NETWORKS['Polygon Mainnet']]: false,
       [FEATURED_NETWORKS['zkSync Era Mainnet']]: false,
       [FEATURED_NETWORKS['Base Mainnet']]: false,
-      // eslint-disable-next-line
-      [FEATURED_NETWORKS['Localhost']]: false,
+      [FEATURED_NETWORKS.Localhost]: false,
       [FEATURED_NETWORKS['Solana Mainnet']]: false,
     });
   };
@@ -680,11 +687,11 @@ function App() {
                     <button
                       className="namespace-button"
                       onClick={async () => {
-                        await copyNamespaceToClipboard('eip155:1');
+                        await copyNamespaceToClipboard('eip155:1:');
                       }}
                     >
                       <span className="copy-icon">📋</span> Ethereum Mainnet
-                      {copiedNamespace === 'eip155:1' && (
+                      {copiedNamespace === 'eip155:1:' && (
                         <span className="namespace-copied">Copied!</span>
                       )}
                     </button>
@@ -692,13 +699,13 @@ function App() {
                       className="namespace-button"
                       onClick={async () => {
                         await copyNamespaceToClipboard(
-                          'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+                          'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp:',
                         );
                       }}
                     >
                       <span className="copy-icon">📋</span> Solana Mainnet
                       {copiedNamespace ===
-                        'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp' && (
+                        'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp:' && (
                         <span className="namespace-copied">Copied!</span>
                       )}
                     </button>
