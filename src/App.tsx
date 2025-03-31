@@ -682,11 +682,14 @@ function App() {
                     <button
                       className="namespace-button"
                       onClick={async () => {
-                        await copyNamespaceToClipboard('eip155:1:');
+                        await copyNamespaceToClipboard(
+                          `${FEATURED_NETWORKS['Ethereum Mainnet']}:`,
+                        );
                       }}
                     >
                       <span className="copy-icon">📋</span> Ethereum Mainnet
-                      {copiedNamespace === 'eip155:1:' && (
+                      {copiedNamespace ===
+                        `${FEATURED_NETWORKS['Ethereum Mainnet']}:` && (
                         <span className="namespace-copied">Copied!</span>
                       )}
                     </button>
@@ -694,13 +697,13 @@ function App() {
                       className="namespace-button"
                       onClick={async () => {
                         await copyNamespaceToClipboard(
-                          'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp:',
+                          `${FEATURED_NETWORKS['Solana Mainnet']}:`,
                         );
                       }}
                     >
                       <span className="copy-icon">📋</span> Solana Mainnet
                       {copiedNamespace ===
-                        'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp:' && (
+                        `${FEATURED_NETWORKS['Solana Mainnet']}:` && (
                         <span className="namespace-copied">Copied!</span>
                       )}
                     </button>
@@ -836,7 +839,6 @@ function App() {
                 </div>
               </div>
 
-              {/* Console Errors */}
               <div className="results-section">
                 <h3>
                   <span className="code-method">Console Errors</span>{' '}
