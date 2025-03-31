@@ -255,13 +255,11 @@ function App() {
           })
           .join(' ');
 
-        // Create a unique key using timestamp + first 20 chars of error text
         const errorSummary = fullErrorText
           .substring(0, 20)
           .replace(/\s+/gu, '');
         const uniqueKey = `${timestamp}-${errorSummary}`;
 
-        // Check if an entry with the same unique key already exists
         if (prev.some((entry) => entry.uniqueKey === uniqueKey)) {
           return prev;
         }
@@ -485,7 +483,6 @@ function App() {
         [scope]: JSON.stringify(defaultRequest, null, 2),
       }));
     } else {
-      // Original handling for EVM methods using OpenRPC
       const example = metamaskOpenrpcDocument?.methods.find(
         (method) => (method as MethodObject).name === selectedMethod,
       );
@@ -541,7 +538,6 @@ function App() {
     }
   };
 
-  // Format error message for display
   const formatError = (
     errorObj: any,
     _errStack?: string,
@@ -559,7 +555,6 @@ function App() {
     return JSON.stringify(errorObj);
   };
 
-  // Format detailed error content
   const formatErrorContent = (
     errorObj: any,
     errStack?: string,
@@ -850,7 +845,6 @@ function App() {
                   {consoleErrorHistory.length > 0 ? (
                     consoleErrorHistory.map(
                       ({ timestamp, error, stack, fullErrorText }, index) => {
-                        // Use the helper functions in the component
                         const displayError = formatError(
                           error,
                           stack,

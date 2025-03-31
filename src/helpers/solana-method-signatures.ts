@@ -41,7 +41,6 @@ const generateBase64Transaction = async (address: string) => {
     }
   }
 
-  // If all endpoints failed, use the fallback blockhash
   if (!blockhash) {
     console.warn('All RPC endpoints failed, using fallback blockhash');
     blockhash = SOLANA_RPC_CONFIG.fallbackBlockhash;
