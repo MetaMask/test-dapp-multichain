@@ -15,8 +15,8 @@ export const FEATURED_NETWORKS = {
 } as const;
 
 export const getNetworkName = (chainId: CaipChainId): string => {
-  const entry = Object.values(FEATURED_NETWORKS).find(
-    (id) => id === chainId,
+  const entry = Object.entries(FEATURED_NETWORKS).find(
+    ([_, id]) => id === chainId,
   );
   return entry ? entry[0] : chainId;
 };
