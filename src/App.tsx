@@ -538,10 +538,10 @@ function App() {
     }
   };
 
-  const formatError = (
+  const formatErrorBase = (
     errorObj: any,
-    _errStack?: string,
     fullText?: string,
+    stringify: (obj: any) => string = (obj) => JSON.stringify(obj),
   ): string => {
     if (fullText) {
       return fullText;
@@ -552,7 +552,15 @@ function App() {
     if (errorObj instanceof Error) {
       return String(errorObj);
     }
-    return JSON.stringify(errorObj);
+    return stringify(errorObj);
+  };
+
+  const formatError = (
+    errorObj: any,
+    _errStack?: string,
+    fullText?: string,
+  ): string => {
+    return formatErrorBase(errorObj, fullText);
   };
 
   const formatErrorContent = (
@@ -560,16 +568,12 @@ function App() {
     errStack?: string,
     fullText?: string,
   ): string => {
-    if (fullText) {
-      return fullText;
+    if (errorObj instanceof Error && errStack) {
+      return `${String(errorObj)}\n\n${errStack}`;
     }
-    if (typeof errorObj === 'string') {
-      return errorObj;
-    }
-    if (errorObj instanceof Error) {
-      return `${String(errorObj)}\n\n${errStack ?? ''}`;
-    }
-    return JSON.stringify(errorObj, null, 2);
+    return formatErrorBase(errorObj, fullText, (obj) =>
+      JSON.stringify(obj, null, 2),
+    );
   };
 
   return (
