@@ -4,7 +4,7 @@ import { parseCaipAccountId } from '@metamask/utils';
 import type { CaipAccountId, CaipChainId, Json } from '@metamask/utils';
 import type { MethodObject, OpenrpcDocument } from '@open-rpc/meta-schema';
 import { parseOpenRPCDocument } from '@open-rpc/schema-utils-js';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 
 import './App.css';
 import DynamicInputs, { INPUT_LABEL_TYPE } from './components/DynamicInputs';
@@ -14,13 +14,14 @@ import {
   injectParams,
   METHODS_REQUIRING_PARAM_INJECTION,
 } from './constants/methods';
-import { FEATURED_NETWORKS } from './constants/networks';
+import { FEATURED_NETWORKS, getNetworkName } from './constants/networks';
 import { openRPCExampleToJSON, truncateJSON } from './helpers/JsonHelpers';
+import { generateSolanaMethodExamples } from './helpers/solana-method-signatures';
 import { useSDK } from './sdk';
 import { WINDOW_POST_MESSAGE_ID } from './sdk/SDK';
 
 function App() {
-  const [addresses, setAddresses] = useState<string[]>(['']);
+  const [caipAccountIds, setCaipAccountIds] = useState<string[]>(['']);
   const [walletMapEntries, setWalletMapEntries] = useState<
     Record<string, WalletMapEntry>
   >({});
@@ -35,16 +36,17 @@ function App() {
   const [selectedScopes, setSelectedScopes] = useState<
     Record<CaipChainId, boolean>
   >({
-    'eip155:1': true,
-    'eip155:59144': true,
-    'eip155:42161': false,
-    'eip155:43114': false,
-    'eip155:56': false,
-    'eip155:10': false,
-    'eip155:137': false,
-    'eip155:324': false,
-    'eip155:8453': false,
-    'eip155:1337': false,
+    [FEATURED_NETWORKS['Ethereum Mainnet']]: true,
+    [FEATURED_NETWORKS['Linea Mainnet']]: true,
+    [FEATURED_NETWORKS['Arbitrum One']]: false,
+    [FEATURED_NETWORKS['Avalanche Network C-Chain']]: false,
+    [FEATURED_NETWORKS['BNB Chain']]: false,
+    [FEATURED_NETWORKS['OP Mainnet']]: false,
+    [FEATURED_NETWORKS['Polygon Mainnet']]: false,
+    [FEATURED_NETWORKS['zkSync Era Mainnet']]: false,
+    [FEATURED_NETWORKS['Base Mainnet']]: false,
+    [FEATURED_NETWORKS.Localhost]: false,
+    [FEATURED_NETWORKS['Solana Mainnet']]: false,
   });
   const [extensionId, setExtensionId] = useState<string>('');
   const [invokeMethodRequests, setInvokeMethodRequests] = useState<
@@ -63,6 +65,17 @@ function App() {
   const [sessionMethodHistory, setSessionMethodHistory] = useState<
     { timestamp: number; method: string; data: any }[]
   >([]);
+  const [consoleErrorHistory, setConsoleErrorHistory] = useState<
+    {
+      timestamp: number;
+      uniqueKey?: string;
+      error: any;
+      stack: string | undefined;
+      fullErrorText: string;
+    }[]
+  >([]);
+  const [copiedNamespace, setCopiedNamespace] = useState<string | null>(null);
+  const originalConsoleError = useRef<typeof console.error | null>(null);
 
   const setInitialMethodsAndAccounts = (currentSession: any) => {
     const initialSelectedMethods: Record<string, string> = {};
@@ -119,7 +132,9 @@ function App() {
 
       if (notification.params?.sessionScopes) {
         setSelectedScopesFromSession(notification.params.sessionScopes);
-        setInitialMethodsAndAccounts(notification.params.sessionScopes);
+        setInitialMethodsAndAccounts({
+          sessionScopes: notification.params.sessionScopes,
+        });
       }
     },
     [
@@ -217,6 +232,59 @@ function App() {
       });
   }, []);
 
+  useEffect(() => {
+    originalConsoleError.current = console.error;
+
+    console.error = (...args) => {
+      if (originalConsoleError.current) {
+        originalConsoleError.current.apply(console, args);
+      }
+
+      setConsoleErrorHistory((prev) => {
+        const timestamp = Date.now();
+
+        const fullErrorText = args
+          .map((arg) => {
+            if (typeof arg === 'string') {
+              return arg;
+            }
+            if (arg instanceof Error) {
+              return String(arg);
+            }
+            return JSON.stringify(arg);
+          })
+          .join(' ');
+
+        const errorSummary = fullErrorText
+          .substring(0, 20)
+          .replace(/\s+/gu, '');
+        const uniqueKey = `${timestamp}-${errorSummary}`;
+
+        if (prev.some((entry) => entry.uniqueKey === uniqueKey)) {
+          return prev;
+        }
+
+        const error = args[0];
+        const stack = error instanceof Error ? error.stack : undefined;
+
+        const newEntry = {
+          timestamp,
+          uniqueKey,
+          error,
+          stack,
+          fullErrorText,
+        };
+        return [newEntry, ...prev].slice(0, 15);
+      });
+    };
+
+    return () => {
+      if (originalConsoleError.current) {
+        console.error = originalConsoleError.current;
+      }
+    };
+  }, []);
+
   const handleResetState = () => {
     setSelectedMethods({});
     setInvokeMethodResults({});
@@ -224,17 +292,19 @@ function App() {
     setWalletSessionChangedHistory([]);
     setWalletNotifyHistory([]);
     setSessionMethodHistory([]);
+    setConsoleErrorHistory([]);
     setSelectedScopes({
-      'eip155:1': false,
-      'eip155:59144': false,
-      'eip155:42161': false,
-      'eip155:43114': false,
-      'eip155:56': false,
-      'eip155:10': false,
-      'eip155:137': false,
-      'eip155:324': false,
-      'eip155:8453': false,
-      'eip155:1337': false,
+      [FEATURED_NETWORKS['Ethereum Mainnet']]: false,
+      [FEATURED_NETWORKS['Linea Mainnet']]: false,
+      [FEATURED_NETWORKS['Arbitrum One']]: false,
+      [FEATURED_NETWORKS['Avalanche Network C-Chain']]: false,
+      [FEATURED_NETWORKS['BNB Chain']]: false,
+      [FEATURED_NETWORKS['OP Mainnet']]: false,
+      [FEATURED_NETWORKS['Polygon Mainnet']]: false,
+      [FEATURED_NETWORKS['zkSync Era Mainnet']]: false,
+      [FEATURED_NETWORKS['Base Mainnet']]: false,
+      [FEATURED_NETWORKS.Localhost]: false,
+      [FEATURED_NETWORKS['Solana Mainnet']]: false,
     });
   };
 
@@ -246,16 +316,21 @@ function App() {
 
   const handleCreateSession = async () => {
     const selectedScopesArray = [
-      ...Object.keys(selectedScopes).filter(
-        (scope) => selectedScopes[scope as CaipChainId],
-      ),
+      ...Object.keys(selectedScopes).filter((scope) => {
+        const caipChainId = scope as CaipChainId;
+        return selectedScopes[caipChainId];
+      }),
       ...customScopes.filter((scope) => scope.length),
     ];
 
     try {
+      const filteredAccountIds = caipAccountIds.filter(
+        (addr) => addr.trim() !== '',
+      );
+
       const result = await createSession(
         selectedScopesArray as CaipChainId[],
-        addresses,
+        filteredAccountIds as CaipAccountId[],
       );
       setSessionMethodHistory((prev) => {
         const timestamp = Date.now();
@@ -370,7 +445,7 @@ function App() {
     }
   }, [currentSession]);
 
-  const handleMethodSelect = (
+  const handleMethodSelect = async (
     evt: React.ChangeEvent<HTMLSelectElement>,
     scope: CaipChainId,
   ) => {
@@ -380,31 +455,26 @@ function App() {
       [scope]: selectedMethod,
     }));
 
-    const example = metamaskOpenrpcDocument?.methods.find(
-      (method) => (method as MethodObject).name === selectedMethod,
-    );
+    const selectedAddress = selectedAccounts[scope];
 
-    if (example) {
-      let exampleParams: Json = openRPCExampleToJSON(example as MethodObject);
-      const selectedAddress = selectedAccounts[scope];
+    if (scope.startsWith('solana:')) {
+      const address = selectedAddress
+        ? parseCaipAccountId(selectedAddress).address
+        : '';
 
-      if (
-        selectedAddress &&
-        selectedMethod in METHODS_REQUIRING_PARAM_INJECTION
-      ) {
-        exampleParams = injectParams(
-          selectedMethod,
-          exampleParams,
-          selectedAddress,
-          scope,
-        );
-      }
+      const solanaExample = await generateSolanaMethodExamples(
+        selectedMethod,
+        address,
+      );
 
       const defaultRequest = {
         method: 'wallet_invokeMethod',
         params: {
           scope,
-          request: exampleParams,
+          request: {
+            method: selectedMethod,
+            ...solanaExample,
+          },
         },
       };
 
@@ -412,6 +482,39 @@ function App() {
         ...prev,
         [scope]: JSON.stringify(defaultRequest, null, 2),
       }));
+    } else {
+      const example = metamaskOpenrpcDocument?.methods.find(
+        (method) => (method as MethodObject).name === selectedMethod,
+      );
+
+      if (example) {
+        let exampleParams: Json = openRPCExampleToJSON(example as MethodObject);
+
+        if (
+          selectedAddress &&
+          selectedMethod in METHODS_REQUIRING_PARAM_INJECTION
+        ) {
+          exampleParams = injectParams(
+            selectedMethod,
+            exampleParams,
+            selectedAddress,
+            scope,
+          );
+        }
+
+        const defaultRequest = {
+          method: 'wallet_invokeMethod',
+          params: {
+            scope,
+            request: exampleParams,
+          },
+        };
+
+        setInvokeMethodRequests((prev) => ({
+          ...prev,
+          [scope]: JSON.stringify(defaultRequest, null, 2),
+        }));
+      }
     }
   };
 
@@ -424,6 +527,54 @@ function App() {
       handleResetState();
     }
   }, [isExternallyConnectableConnected]);
+
+  const copyNamespaceToClipboard = async (namespace: string) => {
+    try {
+      await navigator.clipboard.writeText(namespace);
+      setCopiedNamespace(namespace);
+      setTimeout(() => setCopiedNamespace(null), 2000);
+    } catch (error) {
+      console.error('Failed to copy to clipboard:', error);
+    }
+  };
+
+  const formatErrorBase = (
+    errorObj: any,
+    fullText?: string,
+    stringify: (obj: any) => string = (obj) => JSON.stringify(obj),
+  ): string => {
+    if (fullText) {
+      return fullText;
+    }
+    if (typeof errorObj === 'string') {
+      return errorObj;
+    }
+    if (errorObj instanceof Error) {
+      return String(errorObj);
+    }
+    return stringify(errorObj);
+  };
+
+  const formatError = (
+    errorObj: any,
+    _errStack?: string,
+    fullText?: string,
+  ): string => {
+    return formatErrorBase(errorObj, fullText);
+  };
+
+  const formatErrorContent = (
+    errorObj: any,
+    errStack?: string,
+    fullText?: string,
+  ): string => {
+    if (errorObj instanceof Error && errStack) {
+      return `${String(errorObj)}\n\n${errStack}`;
+    }
+    return formatErrorBase(errorObj, fullText, (obj) =>
+      JSON.stringify(obj, null, 2),
+    );
+  };
 
   return (
     <div className="App">
@@ -508,8 +659,8 @@ function App() {
               <div className="create-session-container">
                 <h3>Create Session</h3>
                 {Object.entries(FEATURED_NETWORKS).map(
-                  ([chainId, networkName]) => (
-                    <label key={chainId}>
+                  ([networkName, chainId]) => (
+                    <label key={chainId} className="network-label">
                       <input
                         type="checkbox"
                         name={chainId}
@@ -528,6 +679,41 @@ function App() {
                     </label>
                   ),
                 )}
+
+                <div className="convenience-buttons-section">
+                  <h4>Convenience Buttons (Copy CaipChainIds to Clipboard)</h4>
+                  <div className="namespace-buttons">
+                    <button
+                      className="namespace-button"
+                      onClick={async () => {
+                        await copyNamespaceToClipboard(
+                          `${FEATURED_NETWORKS['Ethereum Mainnet']}:`,
+                        );
+                      }}
+                    >
+                      <span className="copy-icon">📋</span> Ethereum Mainnet
+                      {copiedNamespace ===
+                        `${FEATURED_NETWORKS['Ethereum Mainnet']}:` && (
+                        <span className="namespace-copied">Copied!</span>
+                      )}
+                    </button>
+                    <button
+                      className="namespace-button"
+                      onClick={async () => {
+                        await copyNamespaceToClipboard(
+                          `${FEATURED_NETWORKS['Solana Mainnet']}:`,
+                        );
+                      }}
+                    >
+                      <span className="copy-icon">📋</span> Solana Mainnet
+                      {copiedNamespace ===
+                        `${FEATURED_NETWORKS['Solana Mainnet']}:` && (
+                        <span className="namespace-copied">Copied!</span>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
                 <div>
                   <DynamicInputs
                     inputArray={customScopes}
@@ -537,9 +723,9 @@ function App() {
                 </div>
                 <div>
                   <DynamicInputs
-                    inputArray={addresses}
-                    setInputArray={setAddresses}
-                    label={INPUT_LABEL_TYPE.ADDRESS}
+                    inputArray={caipAccountIds}
+                    setInputArray={setCaipAccountIds}
+                    label={INPUT_LABEL_TYPE.CAIP_ACCOUNT_ID}
                   />
                 </div>
                 <div className="session-lifecycle-buttons">
@@ -656,6 +842,50 @@ function App() {
                   )}
                 </div>
               </div>
+
+              <div className="results-section">
+                <h3>
+                  <span className="code-method">Console Errors</span>{' '}
+                </h3>
+                <div className="notification-container">
+                  {consoleErrorHistory.length > 0 ? (
+                    consoleErrorHistory.map(
+                      ({ timestamp, error, stack, fullErrorText }, index) => {
+                        const displayError = formatError(
+                          error,
+                          stack,
+                          fullErrorText,
+                        );
+                        const errorContent = formatErrorContent(
+                          error,
+                          stack,
+                          fullErrorText,
+                        );
+
+                        return (
+                          <details key={timestamp}>
+                            <summary className="result-summary">
+                              <span className="timestamp">
+                                {new Date(timestamp).toLocaleString()}
+                              </span>
+                              <span className="error-message">
+                                {displayError}
+                              </span>
+                            </summary>
+                            <code className="code-left-align">
+                              <pre id={`console-error-${index}`}>
+                                {errorContent}
+                              </pre>
+                            </code>
+                          </details>
+                        );
+                      },
+                    )
+                  ) : (
+                    <p>No console errors</p>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
           <div className="session-divider" />
@@ -677,154 +907,148 @@ function App() {
             </button>
             <div className="scopes-grid">
               {Object.entries(currentSession.sessionScopes).map(
-                ([scope, details]: [string, any]) => (
-                  <div
-                    data-testid={`scope-card-${scope}`}
-                    key={scope}
-                    className="scope-card"
-                  >
-                    <h3
-                      title={
-                        FEATURED_NETWORKS[
-                          scope as keyof typeof FEATURED_NETWORKS
-                        ]
-                          ? `${
-                              FEATURED_NETWORKS[
-                                scope as keyof typeof FEATURED_NETWORKS
-                              ]
-                            } (${scope})`
-                          : scope
-                      }
-                      className="scope-card-title"
+                ([scope, details]) => {
+                  const caipChainId = scope as CaipChainId;
+                  const scopeDetails = details as {
+                    accounts: CaipAccountId[];
+                    methods: string[];
+                  };
+                  return (
+                    <div
+                      data-testid={`scope-card-${caipChainId}`}
+                      key={caipChainId}
+                      className="scope-card"
                     >
-                      {FEATURED_NETWORKS[
-                        scope as keyof typeof FEATURED_NETWORKS
-                      ]
-                        ? `${
-                            FEATURED_NETWORKS[
-                              scope as keyof typeof FEATURED_NETWORKS
-                            ]
-                          } (${scope})`
-                        : scope}
-                    </h3>
+                      <h3
+                        title={`${getNetworkName(
+                          caipChainId,
+                        )} (${caipChainId})`}
+                        className="scope-card-title"
+                      >
+                        {`${getNetworkName(caipChainId)} (${caipChainId})`}
+                      </h3>
 
-                    <select
-                      className="accounts-select"
-                      value={selectedAccounts[scope] ?? ''}
-                      onChange={(evt) => {
-                        const newAddress =
-                          (evt.target.value as CaipAccountId) ?? '';
-                        setSelectedAccounts((prev) => ({
-                          ...prev,
-                          [scope]: newAddress,
-                        }));
+                      <select
+                        className="accounts-select"
+                        value={selectedAccounts[caipChainId] ?? ''}
+                        onChange={(evt) => {
+                          const newAddress =
+                            (evt.target.value as CaipAccountId) ?? '';
+                          setSelectedAccounts((prev) => ({
+                            ...prev,
+                            [caipChainId]: newAddress,
+                          }));
 
-                        const currentMethod = selectedMethods[scope];
-                        if (currentMethod) {
-                          const example = metamaskOpenrpcDocument?.methods.find(
-                            (method) =>
-                              (method as MethodObject).name === currentMethod,
-                          );
+                          const currentMethod = selectedMethods[caipChainId];
+                          if (currentMethod) {
+                            const example =
+                              metamaskOpenrpcDocument?.methods.find(
+                                (method) =>
+                                  (method as MethodObject).name ===
+                                  currentMethod,
+                              );
 
-                          if (example) {
-                            let exampleParams: Json = openRPCExampleToJSON(
-                              example as MethodObject,
-                            );
+                            if (example) {
+                              let exampleParams: Json = openRPCExampleToJSON(
+                                example as MethodObject,
+                              );
 
-                            exampleParams = injectParams(
-                              currentMethod,
-                              exampleParams,
-                              newAddress,
-                              scope as CaipChainId,
-                            );
+                              exampleParams = injectParams(
+                                currentMethod,
+                                exampleParams,
+                                newAddress,
+                                caipChainId,
+                              );
 
-                            const updatedRequest = {
-                              method: 'wallet_invokeMethod',
-                              params: {
-                                scope,
-                                request: exampleParams,
-                              },
-                            };
+                              const updatedRequest = {
+                                method: 'wallet_invokeMethod',
+                                params: {
+                                  scope: caipChainId,
+                                  request: exampleParams,
+                                },
+                              };
 
-                            setInvokeMethodRequests((prev) => ({
-                              ...prev,
-                              [scope]: JSON.stringify(updatedRequest, null, 2),
-                            }));
+                              setInvokeMethodRequests((prev) => ({
+                                ...prev,
+                                [caipChainId]: JSON.stringify(
+                                  updatedRequest,
+                                  null,
+                                  2,
+                                ),
+                              }));
+                            }
                           }
-                        }
-                      }}
-                    >
-                      <option value="">Select an account</option>
-                      {(details.accounts ?? []).map(
-                        (account: CaipAccountId) => {
-                          const { address } = parseCaipAccountId(account);
-                          return (
-                            <option
-                              data-testid={`${account}-option`}
-                              key={address}
-                              value={account}
-                            >
-                              {address}
-                            </option>
-                          );
-                        },
-                      )}
-                    </select>
+                        }}
+                      >
+                        <option value="">Select an account</option>
+                        {(scopeDetails.accounts ?? []).map(
+                          (account: CaipAccountId) => {
+                            const { address } = parseCaipAccountId(account);
+                            return (
+                              <option
+                                data-testid={`${String(account)}-option`}
+                                key={address}
+                                value={account}
+                              >
+                                {address}
+                              </option>
+                            );
+                          },
+                        )}
+                      </select>
 
-                    <select
-                      data-testid={`${scope}-select`}
-                      value={selectedMethods[scope] ?? ''}
-                      onChange={(evt) =>
-                        handleMethodSelect(evt, scope as CaipChainId)
-                      }
-                    >
-                      <option value="">Select a method</option>
-                      {details.methods.map((method: string) => (
-                        <option
-                          data-testid={`${scope}-${method}-option`}
-                          key={method}
-                          value={method}
-                        >
-                          {method}
-                        </option>
-                      ))}
-                    </select>
+                      <select
+                        data-testid={`${caipChainId}-select`}
+                        value={selectedMethods[caipChainId] ?? ''}
+                        onChange={async (evt) => {
+                          await handleMethodSelect(evt, caipChainId);
+                        }}
+                      >
+                        <option value="">Select a method</option>
+                        {(scopeDetails.methods ?? []).map((method: string) => (
+                          <option
+                            data-testid={`${caipChainId}-${method}-option`}
+                            key={method}
+                            value={method}
+                          >
+                            {method}
+                          </option>
+                        ))}
+                      </select>
 
-                    <details className="collapsible-section">
-                      <summary>Invoke Method Request</summary>
-                      <div className="collapsible-content">
-                        <textarea
-                          data-testid={`${scope}-collapsible-content-textarea`}
-                          value={invokeMethodRequests[scope] ?? ''}
-                          onChange={(evt) =>
-                            setInvokeMethodRequests((prev) => ({
-                              ...prev,
-                              [scope]: evt.target.value,
-                            }))
+                      <details className="collapsible-section">
+                        <summary>Invoke Method Request</summary>
+                        <div className="collapsible-content">
+                          <textarea
+                            data-testid={`${caipChainId}-collapsible-content-textarea`}
+                            value={invokeMethodRequests[caipChainId] ?? ''}
+                            onChange={(evt) =>
+                              setInvokeMethodRequests((prev) => ({
+                                ...prev,
+                                [caipChainId]: evt.target.value,
+                              }))
+                            }
+                            rows={5}
+                            cols={50}
+                          />
+                        </div>
+                      </details>
+
+                      <button
+                        data-testid={`invoke-method-${caipChainId}-btn`}
+                        onClick={async () => {
+                          const method = selectedMethods[caipChainId];
+                          if (method) {
+                            await handleInvokeMethod(caipChainId, method);
                           }
-                          rows={5}
-                          cols={50}
-                        />
-                      </div>
-                    </details>
+                        }}
+                      >
+                        Invoke Method
+                      </button>
 
-                    <button
-                      data-testid={`invoke-method-${scope}-btn`}
-                      onClick={async () => {
-                        const method = selectedMethods[scope];
-                        if (method) {
-                          await handleInvokeMethod(
-                            scope as CaipChainId,
-                            method,
-                          );
-                        }
-                      }}
-                    >
-                      Invoke Method
-                    </button>
-
-                    {Object.entries(invokeMethodResults[scope] ?? {}).map(
-                      ([method, results]) => {
+                      {Object.entries(
+                        invokeMethodResults[caipChainId] ?? {},
+                      ).map(([method, results]) => {
                         return results.map(({ result, request }, index) => {
                           const { text, truncated } = truncateJSON(result, 150);
                           return truncated ? (
@@ -842,7 +1066,7 @@ function App() {
                               <div className="collapsible-content">
                                 <code className="code-left-align">
                                   <pre
-                                    id={`invoke-method-${scope}-${method}-result-${index}`}
+                                    id={`invoke-method-${caipChainId}-${method}-result-${index}`}
                                   >
                                     {JSON.stringify(result, null, 2)}
                                   </pre>
@@ -862,7 +1086,7 @@ function App() {
                               </div>
                               <code className="code-left-align">
                                 <pre
-                                  id={`invoke-method-${scope}-${method}-result-${index}`}
+                                  id={`invoke-method-${caipChainId}-${method}-result-${index}`}
                                 >
                                   {text}
                                 </pre>
@@ -870,10 +1094,10 @@ function App() {
                             </div>
                           );
                         });
-                      },
-                    )}
-                  </div>
-                ),
+                      })}
+                    </div>
+                  );
+                },
               )}
             </div>
           </div>
