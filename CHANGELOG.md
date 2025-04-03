@@ -9,9 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.8.0]
 
-### Uncategorized
+### Added
 
-- Feat: add Solana support ([#49](https://github.com/MetaMask/test-dapp-multichain/pull/49))
+- Add Solana support ([#49](https://github.com/MetaMask/test-dapp-multichain/pull/49))
 
 ## [0.7.0]
 
