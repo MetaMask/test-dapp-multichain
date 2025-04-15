@@ -25,7 +25,7 @@ class MetaMaskMultichainWindowPostMessageProvider extends MetaMaskMultichainBase
       if (target !== INPAGE || data?.name !== MULTICHAIN_SUBSTREAM_NAME) {
         return;
       }
-      this._handleMessage(data.data.data);
+      this._handleMessage(data.data);
     };
 
     window.addEventListener('message', this.#listener);
