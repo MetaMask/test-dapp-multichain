@@ -22,14 +22,10 @@ class MetaMaskMultichainWindowPostMessageProvider extends MetaMaskMultichainBase
 
     this.#listener = (messageEvent: MessageEvent) => {
       const { target, data } = messageEvent.data;
-      if (
-        target !== INPAGE ||
-        data?.name !== MULTICHAIN_SUBSTREAM_NAME ||
-        data?.data.type !== 'caip-x'
-      ) {
+      if (target !== INPAGE || data?.name !== MULTICHAIN_SUBSTREAM_NAME) {
         return;
       }
-      this._handleMessage(data.data.data);
+      this._handleMessage(data.data);
     };
 
     window.addEventListener('message', this.#listener);
@@ -54,10 +50,7 @@ class MetaMaskMultichainWindowPostMessageProvider extends MetaMaskMultichainBase
         target: CONTENT_SCRIPT,
         data: {
           name: MULTICHAIN_SUBSTREAM_NAME,
-          data: {
-            type: 'caip-x',
-            data: request,
-          },
+          data: request,
         },
       },
       location.origin,
