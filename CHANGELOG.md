@@ -9,9 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.9.0]
 
-### Uncategorized
+### Changed
 
-- feat: remove caip-x envelope for window postMessage provider ([#54](https://github.com/MetaMask/test-dapp-multichain/pull/54))
+- Removed caip-x envelope for Firefox window.postMessage transport ([#54](https://github.com/MetaMask/test-dapp-multichain/pull/54))
 
 ## [0.8.0]
 
