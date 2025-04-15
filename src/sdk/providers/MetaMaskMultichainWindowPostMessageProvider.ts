@@ -25,7 +25,7 @@ class MetaMaskMultichainWindowPostMessageProvider extends MetaMaskMultichainBase
       if (
         target !== INPAGE ||
         data?.name !== MULTICHAIN_SUBSTREAM_NAME ||
-        data?.data.type !== 'caip-x'
+        data?.data.type !== 'caip-348'
       ) {
         return;
       }
@@ -55,7 +55,7 @@ class MetaMaskMultichainWindowPostMessageProvider extends MetaMaskMultichainBase
         data: {
           name: MULTICHAIN_SUBSTREAM_NAME,
           data: {
-            type: 'caip-x',
+            type: 'caip-348',
             data: request,
           },
         },
