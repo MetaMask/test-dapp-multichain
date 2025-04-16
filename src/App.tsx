@@ -161,7 +161,9 @@ function App() {
     (ev: Event) => {
       const customEvent = ev as CustomEvent;
       const { targets, rdns } = customEvent.detail.params;
-      const announcedId = targets?.find((target: {type: string, value: string}) => target.type === 'caip-348')?.value
+      const announcedId = targets?.find(
+        (target: { type: string; value: string }) => target.type === 'caip-348',
+      )?.value;
       const newExtensionId =
         rdns === 'io.metamask.flask' && !announcedId
           ? WINDOW_POST_MESSAGE_ID
