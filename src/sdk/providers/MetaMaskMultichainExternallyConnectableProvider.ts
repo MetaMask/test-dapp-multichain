@@ -42,7 +42,7 @@ class MetaMaskMultichainExternallyConnectableProvider extends MetaMaskMultichain
 
     this.#port.onMessage.addListener((message) => {
       const { type, data } = message;
-      if (type !== 'caip-x') {
+      if (type !== 'caip-348') {
         return;
       }
       this._handleMessage(data);
@@ -72,7 +72,7 @@ class MetaMaskMultichainExternallyConnectableProvider extends MetaMaskMultichain
   }
 
   _sendRequest(request: JsonRpcRequest) {
-    this.#port?.postMessage({ type: 'caip-x', data: request });
+    this.#port?.postMessage({ type: 'caip-348', data: request });
   }
 }
 
