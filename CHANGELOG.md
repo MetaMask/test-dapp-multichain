@@ -9,9 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.10.0]
 
-### Uncategorized
+### Changed
 
-- feat: Replace caip-x with caip-348 ([#53](https://github.com/MetaMask/test-dapp-multichain/pull/53))
+- Replace caip-x with caip-348 ([#53](https://github.com/MetaMask/test-dapp-multichain/pull/53))
 
 ## [0.9.0]
 
