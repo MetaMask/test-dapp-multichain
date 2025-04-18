@@ -25,7 +25,6 @@ function App() {
   const [walletMapEntries, setWalletMapEntries] = useState<
     Record<string, WalletMapEntry>
   >({});
-  const [providerType, setProviderType] = useState<string>('metamask');
   const [selectedMethods, setSelectedMethods] = useState<
     Record<string, string>
   >({});
@@ -586,18 +585,6 @@ function App() {
         <i>Requires MetaMask Extension with CAIP Multichain API Enabled</i>
       </div>
       <section>
-        <div>
-          <label>
-            Provider:
-            <select
-              value={providerType}
-              onChange={(evt) => setProviderType(evt.target.value)}
-            >
-              <option value="metamask">MetaMask Provider</option>
-              <option value="mock">Mock Provider</option>
-            </select>
-          </label>
-        </div>
         <div>
           <label>
             Extension ID:
