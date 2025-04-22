@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.11.0]
 
-### Uncategorized
+###  Changed
 
 - feat: Improve Mobile Responsiveness with Viewport and CSS Updates ([#58](https://github.com/MetaMask/test-dapp-multichain/pull/58))
 - feat: remove provider dropdown ([#57](https://github.com/MetaMask/test-dapp-multichain/pull/57))
