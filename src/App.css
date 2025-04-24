@@ -999,15 +999,3 @@ details[open] summary::before {
     padding: 0.5rem;
   }
 }
-
-/* Fix for wallets section */
-@media (max-width: 768px) {
-  .wallet-list {
-    flex-direction: column;
-  }
-  
-  .wallet-card {
-    width: 100%;
-    margin: 0.5rem 0;
-  }
-}
