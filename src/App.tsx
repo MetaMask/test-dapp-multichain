@@ -6,7 +6,7 @@ import type {
   CaipChainId,
   Json,
 } from '@metamask/utils';
-import { parseCaipAccountId } from '@metamask/utils';
+import { isCaipAccountId, parseCaipAccountId } from '@metamask/utils';
 import type { MethodObject, OpenrpcDocument } from '@open-rpc/meta-schema';
 import { parseOpenRPCDocument } from '@open-rpc/schema-utils-js';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -59,7 +59,7 @@ function App() {
   const [metamaskOpenrpcDocument, setMetamaskOpenrpcDocument] =
     useState<OpenrpcDocument>();
   const [selectedAccounts, setSelectedAccounts] = useState<
-    Record<string, CaipAccountId>
+    Record<string, CaipAccountId | null>
   >({});
   const [walletSessionChangedHistory, setWalletSessionChangedHistory] =
     useState<{ timestamp: number; data: any }[]>([]);
@@ -496,16 +496,24 @@ function App() {
     evt: React.ChangeEvent<HTMLSelectElement>,
     caipChainId: CaipChainId,
   ) => {
-    const newAddress = (evt.target.value as CaipAccountId) ?? '';
+    const { value } = evt.target;
+    const valueIsCaipAccountId = isCaipAccountId(value);
+    const valueToSet = valueIsCaipAccountId ? value : null;
+
     setSelectedAccounts((prev) => ({
       ...prev,
-      [caipChainId]: newAddress,
+      [caipChainId]: valueToSet,
     }));
 
+    if (!valueIsCaipAccountId) {
+      return;
+    }
+
     if (caipChainId.startsWith('solana:')) {
+      const newAddress = parseCaipAccountId(value).address;
       await handleUpdateInvokeMethodSolana(
         caipChainId,
-        parseCaipAccountId(newAddress).address,
+        newAddress,
         selectedMethods[caipChainId] ?? '',
       );
     }
@@ -522,7 +530,7 @@ function App() {
         exampleParams = injectParams(
           currentMethod,
           exampleParams,
-          newAddress,
+          value,
           caipChainId,
         );
 
