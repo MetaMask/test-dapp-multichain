@@ -1,15 +1,20 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { MetaMaskOpenRPCDocument } from '@metamask/api-specs';
-import { parseCaipAccountId } from '@metamask/utils';
-import type { CaipAccountId, CaipChainId, Json } from '@metamask/utils';
+import type {
+  CaipAccountAddress,
+  CaipAccountId,
+  CaipChainId,
+  Json,
+} from '@metamask/utils';
+import { isCaipAccountId, parseCaipAccountId } from '@metamask/utils';
 import type { MethodObject, OpenrpcDocument } from '@open-rpc/meta-schema';
 import { parseOpenRPCDocument } from '@open-rpc/schema-utils-js';
-import React, { useCallback, useEffect, useState, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import './App.css';
 import DynamicInputs, { INPUT_LABEL_TYPE } from './components/DynamicInputs';
-import WalletList from './components/WalletList';
 import type { WalletMapEntry } from './components/WalletList';
+import WalletList from './components/WalletList';
 import {
   injectParams,
   METHODS_REQUIRING_PARAM_INJECTION,
@@ -54,7 +59,7 @@ function App() {
   const [metamaskOpenrpcDocument, setMetamaskOpenrpcDocument] =
     useState<OpenrpcDocument>();
   const [selectedAccounts, setSelectedAccounts] = useState<
-    Record<string, CaipAccountId>
+    Record<string, CaipAccountId | null>
   >({});
   const [walletSessionChangedHistory, setWalletSessionChangedHistory] =
     useState<{ timestamp: number; data: any }[]>([]);
@@ -447,6 +452,104 @@ function App() {
     }
   }, [currentSession]);
 
+  /**
+   * Regenerates the invoke method request for a solana chain with the given method and address,
+   * and updates the state.
+   * @param scope - The CAIP chain ID of the chain the account belongs to.
+   * @param address - The address of the account to invoke the method on.
+   * @param method - The method to invoke.
+   */
+  const handleUpdateInvokeMethodSolana = async (
+    scope: CaipChainId,
+    address: CaipAccountAddress,
+    method: string,
+  ) => {
+    if (!scope.startsWith('solana:')) {
+      throw new Error('Invalid CAIP chain ID. It must start with "solana:"');
+    }
+
+    const solanaExample = await generateSolanaMethodExamples(method, address);
+
+    const defaultRequest = {
+      method: 'wallet_invokeMethod',
+      params: {
+        scope,
+        request: {
+          method,
+          ...solanaExample,
+        },
+      },
+    };
+
+    setInvokeMethodRequests((prev) => ({
+      ...prev,
+      [scope]: JSON.stringify(defaultRequest, null, 2),
+    }));
+  };
+
+  /**
+   * Handles the selection of an account for a given chain.
+   * @param evt - The change event from the select element.
+   * @param caipChainId - The CAIP chain ID of the chain the account belongs to.
+   */
+  const handleAccountSelect = async (
+    evt: React.ChangeEvent<HTMLSelectElement>,
+    caipChainId: CaipChainId,
+  ) => {
+    const { value } = evt.target;
+    const valueIsCaipAccountId = isCaipAccountId(value);
+    const valueToSet = valueIsCaipAccountId ? value : null;
+
+    setSelectedAccounts((prev) => ({
+      ...prev,
+      [caipChainId]: valueToSet,
+    }));
+
+    if (!valueIsCaipAccountId) {
+      return;
+    }
+
+    if (caipChainId.startsWith('solana:')) {
+      const newAddress = parseCaipAccountId(value).address;
+      await handleUpdateInvokeMethodSolana(
+        caipChainId,
+        newAddress,
+        selectedMethods[caipChainId] ?? '',
+      );
+    }
+
+    const currentMethod = selectedMethods[caipChainId];
+    if (currentMethod) {
+      const example = metamaskOpenrpcDocument?.methods.find(
+        (method) => (method as MethodObject).name === currentMethod,
+      );
+
+      if (example) {
+        let exampleParams: Json = openRPCExampleToJSON(example as MethodObject);
+
+        exampleParams = injectParams(
+          currentMethod,
+          exampleParams,
+          value,
+          caipChainId,
+        );
+
+        const updatedRequest = {
+          method: 'wallet_invokeMethod',
+          params: {
+            scope: caipChainId,
+            request: exampleParams,
+          },
+        };
+
+        setInvokeMethodRequests((prev) => ({
+          ...prev,
+          [caipChainId]: JSON.stringify(updatedRequest, null, 2),
+        }));
+      }
+    }
+  };
+
   const handleMethodSelect = async (
     evt: React.ChangeEvent<HTMLSelectElement>,
     scope: CaipChainId,
@@ -458,32 +561,16 @@ function App() {
     }));
 
     const selectedAddress = selectedAccounts[scope];
+    if (!selectedAddress) {
+      return;
+    }
 
     if (scope.startsWith('solana:')) {
-      const address = selectedAddress
-        ? parseCaipAccountId(selectedAddress).address
-        : '';
-
-      const solanaExample = await generateSolanaMethodExamples(
+      await handleUpdateInvokeMethodSolana(
+        scope,
+        parseCaipAccountId(selectedAddress).address,
         selectedMethod,
-        address,
       );
-
-      const defaultRequest = {
-        method: 'wallet_invokeMethod',
-        params: {
-          scope,
-          request: {
-            method: selectedMethod,
-            ...solanaExample,
-          },
-        },
-      };
-
-      setInvokeMethodRequests((prev) => ({
-        ...prev,
-        [scope]: JSON.stringify(defaultRequest, null, 2),
-      }));
     } else {
       const example = metamaskOpenrpcDocument?.methods.find(
         (method) => (method as MethodObject).name === selectedMethod,
@@ -492,10 +579,7 @@ function App() {
       if (example) {
         let exampleParams: Json = openRPCExampleToJSON(example as MethodObject);
 
-        if (
-          selectedAddress &&
-          selectedMethod in METHODS_REQUIRING_PARAM_INJECTION
-        ) {
+        if (selectedMethod in METHODS_REQUIRING_PARAM_INJECTION) {
           exampleParams = injectParams(
             selectedMethod,
             exampleParams,
@@ -921,53 +1005,8 @@ function App() {
                       <select
                         className="accounts-select"
                         value={selectedAccounts[caipChainId] ?? ''}
-                        onChange={(evt) => {
-                          const newAddress =
-                            (evt.target.value as CaipAccountId) ?? '';
-                          setSelectedAccounts((prev) => ({
-                            ...prev,
-                            [caipChainId]: newAddress,
-                          }));
-
-                          const currentMethod = selectedMethods[caipChainId];
-                          if (currentMethod) {
-                            const example =
-                              metamaskOpenrpcDocument?.methods.find(
-                                (method) =>
-                                  (method as MethodObject).name ===
-                                  currentMethod,
-                              );
-
-                            if (example) {
-                              let exampleParams: Json = openRPCExampleToJSON(
-                                example as MethodObject,
-                              );
-
-                              exampleParams = injectParams(
-                                currentMethod,
-                                exampleParams,
-                                newAddress,
-                                caipChainId,
-                              );
-
-                              const updatedRequest = {
-                                method: 'wallet_invokeMethod',
-                                params: {
-                                  scope: caipChainId,
-                                  request: exampleParams,
-                                },
-                              };
-
-                              setInvokeMethodRequests((prev) => ({
-                                ...prev,
-                                [caipChainId]: JSON.stringify(
-                                  updatedRequest,
-                                  null,
-                                  2,
-                                ),
-                              }));
-                            }
-                          }
+                        onChange={async (evt) => {
+                          await handleAccountSelect(evt, caipChainId);
                         }}
                       >
                         <option value="">Select an account</option>
