@@ -1,5 +1,9 @@
 import MetaMaskOpenRPCDocument from '@metamask/api-specs';
-import { parseCaipAccountId, parseCaipChainId } from '@metamask/utils';
+import {
+  parseCaipAccountId,
+  parseCaipChainId,
+  numberToHex,
+} from '@metamask/utils';
 import type { CaipAccountId, CaipChainId, Json } from '@metamask/utils';
 
 /**
@@ -10,6 +14,8 @@ export const METHODS_REQUIRING_PARAM_INJECTION = {
   eth_signTypedData_v4: true,
   personal_sign: true,
   eth_getBalance: true,
+  wallet_sendCalls: true,
+  wallet_getCapabilities: true,
 } as const;
 
 /**
@@ -111,6 +117,31 @@ export const injectParams = (
         ...exampleParams,
         params: [parsedAddress, 'latest'],
       };
+
+    // EIP-5792
+    case 'wallet_sendCalls': {
+      const params = exampleParams.params[0];
+      if (typeof params === 'object') {
+        return {
+          ...exampleParams,
+          params: [
+            {
+              ...params,
+              chainId: numberToHex(Number(chainId)),
+              from: parsedAddress,
+            },
+          ],
+        };
+      }
+      break;
+    }
+
+    case 'wallet_getCapabilities': {
+      return {
+        ...exampleParams,
+        params: [parsedAddress, [numberToHex(Number(chainId))]],
+      };
+    }
 
     default:
       break;
