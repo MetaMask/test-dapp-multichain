@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.0]
+
+### Added
+
+- Add support for invoking EIP-5792 methods ([#61](https://github.com/MetaMask/test-dapp-multichain/pull/61))
+
+### Changed
+
+- Properly refresh the invoke method request when target account is changed in dropdown ([#60](https://github.com/MetaMask/test-dapp-multichain/pull/60))
+
 ## [0.11.0]
 
 ### Changed
@@ -168,7 +178,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix: other linting issues
 - Initial Commit of react app and module template
 
-[Unreleased]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.8.0...v0.9.0
