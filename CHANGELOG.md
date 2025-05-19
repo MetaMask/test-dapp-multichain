@@ -9,10 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.12.0]
 
-### Uncategorized
+### Added
 
-- feat: add support for calling EIP-5792 methods ([#61](https://github.com/MetaMask/test-dapp-multichain/pull/61))
-- fix: properly refresh the invoke method request on Solana ([#60](https://github.com/MetaMask/test-dapp-multichain/pull/60))
+- Add support for invoking EIP-5792 methods ([#61](https://github.com/MetaMask/test-dapp-multichain/pull/61))
+
+### Changed
+
+- Properly refresh the invoke method request on Solana ([#60](https://github.com/MetaMask/test-dapp-multichain/pull/60))
 
 ## [0.11.0]
 
