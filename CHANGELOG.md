@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Properly refresh the invoke method request on Solana ([#60](https://github.com/MetaMask/test-dapp-multichain/pull/60))
+- Properly refresh the invoke method request when target account is changed in dropdown ([#60](https://github.com/MetaMask/test-dapp-multichain/pull/60))
 
 ## [0.11.0]
 
