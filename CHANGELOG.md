@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.13.0]
 
-### Uncategorized
+### Added
 
 - feat: Add HTML ID attributes to interactive elements ([#65](https://github.com/MetaMask/test-dapp-multichain/pull/65))
 
