@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.12.1]
 
-### Uncategorized
+### Added
 
 - feat: Add test-id attributes to improve E2E test selector scoping ([#63](https://github.com/MetaMask/test-dapp-multichain/pull/63))
 
