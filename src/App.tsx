@@ -668,6 +668,10 @@ function App() {
       <div className="app-subtitle">
         <i>Requires MetaMask Extension with CAIP Multichain API Enabled</i>
       </div>
+      <div>
+        isExternallyConnectableConnected:{' '}
+        {JSON.stringify(isExternallyConnectableConnected)}
+      </div>
       <section>
         <div>
           <label>
@@ -715,6 +719,19 @@ function App() {
           >
             Clear Extension ID
           </button>
+          <button
+            onClick={() => {
+              // For postMessage, we don't need an extensionId, so directly connect
+              connect(WINDOW_POST_MESSAGE_ID).catch((error) => {
+                console.error('Auto-connect via postMessage failed:', error);
+              });
+            }}
+            disabled={isExternallyConnectableConnected}
+            data-testid="auto-connect-postmessage-button"
+            id="auto-connect-postmessage-button"
+          >
+            Auto Connect via postMessage
+          </button>
         </div>
       </section>
       <section>
@@ -754,8 +771,11 @@ function App() {
                           }))
                         }
                         disabled={!isExternallyConnectableConnected}
-                        data-testid={`network-checkbox-${chainId}`}
-                        id={`network-checkbox-${chainId}`}
+                        data-testid={`network-checkbox-${chainId.replace(
+                          /:/gu,
+                          '-',
+                        )}`}
+                        id={`network-checkbox-${chainId.replace(/:/gu, '-')}`}
                       />{' '}
                       {networkName}
                     </label>
