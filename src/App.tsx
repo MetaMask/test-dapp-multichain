@@ -668,10 +668,6 @@ function App() {
       <div className="app-subtitle">
         <i>Requires MetaMask Extension with CAIP Multichain API Enabled</i>
       </div>
-      <div>
-        isExternallyConnectableConnected:{' '}
-        {JSON.stringify(isExternallyConnectableConnected)}
-      </div>
       <section>
         <div>
           <label>
