@@ -691,10 +691,12 @@ function App() {
               value={extensionId}
               onChange={(evt) => setExtensionId(evt.target.value)}
               disabled={isExternallyConnectableConnected}
+              data-testid="extension-id-input"
             />
             <button
               onClick={handleConnectClick}
               disabled={isExternallyConnectableConnected}
+              data-testid="connect-button"
             >
               Connect
             </button>
@@ -719,6 +721,7 @@ function App() {
               setExtensionId('');
               localStorage.removeItem('extensionId');
             }}
+            data-testid="clear-extension-button"
           >
             Clear Extension ID
           </button>
@@ -780,6 +783,7 @@ function App() {
                           }))
                         }
                         disabled={!isExternallyConnectableConnected}
+                        data-testid={`network-checkbox-${chainId}`}
                       />{' '}
                       {networkName}
                     </label>
@@ -796,6 +800,7 @@ function App() {
                           `${FEATURED_NETWORKS['Ethereum Mainnet']}:`,
                         );
                       }}
+                      data-testid="copy-ethereum-namespace"
                     >
                       <span className="copy-icon">📋</span> Ethereum Mainnet
                       {copiedNamespace ===
@@ -810,6 +815,7 @@ function App() {
                           `${FEATURED_NETWORKS['Solana Mainnet']}:`,
                         );
                       }}
+                      data-testid="copy-solana-namespace"
                     >
                       <span className="copy-icon">📋</span> Solana Mainnet
                       {copiedNamespace ===
@@ -839,6 +845,7 @@ function App() {
                     id="create-session-btn"
                     onClick={handleCreateSession}
                     disabled={!isExternallyConnectableConnected}
+                    data-testid="create-session-btn"
                   >
                     <span className="code-method">wallet_createSession</span>
                   </button>
@@ -846,6 +853,7 @@ function App() {
                     id="get-session-btn"
                     onClick={handleGetSession}
                     disabled={!isExternallyConnectableConnected}
+                    data-testid="get-session-btn"
                   >
                     <span className="code-method">wallet_getSession</span>
                   </button>
@@ -853,6 +861,7 @@ function App() {
                     id="revoke-session-btn"
                     onClick={handleRevokeSession}
                     disabled={!isExternallyConnectableConnected}
+                    data-testid="revoke-session-btn"
                   >
                     <span className="code-method">wallet_revokeSession</span>
                   </button>
@@ -862,7 +871,10 @@ function App() {
               {currentSession && (
                 <div className="session-info">
                   <h3>Connected Accounts</h3>
-                  <ul className="connection-list">
+                  <ul
+                    className="connection-list"
+                    data-testid="connected-accounts-list"
+                  >
                     {Object.values(currentSession.sessionScopes ?? {})
                       .flatMap((scope: any) => scope.accounts ?? [])
                       .map(
@@ -880,7 +892,10 @@ function App() {
                   </ul>
 
                   <h3>Connected Chains</h3>
-                  <ul className="connection-list">
+                  <ul
+                    className="connection-list"
+                    data-testid="connected-chains-list"
+                  >
                     {Object.keys(currentSession.sessionScopes ?? {}).map(
                       (chain: string) => <li key={chain}>{chain}</li>,
                     ) ?? <li>No chains connected</li>}
@@ -1002,12 +1017,18 @@ function App() {
           <div>
             <div className="scope-header">
               <h2>Connected Scopes</h2>
-              <button onClick={handleClearInvokeResults}>Clear Results</button>
+              <button
+                onClick={handleClearInvokeResults}
+                data-testid="clear-results-button"
+              >
+                Clear Results
+              </button>
             </div>
             <button
               onClick={handleInvokeAllMethods}
               disabled={Object.keys(selectedMethods).length === 0}
               className="invoke-all-button"
+              data-testid="invoke-all-methods-button"
             >
               Invoke All Selected Methods
             </button>
@@ -1040,6 +1061,7 @@ function App() {
                         onChange={async (evt) => {
                           await handleAccountSelect(evt, caipChainId);
                         }}
+                        data-testid={`accounts-select-${caipChainId}`}
                       >
                         <option value="">Select an account</option>
                         {(scopeDetails.accounts ?? []).map(
@@ -1077,7 +1099,10 @@ function App() {
                         ))}
                       </select>
 
-                      <details className="collapsible-section">
+                      <details
+                        className="collapsible-section"
+                        data-testid={`invoke-method-details-${caipChainId}`}
+                      >
                         <summary>Invoke Method Request</summary>
                         <div className="collapsible-content">
                           <textarea
@@ -1116,6 +1141,7 @@ function App() {
                             <details
                               key={`${method}-${index}`}
                               className="collapsible-section"
+                              data-testid={`method-result-details-${caipChainId}-${method}-${index}`}
                             >
                               <summary>
                                 <span className="result-method">{method}</span>
@@ -1138,6 +1164,7 @@ function App() {
                             <div
                               key={`${method}-${index}`}
                               className="result-item-small"
+                              data-testid={`method-result-item-${caipChainId}-${method}-${index}`}
                             >
                               <div className="result-header">
                                 <span className="result-method">{method}</span>
@@ -1168,10 +1195,16 @@ function App() {
         <h2>
           Notifications ( <span className="code-method">wallet_notify</span>)
         </h2>
-        <div className="notification-container">
+        <div
+          className="notification-container"
+          data-testid="wallet-notify-container"
+        >
           {walletNotifyHistory.length > 0 ? (
             walletNotifyHistory.map(({ timestamp, data }, index) => (
-              <details key={timestamp}>
+              <details
+                key={timestamp}
+                data-testid={`wallet-notify-details-${index}`}
+              >
                 <summary className="result-summary">
                   <span className="timestamp">
                     {new Date(timestamp).toLocaleString()}
