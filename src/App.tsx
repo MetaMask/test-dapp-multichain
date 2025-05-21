@@ -81,19 +81,6 @@ function App() {
   const [copiedNamespace, setCopiedNamespace] = useState<string | null>(null);
   const originalConsoleError = useRef<typeof console.error | null>(null);
 
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      console.debug('Received postMessage:', event.data);
-    };
-
-    window.addEventListener('message', handleMessage);
-
-    // Cleanup function
-    return () => {
-      window.removeEventListener('message', handleMessage);
-    };
-  }, []);
-
   const setInitialMethodsAndAccounts = (currentSession: any) => {
     const initialSelectedMethods: Record<string, string> = {};
     const initialSelectedAccounts: Record<string, CaipAccountId> = {};
@@ -724,25 +711,6 @@ function App() {
             data-testid="clear-extension-button"
           >
             Clear Extension ID
-          </button>
-          <button
-            onClick={() => {
-              console.debug(`Debug button clicked! Timestamp: ${Date.now()}`);
-              const messagePayload = {
-                target: 'metamask-contentscript',
-                data: {
-                  name: 'metamask-multichain-provider',
-                  data: { somePayload: 'from dapp' }, // Your actual data here
-                },
-              };
-              console.debug('Sending postMessage:', {
-                message: messagePayload,
-                targetOrigin: location.origin,
-              });
-              window.postMessage(messagePayload, location.origin);
-            }}
-          >
-            Log Debug Info
           </button>
         </div>
       </section>
