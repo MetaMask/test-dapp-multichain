@@ -679,11 +679,13 @@ function App() {
               onChange={(evt) => setExtensionId(evt.target.value)}
               disabled={isExternallyConnectableConnected}
               data-testid="extension-id-input"
+              id="extension-id-input"
             />
             <button
               onClick={handleConnectClick}
               disabled={isExternallyConnectableConnected}
               data-testid="connect-button"
+              id="connect-button"
             >
               Connect
             </button>
@@ -709,6 +711,7 @@ function App() {
               localStorage.removeItem('extensionId');
             }}
             data-testid="clear-extension-button"
+            id="clear-extension-button"
           >
             Clear Extension ID
           </button>
@@ -752,6 +755,7 @@ function App() {
                         }
                         disabled={!isExternallyConnectableConnected}
                         data-testid={`network-checkbox-${chainId}`}
+                        id={`network-checkbox-${chainId}`}
                       />{' '}
                       {networkName}
                     </label>
@@ -769,6 +773,7 @@ function App() {
                         );
                       }}
                       data-testid="copy-ethereum-namespace"
+                      id="copy-ethereum-namespace"
                     >
                       <span className="copy-icon">📋</span> Ethereum Mainnet
                       {copiedNamespace ===
@@ -784,6 +789,7 @@ function App() {
                         );
                       }}
                       data-testid="copy-solana-namespace"
+                      id="copy-solana-namespace"
                     >
                       <span className="copy-icon">📋</span> Solana Mainnet
                       {copiedNamespace ===
@@ -880,7 +886,10 @@ function App() {
                   {sessionMethodHistory.length > 0 ? (
                     sessionMethodHistory.map(
                       ({ timestamp, method, data }, index) => (
-                        <details key={timestamp}>
+                        <details
+                          key={timestamp}
+                          id={`session-method-details-${index}`}
+                        >
                           <summary className="result-summary">
                             <span className="timestamp">
                               {new Date(timestamp).toLocaleString()}
@@ -911,7 +920,10 @@ function App() {
                   {walletSessionChangedHistory.length > 0 ? (
                     walletSessionChangedHistory.map(
                       ({ timestamp, data }, index) => (
-                        <details key={timestamp}>
+                        <details
+                          key={timestamp}
+                          id={`wallet-session-changed-${index}`}
+                        >
                           <summary className="result-summary">
                             <span className="timestamp">
                               {new Date(timestamp).toLocaleString()}
@@ -952,7 +964,10 @@ function App() {
                         );
 
                         return (
-                          <details key={timestamp}>
+                          <details
+                            key={timestamp}
+                            id={`console-error-details-${index}`}
+                          >
                             <summary className="result-summary">
                               <span className="timestamp">
                                 {new Date(timestamp).toLocaleString()}
@@ -988,6 +1003,7 @@ function App() {
               <button
                 onClick={handleClearInvokeResults}
                 data-testid="clear-results-button"
+                id="clear-results-button"
               >
                 Clear Results
               </button>
@@ -997,6 +1013,7 @@ function App() {
               disabled={Object.keys(selectedMethods).length === 0}
               className="invoke-all-button"
               data-testid="invoke-all-methods-button"
+              id="invoke-all-methods-button"
             >
               Invoke All Selected Methods
             </button>
@@ -1030,6 +1047,7 @@ function App() {
                           await handleAccountSelect(evt, caipChainId);
                         }}
                         data-testid={`accounts-select-${caipChainId}`}
+                        id={`accounts-select-${caipChainId}`}
                       >
                         <option value="">Select an account</option>
                         {(scopeDetails.accounts ?? []).map(
@@ -1054,6 +1072,7 @@ function App() {
                         onChange={async (evt) => {
                           await handleMethodSelect(evt, caipChainId);
                         }}
+                        id={`method-select-${caipChainId}`}
                       >
                         <option value="">Select a method</option>
                         {(scopeDetails.methods ?? []).map((method: string) => (
@@ -1070,6 +1089,7 @@ function App() {
                       <details
                         className="collapsible-section"
                         data-testid={`invoke-method-details-${caipChainId}`}
+                        id={`invoke-method-details-${caipChainId}`}
                       >
                         <summary>Invoke Method Request</summary>
                         <div className="collapsible-content">
@@ -1084,6 +1104,7 @@ function App() {
                             }
                             rows={5}
                             cols={50}
+                            id={`invoke-method-request-${caipChainId}`}
                           />
                         </div>
                       </details>
@@ -1096,6 +1117,7 @@ function App() {
                             await handleInvokeMethod(caipChainId, method);
                           }
                         }}
+                        id={`invoke-method-${caipChainId}-btn`}
                       >
                         Invoke Method
                       </button>
@@ -1110,6 +1132,7 @@ function App() {
                               key={`${method}-${index}`}
                               className="collapsible-section"
                               data-testid={`method-result-details-${caipChainId}-${method}-${index}`}
+                              id={`method-result-details-${caipChainId}-${method}-${index}`}
                             >
                               <summary>
                                 <span className="result-method">{method}</span>
@@ -1133,6 +1156,7 @@ function App() {
                               key={`${method}-${index}`}
                               className="result-item-small"
                               data-testid={`method-result-item-${caipChainId}-${method}-${index}`}
+                              id={`method-result-item-${caipChainId}-${method}-${index}`}
                             >
                               <div className="result-header">
                                 <span className="result-method">{method}</span>
@@ -1172,6 +1196,7 @@ function App() {
               <details
                 key={timestamp}
                 data-testid={`wallet-notify-details-${index}`}
+                id={`wallet-notify-details-${index}`}
               >
                 <summary className="result-summary">
                   <span className="timestamp">
