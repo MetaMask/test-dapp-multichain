@@ -20,6 +20,7 @@ import {
   METHODS_REQUIRING_PARAM_INJECTION,
 } from './constants/methods';
 import { FEATURED_NETWORKS, getNetworkName } from './constants/networks';
+import { escapeHtmlId } from './helpers/IdHelpers';
 import { openRPCExampleToJSON, truncateJSON } from './helpers/JsonHelpers';
 import { generateSolanaMethodExamples } from './helpers/solana-method-signatures';
 import { useSDK } from './sdk';
@@ -715,6 +716,19 @@ function App() {
           >
             Clear Extension ID
           </button>
+          <button
+            onClick={() => {
+              // For postMessage, we don't need an extensionId, so directly connect
+              connect(WINDOW_POST_MESSAGE_ID).catch((error) => {
+                console.error('Auto-connect via postMessage failed:', error);
+              });
+            }}
+            disabled={isExternallyConnectableConnected}
+            data-testid="auto-connect-postmessage-button"
+            id="auto-connect-postmessage-button"
+          >
+            Auto Connect via postMessage
+          </button>
         </div>
       </section>
       <section>
@@ -754,8 +768,10 @@ function App() {
                           }))
                         }
                         disabled={!isExternallyConnectableConnected}
-                        data-testid={`network-checkbox-${chainId}`}
-                        id={`network-checkbox-${chainId}`}
+                        data-testid={`network-checkbox-${escapeHtmlId(
+                          chainId,
+                        )}`}
+                        id={`network-checkbox-${escapeHtmlId(chainId)}`}
                       />{' '}
                       {networkName}
                     </label>
