@@ -20,6 +20,7 @@ import {
   METHODS_REQUIRING_PARAM_INJECTION,
 } from './constants/methods';
 import { FEATURED_NETWORKS, getNetworkName } from './constants/networks';
+import { escapeHtmlId } from './helpers/IdHelpers';
 import { openRPCExampleToJSON, truncateJSON } from './helpers/JsonHelpers';
 import { generateSolanaMethodExamples } from './helpers/solana-method-signatures';
 import { useSDK } from './sdk';
@@ -767,11 +768,10 @@ function App() {
                           }))
                         }
                         disabled={!isExternallyConnectableConnected}
-                        data-testid={`network-checkbox-${chainId.replace(
-                          /:/gu,
-                          '-',
+                        data-testid={`network-checkbox-${escapeHtmlId(
+                          chainId,
                         )}`}
-                        id={`network-checkbox-${chainId.replace(/:/gu, '-')}`}
+                        id={`network-checkbox-${escapeHtmlId(chainId)}`}
                       />{' '}
                       {networkName}
                     </label>
