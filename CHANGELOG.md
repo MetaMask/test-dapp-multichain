@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.14.0]
 
-### Uncategorized
+### Added
 
 - feat: Add Auto Connect via postMessage Button and Improve Element IDs for E2E Testing ([#67](https://github.com/MetaMask/test-dapp-multichain/pull/67))
 
