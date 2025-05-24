@@ -1043,7 +1043,7 @@ function App() {
                   };
                   return (
                     <div
-                      data-testid={`scope-card-${caipChainId}`}
+                      data-testid={`scope-card-${escapeHtmlId(caipChainId)}`}
                       key={caipChainId}
                       className="scope-card"
                     >
@@ -1062,8 +1062,10 @@ function App() {
                         onChange={async (evt) => {
                           await handleAccountSelect(evt, caipChainId);
                         }}
-                        data-testid={`accounts-select-${caipChainId}`}
-                        id={`accounts-select-${caipChainId}`}
+                        data-testid={`accounts-select-${escapeHtmlId(
+                          caipChainId,
+                        )}`}
+                        id={`accounts-select-${escapeHtmlId(caipChainId)}`}
                       >
                         <option value="">Select an account</option>
                         {(scopeDetails.accounts ?? []).map(
@@ -1071,7 +1073,9 @@ function App() {
                             const { address } = parseCaipAccountId(account);
                             return (
                               <option
-                                data-testid={`${String(account)}-option`}
+                                data-testid={`${escapeHtmlId(
+                                  String(account),
+                                )}-option`}
                                 key={address}
                                 value={account}
                               >
@@ -1083,17 +1087,19 @@ function App() {
                       </select>
 
                       <select
-                        data-testid={`${caipChainId}-select`}
+                        data-testid={`${escapeHtmlId(caipChainId)}-select`}
                         value={selectedMethods[caipChainId] ?? ''}
                         onChange={async (evt) => {
                           await handleMethodSelect(evt, caipChainId);
                         }}
-                        id={`method-select-${caipChainId}`}
+                        id={`method-select-${escapeHtmlId(caipChainId)}`}
                       >
                         <option value="">Select a method</option>
                         {(scopeDetails.methods ?? []).map((method: string) => (
                           <option
-                            data-testid={`${caipChainId}-${method}-option`}
+                            data-testid={`${escapeHtmlId(
+                              caipChainId,
+                            )}-${method}-option`}
                             key={method}
                             value={method}
                           >
@@ -1104,13 +1110,19 @@ function App() {
 
                       <details
                         className="collapsible-section"
-                        data-testid={`invoke-method-details-${caipChainId}`}
-                        id={`invoke-method-details-${caipChainId}`}
+                        data-testid={`invoke-method-details-${escapeHtmlId(
+                          caipChainId,
+                        )}`}
+                        id={`invoke-method-details-${escapeHtmlId(
+                          caipChainId,
+                        )}`}
                       >
                         <summary>Invoke Method Request</summary>
                         <div className="collapsible-content">
                           <textarea
-                            data-testid={`${caipChainId}-collapsible-content-textarea`}
+                            data-testid={`${escapeHtmlId(
+                              caipChainId,
+                            )}-collapsible-content-textarea`}
                             value={invokeMethodRequests[caipChainId] ?? ''}
                             onChange={(evt) =>
                               setInvokeMethodRequests((prev) => ({
@@ -1120,20 +1132,24 @@ function App() {
                             }
                             rows={5}
                             cols={50}
-                            id={`invoke-method-request-${caipChainId}`}
+                            id={`invoke-method-request-${escapeHtmlId(
+                              caipChainId,
+                            )}`}
                           />
                         </div>
                       </details>
 
                       <button
-                        data-testid={`invoke-method-${caipChainId}-btn`}
+                        data-testid={`invoke-method-${escapeHtmlId(
+                          caipChainId,
+                        )}-btn`}
                         onClick={async () => {
                           const method = selectedMethods[caipChainId];
                           if (method) {
                             await handleInvokeMethod(caipChainId, method);
                           }
                         }}
-                        id={`invoke-method-${caipChainId}-btn`}
+                        id={`invoke-method-${escapeHtmlId(caipChainId)}-btn`}
                       >
                         Invoke Method
                       </button>
@@ -1147,8 +1163,12 @@ function App() {
                             <details
                               key={`${method}-${index}`}
                               className="collapsible-section"
-                              data-testid={`method-result-details-${caipChainId}-${method}-${index}`}
-                              id={`method-result-details-${caipChainId}-${method}-${index}`}
+                              data-testid={`method-result-details-${escapeHtmlId(
+                                caipChainId,
+                              )}-${method}-${index}`}
+                              id={`method-result-details-${escapeHtmlId(
+                                caipChainId,
+                              )}-${method}-${index}`}
                             >
                               <summary>
                                 <span className="result-method">{method}</span>
@@ -1160,7 +1180,9 @@ function App() {
                               <div className="collapsible-content">
                                 <code className="code-left-align">
                                   <pre
-                                    id={`invoke-method-${caipChainId}-${method}-result-${index}`}
+                                    id={`invoke-method-${escapeHtmlId(
+                                      caipChainId,
+                                    )}-${method}-result-${index}`}
                                   >
                                     {JSON.stringify(result, null, 2)}
                                   </pre>
@@ -1171,8 +1193,12 @@ function App() {
                             <div
                               key={`${method}-${index}`}
                               className="result-item-small"
-                              data-testid={`method-result-item-${caipChainId}-${method}-${index}`}
-                              id={`method-result-item-${caipChainId}-${method}-${index}`}
+                              data-testid={`method-result-item-${escapeHtmlId(
+                                caipChainId,
+                              )}-${method}-${index}`}
+                              id={`method-result-item-${escapeHtmlId(
+                                caipChainId,
+                              )}-${method}-${index}`}
                             >
                               <div className="result-header">
                                 <span className="result-method">{method}</span>
@@ -1182,7 +1208,9 @@ function App() {
                               </div>
                               <code className="code-left-align">
                                 <pre
-                                  id={`invoke-method-${caipChainId}-${method}-result-${index}`}
+                                  id={`invoke-method-${escapeHtmlId(
+                                    caipChainId,
+                                  )}-${method}-result-${index}`}
                                 >
                                   {text}
                                 </pre>
