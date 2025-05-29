@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/test-dapp-multichain/staging/static/css/main.6ce160f4.css",
-    "main.js": "/test-dapp-multichain/staging/static/js/main.0f16d9eb.js",
+    "main.css": "/test-dapp-multichain/staging/static/css/main.5440fcfa.css",
+    "main.js": "/test-dapp-multichain/staging/static/js/main.96d18c46.js",
     "index.html": "/test-dapp-multichain/staging/index.html",
-    "main.6ce160f4.css.map": "/test-dapp-multichain/staging/static/css/main.6ce160f4.css.map",
-    "main.0f16d9eb.js.map": "/test-dapp-multichain/staging/static/js/main.0f16d9eb.js.map"
+    "main.5440fcfa.css.map": "/test-dapp-multichain/staging/static/css/main.5440fcfa.css.map",
+    "main.96d18c46.js.map": "/test-dapp-multichain/staging/static/js/main.96d18c46.js.map"
   },
   "entrypoints": [
-    "static/css/main.6ce160f4.css",
-    "static/js/main.0f16d9eb.js"
+    "static/css/main.5440fcfa.css",
+    "static/js/main.96d18c46.js"
   ]
 }
