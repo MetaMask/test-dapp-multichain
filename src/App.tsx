@@ -418,7 +418,6 @@ function App() {
       const paramsArray = normalizeMethodParams(method, params);
       console.log(`📤 Normalized params array:`, paramsArray);
 
-      // Invoke the method
       const result = await invokeMethod(scope, {
         method,
         params: paramsArray,
@@ -426,7 +425,6 @@ function App() {
 
       console.log(`📥 Received result:`, result);
 
-      // Update results state with success
       const request = extractRequestForStorage(finalRequestObject);
       setInvokeMethodResults((prev) => {
         const newResults = updateInvokeMethodResults(
@@ -442,7 +440,6 @@ function App() {
     } catch (error) {
       console.error('❌ Error invoking method:', error);
 
-      // Update results state with error
       const request = extractRequestForStorage(finalRequestObject);
       setInvokeMethodResults((prev) => {
         const newResults = updateInvokeMethodResults(
@@ -503,7 +500,6 @@ function App() {
         return; // Error already logged in helper function
       }
 
-      // Prepare the method request
       const defaultRequest = prepareMethodRequest(
         method,
         caipChainId,
@@ -518,7 +514,6 @@ function App() {
         return; // Error already logged in helper function
       }
 
-      // Update the request state
       setInvokeMethodRequests((prev) => ({
         ...prev,
         [caipChainId]: JSON.stringify(defaultRequest, null, 2),
@@ -526,7 +521,6 @@ function App() {
 
       console.log(`✅ Request prepared for ${method}:`, defaultRequest);
 
-      // Invoke the method immediately with the prepared request
       console.log(`🚀 Invoking ${method} on ${caipChainId}`);
       console.log(
         `📋 Request for ${caipChainId}:`,
@@ -554,7 +548,6 @@ function App() {
 
     setIsAutoMode(autoMode);
 
-    // Add CSS class to body for styling
     if (autoMode) {
       document.body.classList.add('auto-mode');
     } else {

@@ -148,7 +148,7 @@ export const prepareMethodRequest = (
   ) => Json,
   openRPCExampleToJSON: (methodObj: MethodObject) => Json,
   METHODS_REQUIRING_PARAM_INJECTION: Record<string, boolean>,
-): any | null => {
+): Json | null => {
   const example = metamaskOpenrpcDocument?.methods.find(
     (methodObj: MethodObject) => methodObj.name === method,
   );
