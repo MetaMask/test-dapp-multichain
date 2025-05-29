@@ -1313,6 +1313,10 @@ function App() {
                           }
                         }}
                         id={`invoke-method-${escapeHtmlId(caipChainId)}-btn`}
+                        disabled={
+                          !selectedMethods[caipChainId] ||
+                          !invokeMethodRequests[caipChainId]
+                        }
                       >
                         Invoke Method
                       </button>
