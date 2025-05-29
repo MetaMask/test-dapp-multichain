@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.15.0]
 
-### Uncategorized
+### Added
 
 - feat: Add auto-mode for mobile E2E testing ([#71](https://github.com/MetaMask/test-dapp-multichain/pull/71))
 - fix: Enhance element IDs for improved accessibility and E2E testing ([#69](https://github.com/MetaMask/test-dapp-multichain/pull/69))
