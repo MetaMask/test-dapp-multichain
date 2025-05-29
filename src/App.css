@@ -635,6 +635,17 @@ details[open] summary::before {
   text-align: center;
 }
 
+.auto-mode-indicator {
+  background-color: #ffd700;
+  color: #333;
+  padding: 8px 16px;
+  border-radius: 4px;
+  margin-top: 10px;
+  display: inline-block;
+  font-size: 14px;
+  border: 2px solid #ffcc00;
+}
+
 .session-layout {
   display: flex;
   gap: 20px;
@@ -773,6 +784,39 @@ details[open] summary::before {
 @keyframes fadeIn {
   0% { opacity: 0; }
   100% { opacity: 1; }
+}
+
+.direct-method-buttons {
+  display: none;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.auto-mode .direct-method-buttons {
+  display: flex;
+}
+
+.direct-method-btn {
+  padding: 4px 8px;
+  font-size: 12px;
+  background: #4299e1;
+  color: white;
+  border: 1px solid #3182ce;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 0;
+  transition: background-color 0.2s;
+}
+
+.direct-method-btn:hover {
+  background: #3182ce;
+}
+
+.direct-method-btn:disabled {
+  background-color: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
 }
 
 .dynamic-inputs-container {

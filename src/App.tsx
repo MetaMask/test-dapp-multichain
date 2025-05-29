@@ -22,6 +22,14 @@ import {
 import { FEATURED_NETWORKS, getNetworkName } from './constants/networks';
 import { escapeHtmlId } from './helpers/IdHelpers';
 import { openRPCExampleToJSON, truncateJSON } from './helpers/JsonHelpers';
+import {
+  normalizeMethodParams,
+  updateInvokeMethodResults,
+  extractRequestParams,
+  extractRequestForStorage,
+  autoSelectAccountForScope,
+  prepareMethodRequest,
+} from './helpers/MethodInvocationHelpers';
 import { generateSolanaMethodExamples } from './helpers/solana-method-signatures';
 import { useSDK } from './sdk';
 import { WINDOW_POST_MESSAGE_ID } from './sdk/SDK';
@@ -80,6 +88,7 @@ function App() {
     }[]
   >([]);
   const [copiedNamespace, setCopiedNamespace] = useState<string | null>(null);
+  const [isAutoMode, setIsAutoMode] = useState<boolean>(false);
   const originalConsoleError = useRef<typeof console.error | null>(null);
 
   const setInitialMethodsAndAccounts = (currentSession: any) => {
@@ -88,7 +97,7 @@ function App() {
 
     Object.entries(currentSession.sessionScopes).forEach(
       ([scope, details]: [string, any]) => {
-        if (details.accounts && details.accounts.length > 0) {
+        if (details.accounts?.[0]) {
           initialSelectedAccounts[scope] = details.accounts[0];
         }
         initialSelectedMethods[scope] = 'eth_blockNumber';
@@ -391,45 +400,58 @@ function App() {
     }
   };
 
-  const handleInvokeMethod = async (scope: CaipChainId, method: string) => {
-    const requestObject = JSON.parse(invokeMethodRequests[scope] ?? '{}');
+  const handleInvokeMethod = async (
+    scope: CaipChainId,
+    method: string,
+    requestObject?: any,
+  ) => {
+    console.log(`🔧 handleInvokeMethod called: ${method} on ${scope}`);
+    const finalRequestObject =
+      requestObject ?? JSON.parse(invokeMethodRequests[scope] ?? '{}');
+    console.log(`📋 Request object:`, finalRequestObject);
+
     try {
-      const { params } = requestObject.params.request;
+      // Extract and normalize parameters
+      const params = extractRequestParams(finalRequestObject);
+      console.log(`📤 Calling invokeMethod with params:`, params);
+
+      const paramsArray = normalizeMethodParams(method, params);
+      console.log(`📤 Normalized params array:`, paramsArray);
+
       const result = await invokeMethod(scope, {
         method,
-        params,
+        params: paramsArray,
       });
 
+      console.log(`📥 Received result:`, result);
+
+      const request = extractRequestForStorage(finalRequestObject);
       setInvokeMethodResults((prev) => {
-        const scopeResults = prev[scope] ?? {};
-        const methodResults = scopeResults[method] ?? [];
-        return {
-          ...prev,
-          [scope]: {
-            ...scopeResults,
-            [method]: [
-              ...methodResults,
-              { result, request: requestObject.params.request },
-            ],
-          },
-        };
+        const newResults = updateInvokeMethodResults(
+          prev,
+          scope,
+          method,
+          result,
+          request,
+        );
+        console.log(`💾 Updated invoke results:`, newResults);
+        return newResults;
       });
     } catch (error) {
+      console.error('❌ Error invoking method:', error);
+
+      const request = extractRequestForStorage(finalRequestObject);
       setInvokeMethodResults((prev) => {
-        const scopeResults = prev[scope] ?? {};
-        const methodResults = scopeResults[method] ?? [];
-        return {
-          ...prev,
-          [scope]: {
-            ...scopeResults,
-            [method]: [
-              ...methodResults,
-              { result: error, request: requestObject.params.request },
-            ],
-          },
-        };
+        const newResults = updateInvokeMethodResults(
+          prev,
+          scope,
+          method,
+          error as Error,
+          request,
+        );
+        console.log(`💾 Updated invoke results (error):`, newResults);
+        return newResults;
       });
-      console.error('Error invoking method:', error);
     }
   };
 
@@ -446,10 +468,110 @@ function App() {
     );
   };
 
+  /**
+   * Handles direct method invocation for E2E testing.
+   * Auto-selects the method and invokes it immediately.
+   *
+   * @param caipChainId - The CAIP chain ID of the scope.
+   * @param method - The method to invoke.
+   */
+  const handleDirectMethodInvoke = async (
+    caipChainId: CaipChainId,
+    method: string,
+  ) => {
+    try {
+      console.log(`🔄 Direct invoke: ${method} on ${caipChainId}`);
+
+      // Auto-select method first
+      setSelectedMethods((prev) => ({
+        ...prev,
+        [caipChainId]: method,
+      }));
+
+      // Ensure we have a selected account for this scope
+      const selectedAccount = autoSelectAccountForScope(
+        caipChainId,
+        selectedAccounts[caipChainId] ?? null,
+        currentSession,
+        setSelectedAccounts,
+      );
+
+      if (!selectedAccount) {
+        return; // Error already logged in helper function
+      }
+
+      const defaultRequest = prepareMethodRequest(
+        method,
+        caipChainId,
+        selectedAccount,
+        metamaskOpenrpcDocument,
+        injectParams,
+        openRPCExampleToJSON,
+        METHODS_REQUIRING_PARAM_INJECTION,
+      );
+
+      if (!defaultRequest) {
+        return; // Error already logged in helper function
+      }
+
+      setInvokeMethodRequests((prev) => ({
+        ...prev,
+        [caipChainId]: JSON.stringify(defaultRequest, null, 2),
+      }));
+
+      console.log(`✅ Request prepared for ${method}:`, defaultRequest);
+
+      console.log(`🚀 Invoking ${method} on ${caipChainId}`);
+      console.log(
+        `📋 Request for ${caipChainId}:`,
+        JSON.stringify(defaultRequest, null, 2),
+      );
+      await handleInvokeMethod(caipChainId, method, defaultRequest);
+      console.log(`✅ Successfully invoked ${method}`);
+    } catch (error) {
+      console.error(`❌ Error in handleDirectMethodInvoke:`, error);
+    }
+  };
+
   useEffect(() => {
     if (currentSession?.sessionScopes) {
       setInitialMethodsAndAccounts(currentSession);
       setSelectedScopesFromSession(currentSession.sessionScopes);
+    }
+  }, [currentSession]);
+
+  // URL parameter parsing and auto-mode detection
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const autoMode = urlParams.get('autoMode') === 'true';
+    const preselectMethods = urlParams.get('preselect')?.split(',') ?? [];
+
+    setIsAutoMode(autoMode);
+
+    if (autoMode) {
+      document.body.classList.add('auto-mode');
+    } else {
+      document.body.classList.remove('auto-mode');
+    }
+
+    // Auto-populate method selections if in auto mode and session exists
+    if (autoMode && currentSession?.sessionScopes) {
+      const autoSelectedMethods: Record<string, string> = {};
+      const scopeKeys = Object.keys(currentSession.sessionScopes);
+
+      scopeKeys.forEach((scope, index) => {
+        const method = preselectMethods[index];
+        if (method) {
+          autoSelectedMethods[scope] = method;
+        }
+      });
+
+      if (Object.keys(autoSelectedMethods).length > 0) {
+        setSelectedMethods((prev) => ({
+          ...prev,
+          ...autoSelectedMethods,
+        }));
+      }
     }
   }, [currentSession]);
 
@@ -628,7 +750,7 @@ function App() {
   const formatErrorBase = (
     errorObj: any,
     fullText?: string,
-    stringify: (obj: any) => string = (obj) => JSON.stringify(obj),
+    stringify: (obj: Json) => string = (obj) => JSON.stringify(obj),
   ): string => {
     if (fullText) {
       return fullText;
@@ -668,6 +790,11 @@ function App() {
       <h1>MetaMask MultiChain API Test Dapp</h1>
       <div className="app-subtitle">
         <i>Requires MetaMask Extension with CAIP Multichain API Enabled</i>
+        {isAutoMode && (
+          <div className="auto-mode-indicator">
+            <strong>🤖 E2E Testing Mode Active</strong>
+          </div>
+        )}
       </div>
       <section>
         <div>
@@ -1107,6 +1234,35 @@ function App() {
                           </option>
                         ))}
                       </select>
+
+                      {/* Direct method buttons for E2E testing */}
+                      <div
+                        className="direct-method-buttons"
+                        data-testid={`direct-methods-${escapeHtmlId(
+                          caipChainId,
+                        )}`}
+                      >
+                        {(scopeDetails.methods ?? []).map((method: string) => (
+                          <button
+                            key={method}
+                            className="direct-method-btn"
+                            data-testid={`direct-invoke-${escapeHtmlId(
+                              caipChainId,
+                            )}-${method}`}
+                            id={`direct-invoke-${escapeHtmlId(
+                              caipChainId,
+                            )}-${method}`}
+                            onClick={async () => {
+                              await handleDirectMethodInvoke(
+                                caipChainId,
+                                method,
+                              );
+                            }}
+                          >
+                            {method}
+                          </button>
+                        ))}
+                      </div>
 
                       <details
                         className="collapsible-section"
