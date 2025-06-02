@@ -94,31 +94,38 @@ function App() {
   const setInitialMethodsAndAccounts = (currentSession: any) => {
     const initialSelectedMethods: Record<string, string> = {};
     const initialSelectedAccounts: Record<string, CaipAccountId> = {};
+    const initialInvokeMethodRequests: Record<string, string> = {};
 
     Object.entries(currentSession.sessionScopes).forEach(
       ([scope, details]: [string, any]) => {
         if (details.accounts?.[0]) {
           initialSelectedAccounts[scope] = details.accounts[0];
         }
-        initialSelectedMethods[scope] = 'eth_blockNumber';
-        const example = metamaskOpenrpcDocument?.methods.find(
-          (method) => (method as MethodObject).name === 'eth_blockNumber',
-        );
 
-        const defaultRequest = {
+        const getInvokeMethodRequest = (request: unknown) => ({
           method: 'wallet_invokeMethod',
           params: {
             scope,
-            request: openRPCExampleToJSON(example as MethodObject),
+            request,
           },
-        };
+        });
 
-        setInvokeMethodRequests((prev) => ({
-          ...prev,
-          [scope]: JSON.stringify(defaultRequest, null, 2),
-        }));
+        if (scope.startsWith('eip155:')) {
+          initialSelectedMethods[scope] = 'eth_blockNumber';
+          const example = metamaskOpenrpcDocument?.methods.find(
+            (method) => (method as MethodObject).name === 'eth_blockNumber',
+          );
+          const request = openRPCExampleToJSON(example as MethodObject);
+          const invokeMethodRequest = getInvokeMethodRequest(request);
+          initialInvokeMethodRequests[scope] = JSON.stringify(
+            invokeMethodRequest,
+            null,
+            2,
+          );
+        }
       },
     );
+    setInvokeMethodRequests(initialInvokeMethodRequests);
     setSelectedMethods(initialSelectedMethods);
     setSelectedAccounts(initialSelectedAccounts);
   };
@@ -1306,6 +1313,10 @@ function App() {
                           }
                         }}
                         id={`invoke-method-${escapeHtmlId(caipChainId)}-btn`}
+                        disabled={
+                          !selectedMethods[caipChainId] ||
+                          !invokeMethodRequests[caipChainId]
+                        }
                       >
                         Invoke Method
                       </button>
