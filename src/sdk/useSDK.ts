@@ -17,7 +17,7 @@ type UseSDKReturn = {
   revokeSession: () => Promise<Json>;
   invokeMethod: (
     scope: CaipChainId,
-    request: { method: string; params: Json[] },
+    request: { method: string; params: Json | Json[] },
   ) => Promise<Json>;
   onNotification: (callback: (notification: any) => void) => void;
 };
@@ -200,7 +200,10 @@ export function useSDK({
   );
 
   const invokeMethod = useCallback(
-    async (scope: CaipChainId, request: { method: string; params: Json[] }) => {
+    async (
+      scope: CaipChainId,
+      request: { method: string; params: Json | Json[] },
+    ) => {
       if (!sdk) {
         throw new Error('SDK not initialized');
       }

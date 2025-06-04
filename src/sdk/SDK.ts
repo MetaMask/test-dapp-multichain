@@ -67,7 +67,7 @@ export class SDK {
     scope: CaipChainId;
     request: {
       method: string;
-      params: Json[];
+      params: Json | Json[];
     };
   }): Promise<Json> {
     const { scope, request } = options;
