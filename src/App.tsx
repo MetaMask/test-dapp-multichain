@@ -23,7 +23,6 @@ import { FEATURED_NETWORKS, getNetworkName } from './constants/networks';
 import { escapeHtmlId } from './helpers/IdHelpers';
 import { openRPCExampleToJSON, truncateJSON } from './helpers/JsonHelpers';
 import {
-  normalizeMethodParams,
   updateInvokeMethodResults,
   extractRequestParams,
   extractRequestForStorage,
@@ -421,13 +420,9 @@ function App() {
       // Extract and normalize parameters
       const params = extractRequestParams(finalRequestObject);
       console.log(`📤 Calling invokeMethod with params:`, params);
-
-      const paramsArray = normalizeMethodParams(method, params);
-      console.log(`📤 Normalized params array:`, paramsArray);
-
       const result = await invokeMethod(scope, {
         method,
-        params: paramsArray,
+        params,
       });
 
       console.log(`📥 Received result:`, result);
@@ -1039,6 +1034,7 @@ function App() {
                         <details
                           key={timestamp}
                           id={`session-method-details-${index}`}
+                          open={isAutoMode}
                         >
                           <summary className="result-summary">
                             <span className="timestamp">
@@ -1073,6 +1069,7 @@ function App() {
                         <details
                           key={timestamp}
                           id={`wallet-session-changed-${index}`}
+                          open={isAutoMode}
                         >
                           <summary className="result-summary">
                             <span className="timestamp">
@@ -1117,6 +1114,7 @@ function App() {
                           <details
                             key={timestamp}
                             id={`console-error-details-${index}`}
+                            open={isAutoMode}
                           >
                             <summary className="result-summary">
                               <span className="timestamp">
@@ -1279,6 +1277,7 @@ function App() {
                         id={`invoke-method-details-${escapeHtmlId(
                           caipChainId,
                         )}`}
+                        open={isAutoMode}
                       >
                         <summary>Invoke Method Request</summary>
                         <div className="collapsible-content">
@@ -1336,6 +1335,7 @@ function App() {
                               id={`method-result-details-${escapeHtmlId(
                                 caipChainId,
                               )}-${method}-${index}`}
+                              open={isAutoMode}
                             >
                               <summary>
                                 <span className="result-method">{method}</span>
@@ -1400,6 +1400,7 @@ function App() {
         </h2>
         <div
           className="notification-container"
+          id="wallet-notify-container"
           data-testid="wallet-notify-container"
         >
           {walletNotifyHistory.length > 0 ? (
@@ -1408,6 +1409,7 @@ function App() {
                 key={timestamp}
                 data-testid={`wallet-notify-details-${index}`}
                 id={`wallet-notify-details-${index}`}
+                open={isAutoMode}
               >
                 <summary className="result-summary">
                   <span className="timestamp">
@@ -1423,7 +1425,7 @@ function App() {
               </details>
             ))
           ) : (
-            <p>No notifications received</p>
+            <p id="wallet-notify-empty">No notifications received</p>
           )}
         </div>
       </section>

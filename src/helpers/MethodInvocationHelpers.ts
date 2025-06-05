@@ -3,39 +3,6 @@ import type { MethodObject } from '@open-rpc/meta-schema';
 import type { Dispatch, SetStateAction } from 'react';
 
 /**
- * Normalizes parameters for method invocation, ensuring they are always in array format
- * and applying special handling for specific methods.
- *
- * @param method - The method name being invoked.
- * @param params - The raw parameters.
- * @returns Normalized parameters array.
- */
-export const normalizeMethodParams = (method: string, params: Json): Json[] => {
-  // Ensure params is always an array for the SDK
-  let paramsArray = Array.isArray(params) ? params : [params];
-
-  // Special handling for eth_signTypedData_v3/v4: second parameter must be JSON string
-  if (
-    (method === 'eth_signTypedData_v3' || method === 'eth_signTypedData_v4') &&
-    paramsArray.length >= 2
-  ) {
-    const firstParam = paramsArray[0];
-    const secondParam = paramsArray[1];
-
-    if (firstParam !== undefined && secondParam !== undefined) {
-      paramsArray = [
-        firstParam, // address (string)
-        typeof secondParam === 'string'
-          ? secondParam
-          : JSON.stringify(secondParam), // typed data (JSON string)
-      ];
-    }
-  }
-
-  return paramsArray;
-};
-
-/**
  * Updates the invoke method results state in an immutable way.
  *
  * @param previousResults - Previous invoke method results state.
