@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.0]
+
+### Uncategorized
+
+- feat: Refactor method invocation handling and enhance UI for auto-mode ([#74](https://github.com/MetaMask/test-dapp-multichain/pull/74))
+- Fix invoke method issues ([#73](https://github.com/MetaMask/test-dapp-multichain/pull/73))
+
 ## [0.15.0]
 
 ### Added
@@ -204,7 +211,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix: other linting issues
 - Initial Commit of react app and module template
 
-[Unreleased]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.15.0...HEAD
+[Unreleased]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.16.0...HEAD
+[0.16.0]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.12.1...v0.13.0
