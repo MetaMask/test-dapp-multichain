@@ -9,9 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.16.0]
 
-### Uncategorized
+### Added
 
 - feat: Refactor method invocation handling and enhance UI for auto-mode ([#74](https://github.com/MetaMask/test-dapp-multichain/pull/74))
+
+### Fixed
+
 - Fix invoke method issues ([#73](https://github.com/MetaMask/test-dapp-multichain/pull/73))
 
 ## [0.15.0]
