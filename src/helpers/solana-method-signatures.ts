@@ -14,9 +14,9 @@ window.Buffer = Buffer;
 
 const SOLANA_RPC_CONFIG = {
   endpoints: [
-    'https://api.helius-rpc.com/?api-key=15319146-89d5-4685-a3c4-811991e5212f',
     'https://api.devnet.solana.com',
-    'https://api.mainnet-beta.solana.com',
+    'https://solana-devnet.infura.io',
+    'https://solana-mainnet.infura.io',
   ],
   commitment: 'confirmed' as Commitment,
   fallbackBlockhash: 'EETubP5AKHgjPAhzPAFcb8BAY1hMH639CWCFTqi3hq1k',
