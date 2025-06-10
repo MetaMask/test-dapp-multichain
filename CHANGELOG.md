@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.17.0]
 
-### Uncategorized
+### Changed
 
 - feat: update solana endpoints to match the ones in extension code base ([#76](https://github.com/MetaMask/test-dapp-multichain/pull/76))
 
