@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- feat: update solana endpoints to match the ones in extension code base ([#76](https://github.com/MetaMask/test-dapp-multichain/pull/76))
+- chore: update solana endpoints to match extension `privacy-snapshot.json` ([#76](https://github.com/MetaMask/test-dapp-multichain/pull/76))
 
 ## [0.16.0]
 
