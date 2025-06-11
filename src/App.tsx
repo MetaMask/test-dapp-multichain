@@ -502,14 +502,11 @@ function App() {
         return; // Error already logged in helper function
       }
 
-      const defaultRequest = prepareMethodRequest(
+      const defaultRequest = await prepareMethodRequest(
         method,
         caipChainId,
         selectedAccount,
         metamaskOpenrpcDocument,
-        injectParams,
-        openRPCExampleToJSON,
-        METHODS_REQUIRING_PARAM_INJECTION,
       );
 
       if (!defaultRequest) {
