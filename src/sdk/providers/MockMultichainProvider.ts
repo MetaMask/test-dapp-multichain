@@ -11,11 +11,11 @@ const makeProvider = (getSession: () => any): Provider => {
 
   // Function to simulate MetaMask provider
   const provider: Provider = {
-    connect: (_: string) => {
-      // do nothing
+    connect: async (_: string) => {
+      return Promise.resolve(true);
     },
     disconnect: () => {
-      // do nothing
+      return true;
     },
     request: async ({ method, params }: { method: string; params: any }) => {
       console.log(`Calling ${method} with params:`, params);

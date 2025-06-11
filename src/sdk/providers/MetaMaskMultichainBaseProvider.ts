@@ -1,12 +1,12 @@
+import type { JsonRpcId, JsonRpcRequest } from '@metamask/utils';
+
 import type { Provider } from './Provider';
 
 type NotificationCallback = (notification: any) => void;
 
-class MetaMaskMultichainProvider implements Provider {
-  #port: chrome.runtime.Port | null;
-
+abstract class MetaMaskMultichainBaseProvider implements Provider {
   #requestMap: Map<
-    number,
+    JsonRpcId,
     { resolve: (value: unknown) => void; reject: (reason?: any) => void }
   >;
 
@@ -15,35 +15,21 @@ class MetaMaskMultichainProvider implements Provider {
   #notificationCallbacks: Set<NotificationCallback> = new Set();
 
   constructor() {
-    this.#port = null;
     this.#requestMap = new Map();
     this.#nextId = 1;
     this.#notificationCallbacks = new Set();
   }
 
-  connect(extensionId: string): void {
-    if (this.#port) {
-      this.disconnect();
-    }
-    try {
-      this.#port = chrome.runtime.connect(extensionId);
-      this.#port.onMessage.addListener(this.#handleMessage.bind(this));
-      this.#port.onDisconnect.addListener(() => {
-        this.#port = null;
-        this.#requestMap.clear();
-      });
-    } catch {
-      console.error(
-        'Error connecting to MetaMask Multichain Provider. Make sure the Multichain Enable Metamask extension is installed and enabled.',
-      );
-    }
-  }
+  abstract connect(...args: any): Promise<boolean>;
+
+  abstract _disconnect(): void;
+
+  abstract isConnected(): boolean;
+
+  abstract _sendRequest(request: JsonRpcRequest): void;
 
   disconnect(): void {
-    if (this.#port) {
-      this.#port.disconnect();
-      this.#port = null;
-    }
+    this._disconnect();
     this.#requestMap.clear();
     this.removeAllNotificationListeners();
   }
@@ -57,14 +43,14 @@ class MetaMaskMultichainProvider implements Provider {
     params: any;
     id?: number;
   }): Promise<any> {
-    if (!this.#port) {
+    if (!this.isConnected()) {
       throw new Error('Not connected to any extension. Call connect() first.');
     }
 
     const _id = id ?? this.#nextId;
     this.#nextId += 1;
     const request = {
-      jsonrpc: '2.0',
+      jsonrpc: '2.0' as const,
       id: _id,
       method,
       params,
@@ -72,34 +58,31 @@ class MetaMaskMultichainProvider implements Provider {
 
     return new Promise((resolve, reject) => {
       this.#requestMap.set(_id, { resolve, reject });
-      this.#port?.postMessage({ type: 'caip-x', data: request });
-
-      // Set a timeout for the request
+      this._sendRequest(request);
       setTimeout(() => {
         if (this.#requestMap.has(_id)) {
           this.#requestMap.delete(_id);
           reject(new Error('Request timeout'));
         }
-      }, 30000); // 30 seconds timeout
+      }, 30000);
     });
   }
 
-  #handleMessage(message: any): void {
-    const { data } = message;
-    if (data.id && this.#requestMap.has(data.id)) {
-      const { resolve, reject } = this.#requestMap.get(data.id) ?? {};
-      this.#requestMap.delete(data.id);
+  protected _handleMessage(message: any): void {
+    if (message.id && this.#requestMap.has(message.id)) {
+      const { resolve, reject } = this.#requestMap.get(message.id) ?? {};
+      this.#requestMap.delete(message.id);
 
       if (resolve && reject) {
-        if (data.error) {
-          reject(new Error(data.error.message));
+        if (message.error) {
+          reject(new Error(message.error.message));
         } else {
-          resolve(data.result);
+          resolve(message.result);
         }
       }
-    } else if (!data.id) {
+    } else if (!message.id) {
       // It's a notification
-      this.#notifyCallbacks(data);
+      this.#notifyCallbacks(message);
     }
   }
 
@@ -128,4 +111,4 @@ class MetaMaskMultichainProvider implements Provider {
   }
 }
 
-export default MetaMaskMultichainProvider;
+export default MetaMaskMultichainBaseProvider;

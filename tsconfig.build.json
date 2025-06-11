@@ -6,7 +6,7 @@
     "emitDeclarationOnly": true,
     "inlineSources": true,
     "noEmit": false,
-    "outDir": "dist",
+    "outDir": "build",
     "rootDir": "src",
     "sourceMap": true
   },

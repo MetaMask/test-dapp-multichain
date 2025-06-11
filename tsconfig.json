@@ -13,5 +13,5 @@
     "target": "es2020",
     "jsx": "react-jsx"
   },
-  "exclude": ["./dist", "**/node_modules"]
+  "exclude": ["./build", "**/node_modules"]
 }
