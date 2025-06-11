@@ -297,6 +297,13 @@ input[type='checkbox'] {
   max-height: 300px;
   overflow-y: auto;
 }
+/* Prevent breaking the layout on mobile after creating a session */
+@media (max-width: 768px) {
+  .notification-container {
+    contain: strict;
+    contain-intrinsic-height: 150px;
+  }
+}
 
 .notification-container h3 {
   color: #4a5568;
@@ -938,12 +945,6 @@ details[open] summary::before {
   .session-lifecycle-buttons button {
     width: 100%;
     margin: 0.25rem 0;
-  }
-
-  /* Prevent breaking the layout on mobile after creating a session */
-  .notification-container {
-    contain: strict;
-    content-visibility: auto;
   }
 
   .scope-header {
