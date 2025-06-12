@@ -502,14 +502,11 @@ function App() {
         return; // Error already logged in helper function
       }
 
-      const defaultRequest = prepareMethodRequest(
+      const defaultRequest = await prepareMethodRequest(
         method,
         caipChainId,
         selectedAccount,
         metamaskOpenrpcDocument,
-        injectParams,
-        openRPCExampleToJSON,
-        METHODS_REQUIRING_PARAM_INJECTION,
       );
 
       if (!defaultRequest) {
@@ -1324,7 +1321,7 @@ function App() {
                         invokeMethodResults[caipChainId] ?? {},
                       ).map(([method, results]) => {
                         return results.map(({ result, request }, index) => {
-                          const { text, truncated } = truncateJSON(result, 150);
+                          const { text, truncated } = truncateJSON(result, 500);
                           return truncated ? (
                             <details
                               key={`${method}-${index}`}

@@ -1,6 +1,18 @@
-import type { CaipChainId, Json, CaipAccountId } from '@metamask/utils';
+import {
+  type CaipChainId,
+  type Json,
+  type CaipAccountId,
+  parseCaipChainId,
+} from '@metamask/utils';
 import type { MethodObject } from '@open-rpc/meta-schema';
 import type { Dispatch, SetStateAction } from 'react';
+
+import {
+  injectParams,
+  METHODS_REQUIRING_PARAM_INJECTION,
+} from '../constants/methods';
+import { openRPCExampleToJSON } from './JsonHelpers';
+import { generateSolanaMethodExamples } from './solana-method-signatures';
 
 /**
  * Updates the invoke method results state in an immutable way.
@@ -91,49 +103,134 @@ export const autoSelectAccountForScope = (
 };
 
 /**
+ * Determines if a method is EVM, Solana, or other type.
+ *
+ * @param chainId - The CAIP chain ID.
+ * @returns The type of method.
+ */
+const determineMethodType = (
+  chainId: CaipChainId,
+): 'evm' | 'solana' | 'unknown' => {
+  const { namespace } = parseCaipChainId(chainId);
+
+  switch (namespace) {
+    case 'eip155':
+      return 'evm';
+    case 'solana':
+      return 'solana';
+    default:
+      return 'unknown';
+  }
+};
+
+/**
+ * Handles Solana-specific method preparation.
+ *
+ * @param method - The method name to invoke.
+ * @param selectedAccount - The selected account for this scope.
+ * @returns The prepared request object or null if method not found.
+ */
+const handleSolanaMethod = async (
+  method: string,
+  selectedAccount: CaipAccountId,
+): Promise<Json | null> => {
+  const address = selectedAccount.split(':')[2] ?? '';
+  const example = await generateSolanaMethodExamples(method, address);
+
+  if (!example) {
+    console.error(`❌ No example found for Solana method: ${method}`);
+    return null;
+  }
+
+  return example;
+};
+
+/**
+ * Handles EVM-specific method preparation.
+ *
+ * @param method - The method name to invoke.
+ * @param selectedAccount - The selected account for this scope.
+ * @param caipChainId - The CAIP chain ID.
+ * @param metamaskOpenrpcDocument - The MetaMask OpenRPC document.
+ * @returns The prepared request object or null if method not found.
+ */
+const handleEVMMethod = async (
+  method: string,
+  selectedAccount: CaipAccountId,
+  caipChainId: CaipChainId,
+  metamaskOpenrpcDocument: any,
+): Promise<Json | null> => {
+  const example = metamaskOpenrpcDocument?.methods.find(
+    (methodObj: MethodObject) => methodObj.name === method,
+  );
+
+  if (!example) {
+    console.error(`❌ No example found for EVM method: ${method}`);
+    return null;
+  }
+
+  let exampleParams = openRPCExampleToJSON(example as MethodObject);
+
+  if (method in METHODS_REQUIRING_PARAM_INJECTION && exampleParams !== null) {
+    exampleParams = injectParams(
+      method,
+      exampleParams,
+      selectedAccount,
+      caipChainId,
+    ) as { method: string; params: any };
+  }
+
+  return exampleParams;
+};
+
+/**
  * Prepares a method request object for invocation.
  *
  * @param method - The method name to invoke.
  * @param caipChainId - The CAIP chain ID.
  * @param selectedAccount - The selected account for this scope.
  * @param metamaskOpenrpcDocument - The MetaMask OpenRPC document.
- * @param injectParams - Function to inject parameters for specific methods.
- * @param openRPCExampleToJSON - Function to convert OpenRPC examples to JSON.
- * @param METHODS_REQUIRING_PARAM_INJECTION - Object containing methods that require parameter injection.
  * @returns The prepared request object or null if method not found.
  */
-export const prepareMethodRequest = (
+export const prepareMethodRequest = async (
   method: string,
   caipChainId: CaipChainId,
   selectedAccount: CaipAccountId | null,
   metamaskOpenrpcDocument: any,
-  injectParams: (
-    method: string,
-    params: Json,
-    account: CaipAccountId,
-    scope: CaipChainId,
-  ) => Json,
-  openRPCExampleToJSON: (methodObj: MethodObject) => Json,
-  METHODS_REQUIRING_PARAM_INJECTION: Record<string, boolean>,
-): Json | null => {
-  const example = metamaskOpenrpcDocument?.methods.find(
-    (methodObj: MethodObject) => methodObj.name === method,
-  );
+): Promise<Json | null> => {
+  const methodType = determineMethodType(caipChainId);
 
-  if (!example) {
-    console.error(`❌ No example found for method: ${method}`);
+  if (!selectedAccount) {
+    console.error(`❌ No account selected for method: ${method}`);
     return null;
   }
 
-  let exampleParams: Json = openRPCExampleToJSON(example as MethodObject);
+  if (methodType === 'unknown') {
+    console.error(`❌ Unsupported method type for: ${method}`);
+    return null;
+  }
 
-  if (method in METHODS_REQUIRING_PARAM_INJECTION && selectedAccount) {
-    exampleParams = injectParams(
-      method,
-      exampleParams,
-      selectedAccount,
-      caipChainId,
-    );
+  let exampleParams: Json | null = null;
+
+  switch (methodType) {
+    case 'solana':
+      exampleParams = await handleSolanaMethod(method, selectedAccount);
+      break;
+    case 'evm':
+      exampleParams = await handleEVMMethod(
+        method,
+        selectedAccount,
+        caipChainId,
+        metamaskOpenrpcDocument,
+      );
+      break;
+    default:
+      console.error(`❌ Unsupported method type for: ${method}`);
+      return null;
+  }
+
+  if (!exampleParams) {
+    return null;
   }
 
   return {
