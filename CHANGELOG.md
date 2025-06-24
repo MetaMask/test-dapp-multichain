@@ -9,10 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.17.1]
 
-### Uncategorized
+### Changed
 
 - fix: Solana method helpers on E2E mode ([#79](https://github.com/MetaMask/test-dapp-multichain/pull/79))
-- build(deps): bump the npm_and_yarn group across 1 directory with 2 updates ([#16](https://github.com/MetaMask/test-dapp-multichain/pull/16))
+
 
 ## [0.17.0]
 
