@@ -13,7 +13,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - fix: Solana method helpers on E2E mode ([#79](https://github.com/MetaMask/test-dapp-multichain/pull/79))
 
-
 ## [0.17.0]
 
 ### Changed
