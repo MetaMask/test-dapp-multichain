@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - fix: Solana method helpers on E2E mode ([#79](https://github.com/MetaMask/test-dapp-multichain/pull/79))
+- fix: mobile resizing on E2E test mode ([#78](https://github.com/MetaMask/test-dapp-multichain/pull/78))
 
 ## [0.17.0]
 
