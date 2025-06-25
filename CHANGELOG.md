@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.1]
+
+### Changed
+
+- fix: Solana method helpers on E2E mode ([#79](https://github.com/MetaMask/test-dapp-multichain/pull/79))
+- fix: mobile resizing on E2E test mode ([#78](https://github.com/MetaMask/test-dapp-multichain/pull/78))
+
 ## [0.17.0]
 
 ### Changed
@@ -220,7 +227,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix: other linting issues
 - Initial Commit of react app and module template
 
-[Unreleased]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.17.0...HEAD
+[Unreleased]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.17.1...HEAD
+[0.17.1]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.17.0...v0.17.1
 [0.17.0]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.14.0...v0.15.0
