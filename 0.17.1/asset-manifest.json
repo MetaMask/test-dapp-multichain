@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/test-dapp-multichain/0.17.1/static/css/main.66b8f8cf.css",
+    "main.js": "/test-dapp-multichain/0.17.1/static/js/main.d6a21d16.js",
+    "index.html": "/test-dapp-multichain/0.17.1/index.html",
+    "main.66b8f8cf.css.map": "/test-dapp-multichain/0.17.1/static/css/main.66b8f8cf.css.map",
+    "main.d6a21d16.js.map": "/test-dapp-multichain/0.17.1/static/js/main.d6a21d16.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.66b8f8cf.css",
+    "static/js/main.d6a21d16.js"
+  ]
+}
