@@ -59,6 +59,7 @@ function App() {
     [FEATURED_NETWORKS['Base Mainnet']]: false,
     [FEATURED_NETWORKS.Localhost]: false,
     [FEATURED_NETWORKS['Solana Mainnet']]: false,
+    [FEATURED_NETWORKS.Bitcoin]: false,
   });
   const [extensionId, setExtensionId] = useState<string>('');
   const [invokeMethodRequests, setInvokeMethodRequests] = useState<
@@ -328,6 +329,7 @@ function App() {
       [FEATURED_NETWORKS['Base Mainnet']]: false,
       [FEATURED_NETWORKS.Localhost]: false,
       [FEATURED_NETWORKS['Solana Mainnet']]: false,
+      [FEATURED_NETWORKS.Bitcoin]: false,
     });
   };
 
