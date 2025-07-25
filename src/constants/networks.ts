@@ -12,6 +12,7 @@ export const FEATURED_NETWORKS = {
   'Base Mainnet': 'eip155:8453',
   Localhost: 'eip155:1337',
   'Solana Mainnet': 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+  Bitcoin: 'bip122:000000000019d6689c085ae165831e93',
 } as const;
 
 export const getNetworkName = (chainId: CaipChainId): string => {
