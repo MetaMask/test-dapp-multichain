@@ -1,11 +1,13 @@
-import type { JsonRpcRequest } from '@metamask/utils';
+import type { MultichainCore } from '@metamask/connect-multichain';
+import { createMetamaskConnect } from '@metamask/connect-multichain';
 
-import { Provider } from './Provider';
+import type { Provider } from './Provider';
 
 type NotificationCallback = (notification: any) => void;
 
 class MetaMaskConnectProvider implements Provider {
-  #mmConnect: MetamaskConnect | null;
+  #mmConnect: MultichainCore | null;
+
   #notificationCallbacks: Set<NotificationCallback> = new Set();
 
   constructor() {
@@ -18,15 +20,18 @@ class MetaMaskConnectProvider implements Provider {
       this.disconnect();
     }
 
-    await createMetamaskConnect({
+    this.#mmConnect = await createMetamaskConnect({
       dapp: {
         name: 'MultichainTest Dapp',
         url: 'https://metamask.github.io/test-dapp-multichain/latest/',
       },
-      onNotification: (notification: any) => {
-        this.#notifyCallbacks(notification);
+      transport: {
+        onNotification: (notification: any) => {
+          this.#notifyCallbacks(notification);
+        },
       },
     });
+
 
     return true;
   }
@@ -42,7 +47,7 @@ class MetaMaskConnectProvider implements Provider {
     return Boolean(this.#mmConnect);
   }
 
-  async request(request: JsonRpcRequest): Promise<any> {
+  async request(request: { method: string; params: any }): Promise<any> {
     if (request.method === 'wallet_invokeMethod') {
       return this.#mmConnect?.invokeMethod(request.params);
     }
@@ -53,8 +58,9 @@ class MetaMaskConnectProvider implements Provider {
       // noop?
     }
     if (request.method === 'wallet_createSession') {
-      // unsure
+      await this.#mmConnect?.connect(['eip155:1'], []);
     }
+    return Promise.resolve(null);
   }
 
   onNotification(callback: NotificationCallback): void {
@@ -80,7 +86,6 @@ class MetaMaskConnectProvider implements Provider {
       }
     });
   }
-
 }
 
 export default MetaMaskConnectProvider;

@@ -102,5 +102,9 @@
       "@solana/web3.js>rpc-websockets>bufferutil": false,
       "@solana/web3.js>rpc-websockets>utf-8-validate": false
     }
+  },
+  "dependencies": {
+    "@metamask/connect": "^0.1.0",
+    "@metamask/connect-multichain": "^0.1.0"
   }
 }

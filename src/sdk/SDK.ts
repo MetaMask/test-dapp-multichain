@@ -1,6 +1,7 @@
 import type { CaipAccountId, CaipChainId, Json } from '@metamask/utils';
 import { parseCaipChainId, parseCaipAccountId } from '@metamask/utils';
 
+import MetaMaskConnectProvider from './providers/MetaMaskConnectProvider';
 import type MetaMaskMultichainBaseProvider from './providers/MetaMaskMultichainBaseProvider';
 import MetaMaskMultichainExternallyConnectableProvider from './providers/MetaMaskMultichainExternallyConnectableProvider';
 import MetaMaskMultichainWindowPostMessageProvider from './providers/MetaMaskMultichainWindowPostMessageProvider';
@@ -112,6 +113,10 @@ export class SDK {
     let connected;
     if (extensionId === WINDOW_POST_MESSAGE_ID) {
       this.#provider = new MetaMaskMultichainWindowPostMessageProvider();
+      connected = await this.#provider.connect();
+    } else if (extensionId === 'connect') {
+      this.#provider =
+        new MetaMaskConnectProvider() as unknown as MetaMaskMultichainBaseProvider;
       connected = await this.#provider.connect();
     } else {
       this.#provider = new MetaMaskMultichainExternallyConnectableProvider();
