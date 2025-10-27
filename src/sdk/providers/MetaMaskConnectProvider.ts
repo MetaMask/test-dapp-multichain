@@ -1,4 +1,4 @@
-import type { MultichainCore } from '@metamask/connect-multichain';
+import type { MultichainCore, Scope } from '@metamask/connect-multichain';
 import { createMetamaskConnect } from '@metamask/connect-multichain';
 
 import type { Provider } from './Provider';
@@ -27,17 +27,24 @@ class MetaMaskConnectProvider implements Provider {
       },
       transport: {
         onNotification: (notification: any) => {
+          console.log('notification', notification);
           this.#notifyCallbacks(notification);
         },
       },
+      ui: {
+        preferDesktop: false,
+        preferExtension: false,
+      },
     });
+
+    await this.#mmConnect?.connect(['eip155:1'], []);
 
     return true;
   }
 
   disconnect(): void {
     if (this.#mmConnect !== null) {
-      this.#mmConnect.disconnect();
+      this.#mmConnect.disconnect().catch(console.error);
       this.#mmConnect = null;
     }
   }
@@ -54,10 +61,14 @@ class MetaMaskConnectProvider implements Provider {
       // handle this locally
     }
     if (request.method === 'wallet_revokeSession') {
-      // noop?
+      this.disconnect();
     }
     if (request.method === 'wallet_createSession') {
-      await this.#mmConnect?.connect(['eip155:1'], []);
+      const scopes = Object.keys({
+        ...request.params.optionalScopes,
+        ...request.params.requiredScopes,
+      });
+      await this.#mmConnect?.connect(scopes as unknown as Scope[], []);
     }
     return Promise.resolve(null);
   }
