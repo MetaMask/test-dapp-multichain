@@ -32,7 +32,6 @@ class MetaMaskConnectProvider implements Provider {
       },
     });
 
-
     return true;
   }
 
