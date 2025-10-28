@@ -2,18 +2,14 @@ import type { MultichainCore, Scope } from '@metamask/connect-multichain';
 import { createMetamaskConnect } from '@metamask/connect-multichain';
 
 import type { Provider } from './Provider';
+import { CaipAccountId } from '@metamask/utils';
 
 type NotificationCallback = (notification: any) => void;
 
 class MetaMaskConnectProvider implements Provider {
-  #mmConnect: MultichainCore | null;
-
+  #mmConnect: MultichainCore | null = null;
   #notificationCallbacks: Set<NotificationCallback> = new Set();
-
-  constructor() {
-    this.#mmConnect = null;
-    this.#notificationCallbacks = new Set();
-  }
+  #currnetSession: unknown = {"sessionScopes": {}};
 
   async connect(): Promise<boolean> {
     if (this.#mmConnect) {
@@ -27,7 +23,9 @@ class MetaMaskConnectProvider implements Provider {
       },
       transport: {
         onNotification: (notification: any) => {
-          console.log('notification', notification);
+          if (notification.method === 'wallet_sessionChanged') {
+            this.#currnetSession = notification.params;
+          }
           this.#notifyCallbacks(notification);
         },
       },
@@ -58,7 +56,7 @@ class MetaMaskConnectProvider implements Provider {
       return this.#mmConnect?.invokeMethod(request.params);
     }
     if (request.method === 'wallet_getSession') {
-      // handle this locally
+      return this.#currnetSession;
     }
     if (request.method === 'wallet_revokeSession') {
       this.disconnect();
