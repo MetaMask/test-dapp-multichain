@@ -1,15 +1,17 @@
 import type { MultichainCore, Scope } from '@metamask/connect-multichain';
 import { createMetamaskConnect } from '@metamask/connect-multichain';
+import type { CaipAccountId } from '@metamask/utils';
 
 import type { Provider } from './Provider';
-import { CaipAccountId } from '@metamask/utils';
 
 type NotificationCallback = (notification: any) => void;
 
 class MetaMaskConnectProvider implements Provider {
   #mmConnect: MultichainCore | null = null;
+
   #notificationCallbacks: Set<NotificationCallback> = new Set();
-  #currnetSession: unknown = {"sessionScopes": {}};
+
+  #walletSession: unknown = { sessionScopes: {} };
 
   async connect(): Promise<boolean> {
     if (this.#mmConnect) {
@@ -24,7 +26,7 @@ class MetaMaskConnectProvider implements Provider {
       transport: {
         onNotification: (notification: any) => {
           if (notification.method === 'wallet_sessionChanged') {
-            this.#currnetSession = notification.params;
+            this.#walletSession = notification.params;
           }
           this.#notifyCallbacks(notification);
         },
@@ -56,7 +58,7 @@ class MetaMaskConnectProvider implements Provider {
       return this.#mmConnect?.invokeMethod(request.params);
     }
     if (request.method === 'wallet_getSession') {
-      return this.#currnetSession;
+      return this.#walletSession;
     }
     if (request.method === 'wallet_revokeSession') {
       this.disconnect();
@@ -69,10 +71,14 @@ class MetaMaskConnectProvider implements Provider {
 
       const requestedAccounts = new Set<CaipAccountId>();
       Object.values(request.params.optionalScopes).forEach((scopeObject) => {
-        const {accounts} = scopeObject as { accounts: CaipAccountId[] };
-        accounts.forEach(requestedAccounts.add)
+        const { accounts } = scopeObject as { accounts: CaipAccountId[] };
+        accounts.forEach((account) => requestedAccounts.add(account));
       });
-      await this.#mmConnect?.connect(requestedScopes, Array.from(requestedAccounts));
+      await this.#mmConnect?.connect(
+        requestedScopes,
+        Array.from(requestedAccounts),
+      );
+      return this.#walletSession;
     }
     return Promise.resolve(null);
   }
