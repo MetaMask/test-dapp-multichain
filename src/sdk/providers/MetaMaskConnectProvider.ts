@@ -64,11 +64,17 @@ class MetaMaskConnectProvider implements Provider {
       this.disconnect();
     }
     if (request.method === 'wallet_createSession') {
-      const scopes = Object.keys({
+      const requestedScopes = Object.keys({
         ...request.params.optionalScopes,
         ...request.params.requiredScopes,
+      }) as unknown as Scope[];
+
+      const requestedAccounts = new Set<CaipAccountId>();
+      Object.values(request.params.optionalScopes).forEach((scopeObject) => {
+        const {accounts} = scopeObject as { accounts: CaipAccountId[] };
+        accounts.forEach(requestedAccounts.add)
       });
-      await this.#mmConnect?.connect(scopes as unknown as Scope[], []);
+      await this.#mmConnect?.connect(requestedScopes, Array.from(requestedAccounts));
     }
     return Promise.resolve(null);
   }
