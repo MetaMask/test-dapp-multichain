@@ -6,6 +6,7 @@ import type MetaMaskMultichainBaseProvider from './providers/MetaMaskMultichainB
 import MetaMaskMultichainExternallyConnectableProvider from './providers/MetaMaskMultichainExternallyConnectableProvider';
 import MetaMaskMultichainWindowPostMessageProvider from './providers/MetaMaskMultichainWindowPostMessageProvider';
 
+export const MM_CONNECT_ID = 'mm-connect';
 export const WINDOW_POST_MESSAGE_ID = 'window.postMessage';
 export const METAMASK_PROD_CHROME_ID = 'nkbihfbeogaeaoehlefnkodbefgpgknn';
 
@@ -114,7 +115,7 @@ export class SDK {
     if (extensionId === WINDOW_POST_MESSAGE_ID) {
       this.#provider = new MetaMaskMultichainWindowPostMessageProvider();
       connected = await this.#provider.connect();
-    } else if (extensionId === 'connect') {
+    } else if (extensionId === MM_CONNECT_ID) {
       this.#provider =
         new MetaMaskConnectProvider() as unknown as MetaMaskMultichainBaseProvider;
       connected = await this.#provider.connect();
