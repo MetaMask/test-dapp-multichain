@@ -13,7 +13,8 @@ module.exports = {
         "import/no-unassigned-import": "off",
         "jsdoc/require-jsdoc": "off",
         "no-restricted-globals": "off",
-        "@typescript-eslint/naming-convention": "off"
+        "@typescript-eslint/naming-convention": "off",
+        "@typescript-eslint/restrict-template-expressions": "off",
       }
     },
 
