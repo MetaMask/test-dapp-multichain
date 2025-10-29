@@ -9,10 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.18.0]
 
-### Uncategorized
+### Added
 
-- feat: Add MM Connect integration ([#83](https://github.com/MetaMask/test-dapp-multichain/pull/83))
-- chore: Remove jest and test job ([#84](https://github.com/MetaMask/test-dapp-multichain/pull/84))
+- feat: Add MM Connect integration (mobile only) ([#83](https://github.com/MetaMask/test-dapp-multichain/pull/83))
 - feat: Adds Bitcoin to the list of networks ([#82](https://github.com/MetaMask/test-dapp-multichain/pull/82))
 
 ## [0.17.1]
