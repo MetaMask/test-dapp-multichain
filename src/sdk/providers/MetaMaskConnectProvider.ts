@@ -35,6 +35,30 @@ class MetaMaskConnectProvider implements Provider {
         preferDesktop: false,
         preferExtension: false,
       },
+      api: {
+        readonlyRPCMap: {
+          // Ethereum Mainnet
+          'eip155:1': `https://mainnet.infura.io/v3/${process.env.REACT_APP_INFURA_PROJECT_ID}`,
+          // Linea Mainnet
+          'eip155:59144': `https://linea-mainnet.infura.io/v3/${process.env.REACT_APP_INFURA_PROJECT_ID}`,
+          // Arbitrum One
+          'eip155:42161': `https://arbitrum-mainnet.infura.io/v3/${process.env.REACT_APP_INFURA_PROJECT_ID}`,
+          // Avalanche C-Chain
+          'eip155:43114': `https://avalanche-mainnet.infura.io/v3/${process.env.REACT_APP_INFURA_PROJECT_ID}`,
+          // BNB Chain
+          'eip155:56': `https://bsc-mainnet.infura.io/v3/${process.env.REACT_APP_INFURA_PROJECT_ID}`,
+          // Optimism Mainnet
+          'eip155:10': `https://optimism-mainnet.infura.io/v3/${process.env.REACT_APP_INFURA_PROJECT_ID}`,
+          // Polygon Mainnet
+          'eip155:137': `https://polygon-mainnet.infura.io/v3/${process.env.REACT_APP_INFURA_PROJECT_ID}`,
+          // zkSync Era Mainnet
+          'eip155:324': `https://zksync-era-mainnet.infura.io/v3/${process.env.REACT_APP_INFURA_PROJECT_ID}`,
+          // Base Mainnet
+          'eip155:8453': `https://base-mainnet.infura.io/v3/${process.env.REACT_APP_INFURA_PROJECT_ID}`,
+          // Localhost (for development)
+          'eip155:1337': 'http://localhost:8545',
+        },
+      },
     });
 
     await this.#mmConnect?.connect(['eip155:1'], []);

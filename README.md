@@ -14,6 +14,36 @@ To start the development server:
 
 This will launch the test dapp, allowing you to interact with the MetaMask Multichain API.
 
+## Environment Variables
+
+The test dapp uses a single Infura API key for all supported blockchain networks. 
+
+**Note**: React requires environment variables to be prefixed with `REACT_APP_` to be accessible in the browser. 
+
+1. Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Get your Infura API key from [https://infura.io/](https://infura.io/)
+
+3. Update the `.env` file with your Infura project ID:
+   ```bash
+   REACT_APP_INFURA_PROJECT_ID=your_infura_project_id_here
+   ```
+
+The app will automatically use this single API key for all supported networks:
+- **Ethereum Mainnet**
+- **Linea Mainnet**
+- **Arbitrum One**
+- **Avalanche C-Chain**
+- **BNB Chain**
+- **Optimism Mainnet**
+- **Polygon Mainnet**
+- **zkSync Era Mainnet**
+- **Base Mainnet**
+- **Localhost** (for development, no API key needed)
+
 ## Contributing
 
 #### This project uses the [MetaMask Module Template](https://github.com/MetaMask/metamask-module-template)
