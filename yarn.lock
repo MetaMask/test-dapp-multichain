@@ -3567,16 +3567,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:^18.18":
-  version: 18.19.34
-  resolution: "@types/node@npm:18.19.34"
-  dependencies:
-    undici-types: "npm:~5.26.4"
-  checksum: 10/5c8daed0c672e824c36d31312377fc4dddf3e91006fadad719527bb2bd710d4207193c1c7034da9d2d6cbc03da89d3693c86207f751540c18a7d38802040fbd9
-  languageName: node
-  linkType: hard
-
-"@types/node@npm:>=13.7.0":
+"@types/node@npm:*, @types/node@npm:>=13.7.0":
   version: 24.9.1
   resolution: "@types/node@npm:24.9.1"
   dependencies:
@@ -3589,6 +3580,15 @@ __metadata:
   version: 12.20.55
   resolution: "@types/node@npm:12.20.55"
   checksum: 10/1f916a06fff02faadb09a16ed6e31820ce170798b202ef0b14fc244bfbd721938c54a3a99836e185e4414ca461fe96c5bb5c67c3d248f153555b7e6347f061dd
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^18.18":
+  version: 18.19.34
+  resolution: "@types/node@npm:18.19.34"
+  dependencies:
+    undici-types: "npm:~5.26.4"
+  checksum: 10/5c8daed0c672e824c36d31312377fc4dddf3e91006fadad719527bb2bd710d4207193c1c7034da9d2d6cbc03da89d3693c86207f751540c18a7d38802040fbd9
   languageName: node
   linkType: hard
 
@@ -15616,22 +15616,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:^8.13.0, ws@npm:^8.5.0":
-  version: 8.18.1
-  resolution: "ws@npm:8.18.1"
-  peerDependencies:
-    bufferutil: ^4.0.1
-    utf-8-validate: ">=5.0.2"
-  peerDependenciesMeta:
-    bufferutil:
-      optional: true
-    utf-8-validate:
-      optional: true
-  checksum: 10/3f38e9594f2af5b6324138e86b74df7d77bbb8e310bf8188679dd80bac0d1f47e51536a1923ac3365f31f3d8b25ea0b03e4ade466aa8292a86cd5defca64b19b
-  languageName: node
-  linkType: hard
-
-"ws@npm:^8.18.3":
+"ws@npm:^8.13.0, ws@npm:^8.18.3, ws@npm:^8.5.0":
   version: 8.18.3
   resolution: "ws@npm:8.18.3"
   peerDependencies:
