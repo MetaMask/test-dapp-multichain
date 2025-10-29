@@ -31,7 +31,7 @@ import {
 } from './helpers/MethodInvocationHelpers';
 import { generateSolanaMethodExamples } from './helpers/solana-method-signatures';
 import { useSDK } from './sdk';
-import { WINDOW_POST_MESSAGE_ID } from './sdk/SDK';
+import { MM_CONNECT_ID, WINDOW_POST_MESSAGE_ID } from './sdk/SDK';
 
 function App() {
   const [caipAccountIds, setCaipAccountIds] = useState<string[]>(['']);
@@ -856,6 +856,18 @@ function App() {
             id="auto-connect-postmessage-button"
           >
             Auto Connect via postMessage
+          </button>
+          <button
+            onClick={() => {
+              connect(MM_CONNECT_ID).catch((error) => {
+                console.error('Auto-connect via MM Connect failed:', error);
+              });
+            }}
+            disabled={isExternallyConnectableConnected}
+            data-testid="auto-connect-mm-connect-button"
+            id="auto-connect-mm-connect-button"
+          >
+            Auto Connect via MM Connect
           </button>
         </div>
       </section>
