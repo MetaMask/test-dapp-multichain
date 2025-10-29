@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.18.0]
+
+### Uncategorized
+
+- feat: Add MM Connect integration ([#83](https://github.com/MetaMask/test-dapp-multichain/pull/83))
+- chore: Remove jest and test job ([#84](https://github.com/MetaMask/test-dapp-multichain/pull/84))
+- feat: Adds Bitcoin to the list of networks ([#82](https://github.com/MetaMask/test-dapp-multichain/pull/82))
+
 ## [0.17.1]
 
 ### Changed
@@ -227,7 +235,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix: other linting issues
 - Initial Commit of react app and module template
 
-[Unreleased]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.17.1...HEAD
+[Unreleased]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.18.0...HEAD
+[0.18.0]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.17.1...v0.18.0
 [0.17.1]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.17.0...v0.17.1
 [0.17.0]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.15.0...v0.16.0
