@@ -13,7 +13,8 @@ module.exports = {
         "import/no-unassigned-import": "off",
         "jsdoc/require-jsdoc": "off",
         "no-restricted-globals": "off",
-        "@typescript-eslint/naming-convention": "off"
+        "@typescript-eslint/naming-convention": "off",
+        "@typescript-eslint/restrict-template-expressions": "off",
       }
     },
 
@@ -42,7 +43,6 @@ module.exports = {
     {
       files: ['*.test.ts', '*.test.js'],
       extends: [
-        '@metamask/eslint-config-jest',
         '@metamask/eslint-config-nodejs',
       ],
     },
