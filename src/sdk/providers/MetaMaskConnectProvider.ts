@@ -64,7 +64,9 @@ class MetaMaskConnectProvider implements Provider {
       return this.#walletSession;
     }
     if (request.method === 'wallet_revokeSession') {
-      this.disconnect();
+      throw new Error(
+        'wallet_revokeSession is not supported via MetaMask Connect',
+      );
     }
     if (request.method === 'wallet_createSession') {
       const requestedScopes = Object.keys({
