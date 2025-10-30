@@ -19,6 +19,9 @@ class MetaMaskConnectProvider implements Provider {
     }
 
     this.#mmConnect = await createMetamaskConnect({
+      api: {
+        readonlyRPCMap: {},
+      },
       dapp: {
         name: 'MultichainTest Dapp',
         url: 'https://metamask.github.io/test-dapp-multichain/latest/',
@@ -33,7 +36,7 @@ class MetaMaskConnectProvider implements Provider {
       },
       ui: {
         preferDesktop: false,
-        preferExtension: false,
+        preferExtension: true,
       },
     });
 
