@@ -11,8 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Uncategorized
 
-- fix: disable wallet_revokeSession for MMC ([#87](https://github.com/MetaMask/test-dapp-multichain/pull/87))
-- fix: Fix MMC mobile deeplink ([#86](https://github.com/MetaMask/test-dapp-multichain/pull/86))
+- fix: Disable wallet_revokeSession for MM Connect ([#87](https://github.com/MetaMask/test-dapp-multichain/pull/87))
+- fix: Fix MM Connect mobile deeplink ([#86](https://github.com/MetaMask/test-dapp-multichain/pull/86))
 
 ## [0.18.0]
 
