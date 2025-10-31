@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.18.1]
+
+### Fixed
+
+- fix: Disable wallet_revokeSession for MM Connect ([#87](https://github.com/MetaMask/test-dapp-multichain/pull/87))
+- fix: Fix MM Connect mobile deeplink ([#86](https://github.com/MetaMask/test-dapp-multichain/pull/86))
+
 ## [0.18.0]
 
 ### Added
@@ -234,7 +241,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix: other linting issues
 - Initial Commit of react app and module template
 
-[Unreleased]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.18.0...HEAD
+[Unreleased]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.18.1...HEAD
+[0.18.1]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.18.0...v0.18.1
 [0.18.0]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.17.1...v0.18.0
 [0.17.1]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.17.0...v0.17.1
 [0.17.0]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.16.0...v0.17.0
