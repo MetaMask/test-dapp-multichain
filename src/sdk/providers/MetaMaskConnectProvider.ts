@@ -13,7 +13,7 @@ class MetaMaskConnectProvider implements Provider {
 
   #walletSession: unknown = { sessionScopes: {} };
 
-  async connect(): Promise<boolean> {
+  async connect(scopes?: Scope[]): Promise<boolean> {
     if (this.#mmConnect) {
       this.disconnect();
     }
@@ -39,7 +39,11 @@ class MetaMaskConnectProvider implements Provider {
       },
     });
 
-    await this.#mmConnect?.connect(['eip155:1'], []);
+    const scopesToUse =
+      scopes && scopes.length > 0
+        ? scopes
+        : (['eip155:1'] as unknown as Scope[]);
+    await this.#mmConnect?.connect(scopesToUse, []);
 
     return true;
   }

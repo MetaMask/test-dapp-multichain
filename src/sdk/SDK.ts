@@ -109,7 +109,10 @@ export class SDK {
     this.#provider?.disconnect();
   }
 
-  public async setExtensionIdAndConnect(extensionId: string): Promise<boolean> {
+  public async setExtensionIdAndConnect(
+    extensionId: string,
+    scopes?: CaipChainId[],
+  ): Promise<boolean> {
     // TODO add logic once we have CAIP-294 wallet discovery + or hardcode the stable extensionId
     let connected;
     if (extensionId === WINDOW_POST_MESSAGE_ID) {
@@ -118,7 +121,9 @@ export class SDK {
     } else if (extensionId === MM_CONNECT_ID) {
       this.#provider =
         new MetaMaskConnectProvider() as unknown as MetaMaskMultichainBaseProvider;
-      connected = await this.#provider.connect();
+      // Convert CaipChainId[] to Scope[] for MetaMaskConnectProvider
+      // Scope is from @metamask/connect-multichain and is compatible with CaipChainId
+      connected = await this.#provider.connect(scopes as unknown as any);
     } else {
       this.#provider = new MetaMaskMultichainExternallyConnectableProvider();
       connected = await this.#provider.connect(extensionId);

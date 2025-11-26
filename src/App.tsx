@@ -859,7 +859,14 @@ function App() {
           </button>
           <button
             onClick={() => {
-              connect(MM_CONNECT_ID).catch((error) => {
+              const selectedScopesArray = [
+                ...Object.keys(selectedScopes).filter((scope) => {
+                  const caipChainId = scope as CaipChainId;
+                  return selectedScopes[caipChainId];
+                }),
+                ...customScopes.filter((scope) => scope.length),
+              ] as CaipChainId[];
+              connect(MM_CONNECT_ID, selectedScopesArray).catch((error) => {
                 console.error('Auto-connect via MM Connect failed:', error);
               });
             }}
@@ -907,7 +914,6 @@ function App() {
                             [chainId]: evt.target.checked,
                           }))
                         }
-                        disabled={!isExternallyConnectableConnected}
                         data-testid={`network-checkbox-${escapeHtmlId(
                           chainId,
                         )}`}
