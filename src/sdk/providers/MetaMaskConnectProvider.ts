@@ -20,7 +20,20 @@ class MetaMaskConnectProvider implements Provider {
 
     this.#mmConnect = await createMetamaskConnect({
       api: {
-        supportedNetworks: {},
+        supportedNetworks: {
+          'eip155:1': 'https://eth.llamarpc.com',
+          'eip155:59144': 'https://rpc.linea.build',
+          'eip155:42161': 'https://arb1.arbitrum.io/rpc',
+          'eip155:43114': 'https://avalanche.public-rpc.com',
+          'eip155:56': 'https://bsc-dataseed.binance.org',
+          'eip155:10': 'https://0xrpc.io/op',
+          'eip155:137': 'https://polygon-rpc.com',
+          'eip155:324': 'https://mainnet.era.zksync.io',
+          'eip155:8453': 'https://mainnet.base.org',
+          'eip155:1337': 'http://localhost:8545',
+          'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp':
+            'https://api.mainnet-beta.solana.com',
+        },
       },
       dapp: {
         name: 'MultichainTest Dapp',
