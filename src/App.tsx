@@ -876,6 +876,26 @@ function App() {
           >
             Auto Connect via MM Connect
           </button>
+          {extensionId === MM_CONNECT_ID &&
+            isExternallyConnectableConnected &&
+            currentSession && (
+              <button
+                onClick={() => {
+                  disconnect();
+                  setExtensionId('');
+                  localStorage.removeItem('extensionId');
+                }}
+                style={{
+                  backgroundColor: '#dc2626',
+                  color: 'white',
+                  border: 'none',
+                }}
+                data-testid="disconnect-mm-connect-button"
+                id="disconnect-mm-connect-button"
+              >
+                Disconnect MMConnect Session
+              </button>
+            )}
         </div>
       </section>
       <section>
