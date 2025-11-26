@@ -20,7 +20,7 @@ class MetaMaskConnectProvider implements Provider {
 
     this.#mmConnect = await createMetamaskConnect({
       api: {
-        readonlyRPCMap: {},
+        supportedNetworks: {},
       },
       dapp: {
         name: 'MultichainTest Dapp',
@@ -35,7 +35,6 @@ class MetaMaskConnectProvider implements Provider {
         },
       },
       ui: {
-        preferDesktop: false,
         preferExtension: true,
       },
     });
