@@ -13,14 +13,27 @@ class MetaMaskConnectProvider implements Provider {
 
   #walletSession: unknown = { sessionScopes: {} };
 
-  async connect(): Promise<boolean> {
+  async connect(scopes?: Scope[]): Promise<boolean> {
     if (this.#mmConnect) {
       this.disconnect();
     }
 
     this.#mmConnect = await createMetamaskConnect({
       api: {
-        supportedNetworks: {},
+        supportedNetworks: {
+          'eip155:1': 'https://eth.llamarpc.com',
+          'eip155:59144': 'https://rpc.linea.build',
+          'eip155:42161': 'https://arb1.arbitrum.io/rpc',
+          'eip155:43114': 'https://avalanche.public-rpc.com',
+          'eip155:56': 'https://bsc-dataseed.binance.org',
+          'eip155:10': 'https://0xrpc.io/op',
+          'eip155:137': 'https://polygon-rpc.com',
+          'eip155:324': 'https://mainnet.era.zksync.io',
+          'eip155:8453': 'https://mainnet.base.org',
+          'eip155:1337': 'http://localhost:8545',
+          'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp':
+            'https://api.mainnet-beta.solana.com',
+        },
       },
       dapp: {
         name: 'MultichainTest Dapp',
@@ -39,7 +52,11 @@ class MetaMaskConnectProvider implements Provider {
       },
     });
 
-    await this.#mmConnect?.connect(['eip155:1'], []);
+    const scopesToUse =
+      scopes && scopes.length > 0
+        ? scopes
+        : (['eip155:1'] as unknown as Scope[]);
+    await this.#mmConnect?.connect(scopesToUse, []);
 
     return true;
   }

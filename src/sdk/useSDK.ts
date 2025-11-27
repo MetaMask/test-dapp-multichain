@@ -7,7 +7,7 @@ type UseSDKReturn = {
   isConnected: boolean;
   currentSession: any;
   extensionId: string;
-  connect: (extensionId: string) => Promise<void>;
+  connect: (extensionId: string, scopes?: CaipChainId[]) => Promise<void>;
   disconnect: () => void;
   createSession: (
     scopes: CaipChainId[],
@@ -131,10 +131,13 @@ export function useSDK({
   }, [sdk, isConnected]);
 
   const connect = useCallback(
-    async (newExtensionId: string) => {
+    async (newExtensionId: string, scopes?: CaipChainId[]) => {
       if (sdk) {
         try {
-          const connected = await sdk.setExtensionIdAndConnect(newExtensionId);
+          const connected = await sdk.setExtensionIdAndConnect(
+            newExtensionId,
+            scopes,
+          );
           setIsConnected(connected);
           if (connected) {
             localStorage.setItem('extensionId', newExtensionId);

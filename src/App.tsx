@@ -859,7 +859,14 @@ function App() {
           </button>
           <button
             onClick={() => {
-              connect(MM_CONNECT_ID).catch((error) => {
+              const selectedScopesArray = [
+                ...Object.keys(selectedScopes).filter((scope) => {
+                  const caipChainId = scope as CaipChainId;
+                  return selectedScopes[caipChainId];
+                }),
+                ...customScopes.filter((scope) => scope.length),
+              ] as CaipChainId[];
+              connect(MM_CONNECT_ID, selectedScopesArray).catch((error) => {
                 console.error('Auto-connect via MM Connect failed:', error);
               });
             }}
@@ -869,6 +876,26 @@ function App() {
           >
             Auto Connect via MM Connect
           </button>
+          {extensionId === MM_CONNECT_ID &&
+            isExternallyConnectableConnected &&
+            currentSession && (
+              <button
+                onClick={() => {
+                  disconnect();
+                  setExtensionId('');
+                  localStorage.removeItem('extensionId');
+                }}
+                style={{
+                  backgroundColor: '#dc2626',
+                  color: 'white',
+                  border: 'none',
+                }}
+                data-testid="disconnect-mm-connect-button"
+                id="disconnect-mm-connect-button"
+              >
+                Disconnect MMConnect Session
+              </button>
+            )}
         </div>
       </section>
       <section>
@@ -907,7 +934,6 @@ function App() {
                             [chainId]: evt.target.checked,
                           }))
                         }
-                        disabled={!isExternallyConnectableConnected}
                         data-testid={`network-checkbox-${escapeHtmlId(
                           chainId,
                         )}`}
