@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/test-dapp-multichain/staging/static/css/main.66b8f8cf.css",
-    "main.js": "/test-dapp-multichain/staging/static/js/main.b781f3ea.js",
+    "main.js": "/test-dapp-multichain/staging/static/js/main.0c46bc74.js",
     "static/js/955.78bb4e99.chunk.js": "/test-dapp-multichain/staging/static/js/955.78bb4e99.chunk.js",
     "static/js/879.c03d62c0.chunk.js": "/test-dapp-multichain/staging/static/js/879.c03d62c0.chunk.js",
     "static/js/878.7a64e09c.chunk.js": "/test-dapp-multichain/staging/static/js/878.7a64e09c.chunk.js",
     "static/js/599.6669e12c.chunk.js": "/test-dapp-multichain/staging/static/js/599.6669e12c.chunk.js",
     "index.html": "/test-dapp-multichain/staging/index.html",
     "main.66b8f8cf.css.map": "/test-dapp-multichain/staging/static/css/main.66b8f8cf.css.map",
-    "main.b781f3ea.js.map": "/test-dapp-multichain/staging/static/js/main.b781f3ea.js.map",
+    "main.0c46bc74.js.map": "/test-dapp-multichain/staging/static/js/main.0c46bc74.js.map",
     "955.78bb4e99.chunk.js.map": "/test-dapp-multichain/staging/static/js/955.78bb4e99.chunk.js.map",
     "879.c03d62c0.chunk.js.map": "/test-dapp-multichain/staging/static/js/879.c03d62c0.chunk.js.map",
     "878.7a64e09c.chunk.js.map": "/test-dapp-multichain/staging/static/js/878.7a64e09c.chunk.js.map",
@@ -16,6 +16,6 @@
   },
   "entrypoints": [
     "static/css/main.66b8f8cf.css",
-    "static/js/main.b781f3ea.js"
+    "static/js/main.0c46bc74.js"
   ]
 }
