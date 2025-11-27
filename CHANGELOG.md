@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.19.0]
 
-### Uncategorized
+### Changed
 
 - chore: MMConnect Configuration Improvements ([#91](https://github.com/MetaMask/test-dapp-multichain/pull/91))
 - chore: bump @metamask/connect-multichain to 0.2.0 ([#89](https://github.com/MetaMask/test-dapp-multichain/pull/89))
