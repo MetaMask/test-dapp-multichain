@@ -2330,12 +2330,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@metamask/analytics@npm:^0.1.0":
-  version: 0.1.0
-  resolution: "@metamask/analytics@npm:0.1.0"
+"@metamask/analytics@npm:^0.1.1":
+  version: 0.1.1
+  resolution: "@metamask/analytics@npm:0.1.1"
   dependencies:
     openapi-fetch: "npm:^0.13.5"
-  checksum: 10/31b8c9b217d06543591ebb0d28d8c67262c0d38af55e08c244ef515f151497fb1a061c305b4ac4171c7167325bd7e4cd419a00c07673622582804bec26f51a4e
+  checksum: 10/0ae12056d35acc4a34099b00c94c9b56059934238649718a2b820d7f1a1ec0b745edfa8e19aa346cfd9f88b042a599d16ce10a430fba242aed0c07a6186c6cd8
   languageName: node
   linkType: hard
 
@@ -2361,15 +2361,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@metamask/connect-multichain@npm:^0.1.0":
-  version: 0.1.0
-  resolution: "@metamask/connect-multichain@npm:0.1.0"
+"@metamask/connect-multichain@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "@metamask/connect-multichain@npm:0.2.0"
   dependencies:
-    "@metamask/analytics": "npm:^0.1.0"
+    "@metamask/analytics": "npm:^0.1.1"
     "@metamask/mobile-wallet-protocol-core": "npm:^0.3.0"
     "@metamask/mobile-wallet-protocol-dapp-client": "npm:^0.2.1"
-    "@metamask/multichain-api-client": "npm:^0.8.0"
-    "@metamask/multichain-ui": "npm:^0.1.0"
+    "@metamask/multichain-api-client": "npm:^0.8.1"
+    "@metamask/multichain-ui": "npm:^0.2.0"
     "@metamask/onboarding": "npm:^1.0.1"
     "@metamask/utils": "npm:^11.8.1"
     "@paulmillr/qr": "npm:^0.2.1"
@@ -2382,7 +2382,7 @@ __metadata:
     ws: "npm:^8.18.3"
   peerDependencies:
     "@react-native-async-storage/async-storage": ^1.23
-  checksum: 10/796402213f789cf2f89715a9b777ed26a68c47666bbf39c73cc54e3d3cda0f95b52db5671706c8a14f08be47d9fcc11e94539868060988c2166b592db1012e2f
+  checksum: 10/5d556a3f5be4adb9be4298d3ae37782e3d788c27f37f6aab6f625491ee7cf4b970aee1b6f4096edb516520d08965237f8c281aa736e8210ce6e66a98251e3b6e
   languageName: node
   linkType: hard
 
@@ -2447,20 +2447,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@metamask/multichain-api-client@npm:^0.8.0":
-  version: 0.8.0
-  resolution: "@metamask/multichain-api-client@npm:0.8.0"
-  checksum: 10/73a9cc74c9bc8d20423535a28f690818a82d81ad76077670a4968e6322b8364f70c3fab40558fae79028f9003766cd0eeaada2cefd39042a1df4d327a22cb2f8
+"@metamask/multichain-api-client@npm:^0.8.1":
+  version: 0.8.1
+  resolution: "@metamask/multichain-api-client@npm:0.8.1"
+  checksum: 10/a6e079b4acce94d25ffdccbbf7f09ce1b5c650ceec6119e7002f8095cd1eb18c59a26fbfe0ac775c60862e38c657273dad507e27ddbdc166fea404b03f54bdb6
   languageName: node
   linkType: hard
 
-"@metamask/multichain-ui@npm:^0.1.0":
-  version: 0.1.0
-  resolution: "@metamask/multichain-ui@npm:0.1.0"
+"@metamask/multichain-ui@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "@metamask/multichain-ui@npm:0.2.0"
   dependencies:
     "@paulmillr/qr": "npm:^0.2.1"
     qr-code-styling: "npm:^1.9.2"
-  checksum: 10/7cec847cd3d1f9ed0143839a351ec854744252d98f58908388f2cf72b2e446f028e11da2878162efe6a8d5c0cb09b380934b3f1164dc9416de10df5765b1c419
+  checksum: 10/72d208f8d6c496a7ffc67ebc7e9f97091601d344596859b098234b0ac519d6ca8bf3d3823767d1daf4fef5e8cc6e805f5273e4e9bca50518710c3250c6123cc9
   languageName: node
   linkType: hard
 
@@ -2488,7 +2488,7 @@ __metadata:
     "@lavamoat/preinstall-always-fail": "npm:^2.0.0"
     "@metamask/api-specs": "npm:^0.14.0"
     "@metamask/auto-changelog": "npm:^3.4.3"
-    "@metamask/connect-multichain": "npm:^0.1.0"
+    "@metamask/connect-multichain": "npm:^0.2.0"
     "@metamask/eslint-config": "npm:^12.2.0"
     "@metamask/eslint-config-nodejs": "npm:^12.1.0"
     "@metamask/eslint-config-typescript": "npm:^12.1.0"
