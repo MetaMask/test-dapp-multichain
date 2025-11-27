@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunk_metamask_test_dapp_multichain=self.webpackChunk_metamask_test_dapp_multichain||[]).push([[955],{955:e=>{e.exports=function(){throw new Error("ws does not work in the browser. Browser clients must use the native WebSocket object")}}}]);
+//# sourceMappingURL=955.78bb4e99.chunk.js.map
