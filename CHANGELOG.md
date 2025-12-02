@@ -9,9 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.19.1]
 
-### Uncategorized
+### Changed
 
-- chore: bump @metamask/connect-multichain to 0.2.1 for updated analytics support ([#93](https://github.com/MetaMask/test-dapp-multichain/pull/93))
+- chore: bump `@metamask/connect-multichain` to `0.2.1` for updated analytics support ([#93](https://github.com/MetaMask/test-dapp-multichain/pull/93))
 
 ## [0.19.0]
 
