@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.19.1]
+
+### Changed
+
+- chore: bump `@metamask/connect-multichain` to `0.2.1` for updated analytics support ([#93](https://github.com/MetaMask/test-dapp-multichain/pull/93))
+
 ## [0.19.0]
 
 ### Changed
@@ -249,7 +255,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix: other linting issues
 - Initial Commit of react app and module template
 
-[Unreleased]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.19.0...HEAD
+[Unreleased]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.19.1...HEAD
+[0.19.1]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.19.0...v0.19.1
 [0.19.0]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.18.1...v0.19.0
 [0.18.1]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.18.0...v0.18.1
 [0.18.0]: https://github.com/MetaMask/test-dapp-multichain/compare/v0.17.1...v0.18.0
