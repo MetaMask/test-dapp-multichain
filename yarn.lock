@@ -2330,12 +2330,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@metamask/analytics@npm:^0.1.1":
-  version: 0.1.1
-  resolution: "@metamask/analytics@npm:0.1.1"
+"@metamask/analytics@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "@metamask/analytics@npm:0.2.0"
   dependencies:
     openapi-fetch: "npm:^0.13.5"
-  checksum: 10/0ae12056d35acc4a34099b00c94c9b56059934238649718a2b820d7f1a1ec0b745edfa8e19aa346cfd9f88b042a599d16ce10a430fba242aed0c07a6186c6cd8
+  checksum: 10/d09695b1e130230ed8d6985efc32262cd32c41f661cf58d44ce36e0cfdf835906b9a60e286e16f63071d39bc90117c75fd7ea75bbb3b81088b8739a44db5f3bb
   languageName: node
   linkType: hard
 
@@ -2361,11 +2361,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@metamask/connect-multichain@npm:^0.2.0":
-  version: 0.2.0
-  resolution: "@metamask/connect-multichain@npm:0.2.0"
+"@metamask/connect-multichain@npm:^0.2.1":
+  version: 0.2.1
+  resolution: "@metamask/connect-multichain@npm:0.2.1"
   dependencies:
-    "@metamask/analytics": "npm:^0.1.1"
+    "@metamask/analytics": "npm:^0.2.0"
     "@metamask/mobile-wallet-protocol-core": "npm:^0.3.0"
     "@metamask/mobile-wallet-protocol-dapp-client": "npm:^0.2.1"
     "@metamask/multichain-api-client": "npm:^0.8.1"
@@ -2382,7 +2382,7 @@ __metadata:
     ws: "npm:^8.18.3"
   peerDependencies:
     "@react-native-async-storage/async-storage": ^1.23
-  checksum: 10/5d556a3f5be4adb9be4298d3ae37782e3d788c27f37f6aab6f625491ee7cf4b970aee1b6f4096edb516520d08965237f8c281aa736e8210ce6e66a98251e3b6e
+  checksum: 10/583007270044d30c56ae875ef9e64e03713faf56015e1b94e207a6833fa06118773ba5cbf8dfb503b50a80f4903790933eb2db52e0678c2e20c6eff599849264
   languageName: node
   linkType: hard
 
@@ -2488,7 +2488,7 @@ __metadata:
     "@lavamoat/preinstall-always-fail": "npm:^2.0.0"
     "@metamask/api-specs": "npm:^0.14.0"
     "@metamask/auto-changelog": "npm:^3.4.3"
-    "@metamask/connect-multichain": "npm:^0.2.0"
+    "@metamask/connect-multichain": "npm:^0.2.1"
     "@metamask/eslint-config": "npm:^12.2.0"
     "@metamask/eslint-config-nodejs": "npm:^12.1.0"
     "@metamask/eslint-config-typescript": "npm:^12.1.0"
