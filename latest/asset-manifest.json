@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/test-dapp-multichain/latest/static/css/main.66b8f8cf.css",
-    "main.js": "/test-dapp-multichain/latest/static/js/main.45891121.js",
+    "main.js": "/test-dapp-multichain/latest/static/js/main.6d33525e.js",
     "static/js/955.78bb4e99.chunk.js": "/test-dapp-multichain/latest/static/js/955.78bb4e99.chunk.js",
     "static/js/879.c03d62c0.chunk.js": "/test-dapp-multichain/latest/static/js/879.c03d62c0.chunk.js",
     "static/js/878.7a64e09c.chunk.js": "/test-dapp-multichain/latest/static/js/878.7a64e09c.chunk.js",
     "static/js/599.6669e12c.chunk.js": "/test-dapp-multichain/latest/static/js/599.6669e12c.chunk.js",
     "index.html": "/test-dapp-multichain/latest/index.html",
     "main.66b8f8cf.css.map": "/test-dapp-multichain/latest/static/css/main.66b8f8cf.css.map",
-    "main.45891121.js.map": "/test-dapp-multichain/latest/static/js/main.45891121.js.map",
+    "main.6d33525e.js.map": "/test-dapp-multichain/latest/static/js/main.6d33525e.js.map",
     "955.78bb4e99.chunk.js.map": "/test-dapp-multichain/latest/static/js/955.78bb4e99.chunk.js.map",
     "879.c03d62c0.chunk.js.map": "/test-dapp-multichain/latest/static/js/879.c03d62c0.chunk.js.map",
     "878.7a64e09c.chunk.js.map": "/test-dapp-multichain/latest/static/js/878.7a64e09c.chunk.js.map",
@@ -16,6 +16,6 @@
   },
   "entrypoints": [
     "static/css/main.66b8f8cf.css",
-    "static/js/main.45891121.js"
+    "static/js/main.6d33525e.js"
   ]
 }
