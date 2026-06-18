@@ -46,7 +46,7 @@
   "devDependencies": {
     "@lavamoat/allow-scripts": "^3.0.4",
     "@lavamoat/preinstall-always-fail": "^2.0.0",
-    "@metamask/api-specs": "^0.14.0",
+    "@metamask/api-specs": "^0.15.0",
     "@metamask/auto-changelog": "^3.4.3",
     "@metamask/connect-multichain": "^0.2.1",
     "@metamask/eslint-config": "^12.2.0",
